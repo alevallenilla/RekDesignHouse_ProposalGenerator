@@ -1,0 +1,2 @@
+# Ignore reference PDFs — not needed in the deployed repo
+*.pdf
