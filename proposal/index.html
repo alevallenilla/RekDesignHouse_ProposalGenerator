@@ -1728,22 +1728,30 @@ async function setStatus(id, status, btn) {
 }
 
 /* ─── GOOGLE MAPS AUTOCOMPLETE ───────────────── */
-function initAutocomplete() {
-  const input = document.getElementById('caddr');
-  const ac = new google.maps.places.Autocomplete(input, {
-    fields: ['formatted_address'],
-  });
-  ac.addListener('place_changed', () => {
-    const place = ac.getPlace();
-    if (place.formatted_address) {
-      input.value = place.formatted_address;
-    }
-  });
+async function initAutocomplete() {
+  try {
+    const { Autocomplete } = await google.maps.importLibrary('places');
+    const input = document.getElementById('caddr');
+    const ac = new Autocomplete(input, {
+      fields: ['formatted_address'],
+      types: ['address'],
+    });
+    ac.addListener('place_changed', () => {
+      const place = ac.getPlace();
+      if (place.formatted_address) {
+        input.value = place.formatted_address;
+      }
+    });
+  } catch (err) {
+    console.warn('Google Maps Autocomplete failed to load:', err);
+    // Graceful fallback — field still works as a plain text input
+  }
 }
 
 // Init
 document.getElementById('tbDate').textContent = new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
 document.getElementById('cdate').value = today();
+initAutocomplete();
 </script>
 <!-- EDIT MODAL ──────────────────────────────── -->
 <div class="modal-overlay" id="editModal" style="display:none" onclick="closeEditModal(event)">
@@ -1774,6 +1782,7 @@ document.getElementById('cdate').value = today();
 
 <script src="/shared/nav.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBh774hHdIz_0t-LbF8V4b2YMthT7KEJIk&libraries=places&callback=initAutocomplete"></script>
+<!-- Google Maps JS API — new bootstrap loader (replaces deprecated callback= pattern) -->
+<script>(g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b.maps||(b.maps={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await(a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src=`https://maps.${c}apis.com/maps/api/js?`+e;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a)}));d[l]?console.warn(p+" only loads once. Ignoring:",g):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})({key:"AIzaSyBh774hHdIz_0t-LbF8V4b2YMthT7KEJIk",v:"weekly"});</script>
 </body>
 </html>
