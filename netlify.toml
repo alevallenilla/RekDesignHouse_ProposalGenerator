@@ -1,4 +1,11 @@
+# Redirect old proposal file URL → new path
+[[redirects]]
+  from = "/Rek_Quote_Proposal_v2.html"
+  to   = "/proposal"
+  status = 301
+
+# Redirect root → proposal tool (default landing)
 [[redirects]]
   from = "/"
-  to   = "/Rek_Quote_Proposal_v2.html"
-  status = 200
+  to   = "/proposal"
+  status = 302

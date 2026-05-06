@@ -1,0 +1,1779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>REK Design Studio — Quote & Proposal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --page:    #2C3A2E;
+      --header:  #233020;
+      --card:    #EDE8DC;
+      --cream:   #F2EDE4;
+      --burg:    #6B1F2A;
+      --burg-dk: #561929;
+      --burg-t:  rgba(107,31,42,0.08);
+      --gold:    #8C7A3A;
+      --gold-t:  rgba(140,122,58,0.12);
+      --char:    #1C1C1A;
+      --muted:   rgba(28,28,26,0.50);
+      --border:  #C8C0B0;
+      --bsub:    rgba(28,28,26,0.10);
+      --notebg:  #faf6e8;
+      --notebd:  #d9c96a;
+      --noteacc: #9a7818;
+      --notetxt: #4a3900;
+      --floor-c: #3d7a52;
+      --rec-c:   #8C7A3A;
+      --prop-c:  #6B1F2A;
+      --ceil-c:  #7a7060;
+    }
+
+    body {
+      background: var(--page);
+      color: var(--char);
+      font-family: 'Inter', sans-serif;
+      font-weight: 400;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── TOPBAR ─────────────────────────────── */
+    .topbar {
+      width: 100%; background: var(--header);
+      border-bottom: 1px solid rgba(242,237,228,0.15);
+      padding: 0 28px; height: 56px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100; flex-shrink: 0;
+    }
+    .tb-brand { display: flex; align-items: baseline; gap: 9px; }
+    .tb-rek   { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 600; color: var(--cream); letter-spacing: 0.03em; }
+    .tb-sub   { font-size: 10px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(242,237,228,0.45); }
+    .tb-date  { font-size: 12px; color: rgba(242,237,228,0.38); }
+
+    /* ── LAYOUT ─────────────────────────────── */
+    .page-content {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; padding: 36px 16px 80px;
+    }
+
+    /* ── PROGRESS ───────────────────────────── */
+    .progress {
+      display: none; align-items: center; gap: 10px; margin-bottom: 20px;
+    }
+    .progress.show { display: flex; }
+    .pdot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: rgba(242,237,228,0.18);
+      transition: background 0.3s, transform 0.3s;
+    }
+    .pdot.on { background: var(--gold); transform: scale(1.15); }
+    .plabel {
+      font-size: 11px; font-weight: 500; letter-spacing: 0.1em;
+      text-transform: uppercase; color: rgba(242,237,228,0.42); margin-left: 6px;
+    }
+
+    /* ── CARD ───────────────────────────────── */
+    .card {
+      background: var(--card); border-radius: 12px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.22), 0 0 0 1px rgba(0,0,0,0.06);
+      width: 100%; max-width: 680px;
+      padding: 44px 52px 40px;
+    }
+    @media (max-width: 600px) { .card { padding: 32px 26px; } }
+
+    /* ── SCREENS ────────────────────────────── */
+    .screen {
+      display: none; opacity: 0; transform: translateY(8px);
+      transition: opacity 0.22s, transform 0.22s;
+    }
+    .screen.visible { display: block; }
+    .screen.active  { opacity: 1; transform: translateY(0); }
+    .screen.out     { opacity: 0 !important; transform: translateY(-6px) !important; transition: opacity 0.15s, transform 0.15s; }
+
+    /* ── TYPE ───────────────────────────────── */
+    .eyebrow {
+      font-size: 11px; font-weight: 500; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--burg); margin-bottom: 10px;
+    }
+    .headline {
+      font-family: 'Cormorant Garamond', serif; font-weight: 500;
+      font-size: clamp(1.6rem,5vw,2rem); line-height: 1.15;
+      color: var(--char); margin-bottom: 10px;
+    }
+    .headline em { font-style: italic; font-weight: 400; }
+    .subhead { font-size: 13px; color: var(--muted); line-height: 1.65; margin-bottom: 22px; }
+    .sec-label {
+      font-size: 11px; font-weight: 500; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--muted); margin-bottom: 12px;
+    }
+    .rule { height: 1px; background: var(--bsub); margin: 20px 0; }
+    .footnote { font-size: 11px; color: var(--muted); line-height: 1.55; margin-top: 6px; }
+
+    /* ── FORM ───────────────────────────────── */
+    .fg { margin-bottom: 16px; }
+    .fl {
+      display: block; font-size: 11px; font-weight: 500;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 6px;
+    }
+    .req { color: var(--burg); }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+    @media (max-width: 460px) { .form-row { grid-template-columns: 1fr; } }
+    .fi, .fta {
+      width: 100%; background: #fff; border: 1px solid var(--border);
+      border-radius: 8px; font-family: 'Inter', sans-serif;
+      font-size: 13px; color: var(--char); padding: 10px 13px;
+      outline: none; transition: border-color 0.15s, box-shadow 0.15s;
+      -webkit-appearance: none; appearance: none;
+    }
+    .fi:focus, .fta:focus { border-color: var(--burg); box-shadow: 0 0 0 3px var(--burg-t); }
+    .fi::placeholder, .fta::placeholder { color: #b8b0a4; }
+    .fta { resize: vertical; min-height: 72px; }
+
+    /* ── CHOICES ────────────────────────────── */
+    .choices { display: flex; flex-direction: column; gap: 8px; margin-bottom: 26px; }
+    .choice {
+      display: block; padding: 13px 16px;
+      background: rgba(255,255,255,0.5); border: 1px solid var(--border);
+      border-radius: 8px; cursor: pointer; text-align: left; width: 100%;
+      font-family: 'Inter', sans-serif;
+      transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+    }
+    .choice:hover:not(.sel) { border-color: var(--burg); background: rgba(255,255,255,0.78); box-shadow: 0 0 0 3px var(--burg-t); }
+    .choice.sel { background: var(--burg); border-color: var(--burg); box-shadow: 0 2px 8px rgba(107,31,42,0.25); }
+    .ct { font-size: 13px; font-weight: 500; color: var(--char); line-height: 1.4; transition: color 0.15s; }
+    .choice.sel .ct { color: var(--cream); }
+    .cs { font-size: 12px; color: var(--muted); margin-top: 2px; line-height: 1.45; transition: color 0.15s; }
+    .choice.sel .cs { color: rgba(242,237,228,0.68); }
+    .tag { font-size: 11px; font-weight: 400; color: var(--muted); letter-spacing: 0.02em; }
+    .choice.sel .tag { color: rgba(242,237,228,0.55); }
+
+    /* ── BUTTONS ────────────────────────────── */
+    button { font-family: 'Inter', sans-serif; outline: none; }
+    .btn-p {
+      display: inline-block; background: var(--burg); color: var(--cream);
+      font-size: 12px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase;
+      padding: 12px 32px; border: none; border-radius: 6px; cursor: pointer;
+      transition: background 0.15s, box-shadow 0.15s;
+    }
+    .btn-p:hover    { background: var(--burg-dk); box-shadow: 0 2px 8px rgba(107,31,42,0.3); }
+    .btn-p:disabled { opacity: 0.35; cursor: default; pointer-events: none; }
+    .btn-g {
+      display: inline-block; background: transparent; color: var(--muted);
+      font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase;
+      padding: 8px 0; border: none; cursor: pointer; transition: color 0.15s; margin-top: 12px;
+    }
+    .btn-g:hover { color: var(--char); }
+    .btn-a {
+      display: inline-flex; align-items: center; gap: 7px; background: white;
+      color: var(--char); border: 1px solid var(--gold); border-radius: 6px;
+      font-size: 12px; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase;
+      padding: 10px 18px; cursor: pointer; transition: background 0.15s, color 0.15s;
+    }
+    .btn-a:hover { background: var(--gold); color: white; }
+    .btn-col { display: flex; flex-direction: column; align-items: flex-start; }
+    .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 22px; padding-top: 20px; border-top: 1px solid var(--bsub); }
+
+    /* ── ROOM GRID ──────────────────────────── */
+    .room-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 8px; margin-bottom: 16px; }
+    @media (max-width: 400px) { .room-grid { grid-template-columns: 1fr; } }
+    .rtile {
+      border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px 11px;
+      cursor: pointer; background: rgba(255,255,255,0.5);
+      display: flex; justify-content: space-between; align-items: center; gap: 8px;
+      transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+    }
+    .rtile:hover:not(.sel) { border-color: var(--burg); background: rgba(255,255,255,0.78); box-shadow: 0 0 0 3px var(--burg-t); }
+    .rtile.sel { background: var(--burg); border-color: var(--burg); box-shadow: 0 2px 8px rgba(107,31,42,0.2); align-items: flex-start; }
+    .rname  { font-size: 12.5px; font-weight: 500; color: var(--char); transition: color 0.15s; }
+    .rprice { font-size: 11.5px; font-weight: 500; color: var(--gold); margin-top: 1px; transition: color 0.15s; }
+    .rtile.sel .rname  { color: var(--cream); }
+    .rtile.sel .rprice { color: rgba(242,237,228,0.72); }
+    .rcheck {
+      width: 16px; height: 16px; border: 1.5px solid var(--border); border-radius: 4px;
+      flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+      background: white; transition: all 0.15s;
+    }
+    .rtile.sel .rcheck { background: rgba(255,255,255,0.22); border-color: rgba(255,255,255,0.38); }
+    .cksv { display: none; }
+    .rtile.sel .cksv { display: block; }
+
+    /* ── TOTAL STRIP ────────────────────────── */
+    .total-strip {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 12px 16px; background: rgba(0,0,0,0.06); border-radius: 8px; margin-bottom: 6px;
+    }
+    .tlabel { font-size: 11px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+    .tvalue { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; font-weight: 500; color: var(--gold); }
+
+    /* ── RESULT — PRICING ───────────────────── */
+    .result-meta { font-size: 12.5px; color: var(--muted); line-height: 1.65; margin-bottom: 20px; }
+    .result-meta strong { color: var(--char); font-weight: 500; }
+
+    /* Hero — Proposal Price */
+    .prop-hero {
+      text-align: center; background: var(--burg); border-radius: 10px;
+      padding: 26px 24px 24px; margin: 4px 0 10px;
+      box-shadow: 0 4px 18px rgba(107,31,42,0.22);
+    }
+    .prop-hero-lbl {
+      font-size: 9.5px; font-weight: 500; letter-spacing: 0.18em;
+      text-transform: uppercase; color: rgba(242,237,228,0.55); margin-bottom: 4px;
+    }
+    .prop-hero-desc { font-size: 11px; color: rgba(242,237,228,0.40); margin-bottom: 12px; }
+    .prop-hero-val {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 3rem; font-weight: 500; color: var(--cream); line-height: 1;
+    }
+
+    /* Reference row — Internal Target + Floor */
+    .ref-tiers {
+      display: flex; justify-content: space-around; align-items: center;
+      padding: 14px 20px; background: rgba(0,0,0,0.04);
+      border-radius: 8px; margin-bottom: 12px; gap: 12px;
+    }
+    .ref-tier    { text-align: center; flex: 1; }
+    .ref-divider { width: 1px; height: 32px; background: var(--bsub); }
+    .ref-tier-lbl { font-size: 9px; font-weight: 500; letter-spacing: 0.13em; text-transform: uppercase; margin-bottom: 4px; }
+    .ref-tier-val { font-family: 'Cormorant Garamond', serif; font-size: 1.35rem; font-weight: 500; }
+    .rtl-rec  { color: var(--rec-c); }
+    .rtv-rec  { color: var(--rec-c); }
+    .rtl-floor{ color: var(--floor-c); }
+    .rtv-floor{ color: var(--floor-c); }
+
+    /* Fee breakdown */
+    .fee-breakdown {
+      background: var(--notebg); border: 1px solid var(--notebd);
+      border-left: 3px solid var(--noteacc); border-radius: 0 6px 6px 0;
+      padding: 12px 16px; margin-bottom: 4px;
+    }
+    .fb-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 5px 0; border-bottom: 1px solid rgba(153,135,46,0.15); font-size: 12px;
+    }
+    .fb-lbl { color: var(--notetxt); }
+    .fb-val { font-weight: 500; color: var(--noteacc); }
+    .fb-total {
+      display: flex; justify-content: space-between; align-items: center;
+      padding-top: 8px; margin-top: 4px; border-top: 1.5px solid var(--noteacc);
+    }
+    .fb-total-lbl { font-size: 9.5px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--noteacc); }
+    .fb-total-val { font-family: 'Cormorant Garamond', serif; font-size: 1.25rem; color: var(--noteacc); font-weight: 500; }
+
+    /* $ prefix on number inputs */
+    .input-prefix-wrap { position: relative; }
+    .input-prefix {
+      position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
+      font-size: 13px; color: var(--muted); pointer-events: none; user-select: none;
+    }
+    .input-prefix-wrap .fi { padding-left: 24px; }
+
+    /* ── EDIT MODAL ──────────────────────────── */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,0.45); backdrop-filter: blur(3px);
+      display: flex; align-items: center; justify-content: center; padding: 20px;
+    }
+    .modal-card {
+      background: var(--cream); border-radius: 12px;
+      padding: 32px 36px; width: 100%; max-width: 420px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.28);
+    }
+    .modal-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.5rem; font-weight: 500; color: var(--char); margin-bottom: 22px;
+    }
+    .modal-actions { display: flex; gap: 10px; margin-top: 22px; align-items: center; }
+    .modal-delete  { margin-left: auto; font-size: 11px; color: var(--burg); background: none; border: none; cursor: pointer; font-family: 'Inter', sans-serif; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; padding: 4px 0; }
+    .modal-delete:hover { text-decoration: underline; }
+
+    /* ── PROPOSALS — ITEM FOOTER ─────────────── */
+    .plist-item-footer {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--bsub);
+      gap: 8px;
+    }
+    .plist-project { font-size: 12px; color: var(--gold); font-style: italic; margin-top: 1px; }
+    .ctrl-btn {
+      font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 500;
+      letter-spacing: 0.08em; text-transform: uppercase; padding: 5px 12px;
+      border-radius: 5px; border: 1px solid var(--border);
+      background: transparent; color: var(--muted); cursor: pointer; transition: all 0.15s;
+    }
+    .ctrl-btn:hover { border-color: var(--gold); color: var(--char); }
+
+    /* ── PROPOSAL DOC — PROJECT NAME ─────────── */
+    .p-project-name {
+      font-size: 13px; color: #8C7A3A; font-style: italic;
+      margin-top: 2px; margin-bottom: 5px;
+    }
+
+    /* ── TOPBAR — PROPOSALS BUTTON ──────────── */
+    .tb-proposals {
+      font-family: 'Inter', sans-serif;
+      font-size: 10px; font-weight: 500; letter-spacing: 0.12em;
+      text-transform: uppercase; color: rgba(242,237,228,0.38);
+      background: transparent; border: 1px solid rgba(242,237,228,0.15);
+      border-radius: 5px; padding: 5px 12px; cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .tb-proposals:hover { color: rgba(242,237,228,0.7); border-color: rgba(242,237,228,0.3); }
+
+    /* ── PROPOSALS SCREEN ────────────────────── */
+    .plist-header {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      margin-bottom: 22px;
+    }
+    .plist-loading, .plist-empty {
+      text-align: center; padding: 44px 20px;
+      font-size: 13px; color: var(--muted); line-height: 1.7;
+    }
+    .plist-item {
+      border: 1px solid var(--border); border-radius: 8px;
+      padding: 14px 16px; margin-bottom: 10px;
+      background: rgba(255,255,255,0.5);
+    }
+    .plist-item-top {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 4px; gap: 12px;
+    }
+    .plist-cname {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px; font-weight: 500; color: var(--char);
+    }
+    .plist-meta  { font-size: 12px; color: var(--muted); margin-bottom: 12px; }
+    .plist-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+
+    /* Status badges */
+    .status-badge {
+      font-size: 9px; font-weight: 500; letter-spacing: 0.12em;
+      text-transform: uppercase; padding: 3px 9px; border-radius: 4px;
+      white-space: nowrap; flex-shrink: 0;
+    }
+    .st-draft       { color: var(--muted);   background: rgba(0,0,0,0.06); }
+    .st-in-progress { color: var(--rec-c);   background: var(--gold-t); }
+    .st-signed      { color: var(--floor-c); background: rgba(61,122,82,0.08); }
+    .st-closed      { color: var(--burg);    background: var(--burg-t); }
+
+    /* Status action buttons */
+    .status-btn {
+      font-family: 'Inter', sans-serif;
+      font-size: 10px; font-weight: 500; letter-spacing: 0.08em;
+      text-transform: uppercase; padding: 5px 11px;
+      border-radius: 5px; border: 1px solid var(--border);
+      background: transparent; color: var(--muted); cursor: pointer;
+      transition: all 0.15s;
+    }
+    .status-btn:hover { border-color: var(--burg); color: var(--burg); }
+    .status-btn.active { pointer-events: none; }
+    .status-btn.active.st-draft       { border-color: rgba(0,0,0,0.15);      color: var(--muted);   background: rgba(0,0,0,0.06); }
+    .status-btn.active.st-in-progress { border-color: rgba(140,122,58,0.35); color: var(--rec-c);   background: var(--gold-t); }
+    .status-btn.active.st-signed      { border-color: rgba(61,122,82,0.35);  color: var(--floor-c); background: rgba(61,122,82,0.08); }
+    .status-btn.active.st-closed      { border-color: rgba(107,31,42,0.35);  color: var(--burg);    background: var(--burg-t); }
+
+    /* ── GOOGLE MAPS AUTOCOMPLETE ───────────── */
+    .pac-container {
+      font-family: 'Inter', sans-serif;
+      border: 1px solid var(--border); border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.13); margin-top: 4px;
+      overflow: hidden;
+    }
+    .pac-item {
+      font-family: 'Inter', sans-serif; font-size: 12.5px;
+      padding: 9px 13px; cursor: pointer; color: var(--char);
+      border-top: 1px solid var(--bsub);
+    }
+    .pac-item:first-child { border-top: none; }
+    .pac-item:hover, .pac-item-selected { background: var(--burg-t); }
+    .pac-icon { display: none; }
+    .pac-item-query { font-size: 12.5px; color: var(--char); }
+    .pac-matched { font-weight: 500; color: var(--burg); }
+
+    /* ── SETTINGS ───────────────────────────── */
+    .settings {
+      width: 100%; max-width: 680px; margin-top: 14px;
+      border: 1px solid rgba(200,192,176,0.22); border-radius: 8px;
+      background: rgba(0,0,0,0.15); overflow: hidden;
+    }
+    .s-toggle {
+      width: 100%; display: flex; justify-content: space-between; align-items: center;
+      padding: 11px 18px; background: transparent; border: none; cursor: pointer;
+      font-family: 'Inter', sans-serif; font-size: 10.5px; font-weight: 500;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: rgba(242,237,228,0.28); transition: color 0.15s;
+    }
+    .s-toggle:hover { color: rgba(242,237,228,0.48); }
+    .s-toggle svg { transition: transform 0.2s; opacity: 0.4; }
+    .s-toggle.open svg { transform: rotate(180deg); }
+    .s-body { padding: 14px 18px 16px; border-top: 1px solid rgba(200,192,176,0.15); display: none; }
+    .s-body.open { display: block; }
+    .s-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+    .s-row:last-child { margin-bottom: 0; }
+    .s-lbl { font-size: 11.5px; color: rgba(242,237,228,0.38); }
+    .s-inp {
+      width: 84px; background: rgba(0,0,0,0.28); border: 1px solid rgba(200,192,176,0.2);
+      border-radius: 5px; color: rgba(242,237,228,0.55); font-family: 'Inter', sans-serif;
+      font-size: 13px; padding: 6px 10px; text-align: right; outline: none;
+      -webkit-appearance: none; appearance: none;
+    }
+
+    /* ══════════════════════════════════════════
+       PROPOSAL SCREEN
+    ══════════════════════════════════════════ */
+    .edit-bar {
+      background: rgba(107,31,42,0.07); border: 1px solid rgba(107,31,42,0.2);
+      border-radius: 8px; padding: 18px 20px; margin-bottom: 22px;
+    }
+    .edit-bar-title {
+      font-size: 10px; font-weight: 500; letter-spacing: 0.14em;
+      text-transform: uppercase; color: var(--burg); margin-bottom: 14px;
+    }
+    .edit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    @media (max-width: 500px) { .edit-grid { grid-template-columns: 1fr; } }
+    .eg { display: flex; flex-direction: column; gap: 4px; }
+    .eg.full { grid-column: 1 / -1; }
+    .elabel { font-size: 10px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+    .einput {
+      background: #fff; border: 1px solid var(--border); border-radius: 6px;
+      font-family: 'Inter', sans-serif; font-size: 12.5px; color: var(--char);
+      padding: 7px 10px; outline: none; transition: border-color 0.15s;
+      -webkit-appearance: none; appearance: none; width: 100%;
+    }
+    .einput:focus { border-color: var(--burg); }
+    .einput.ta { resize: vertical; min-height: 60px; font-size: 12px; }
+
+    /* ── PROPOSAL DOCUMENT ──────────────────── */
+    .pdoc {
+      background: white; border-radius: 8px;
+      box-shadow: 0 2px 20px rgba(0,0,0,0.14);
+      overflow: hidden; margin-bottom: 22px;
+    }
+    .ph {
+      background: #1A2419; padding: 26px 34px;
+      display: flex; justify-content: space-between; align-items: flex-end;
+    }
+    .ph-brand {}
+    .ph-name { font-family: 'Cormorant Garamond', serif; font-size: 24px; font-weight: 500; color: #F2EDE4; letter-spacing: 0.04em; line-height: 1; }
+    .ph-sub  { font-size: 9px; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(242,237,228,0.40); margin-top: 5px; }
+    .ph-right { text-align: right; }
+    .ph-doclabel { font-size: 9px; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(242,237,228,0.38); margin-bottom: 4px; }
+    .ph-doctitle { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 400; font-style: italic; color: #8C7A3A; }
+
+    .pb { padding: 30px 34px; }
+
+    .p-client { padding-bottom: 22px; margin-bottom: 22px; border-bottom: 1px solid #ede7dc; }
+    .p-prepfor { font-size: 9px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: #a09080; margin-bottom: 6px; }
+    .p-cname   { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 500; color: #1C1C1A; margin-bottom: 5px; }
+    .p-cmeta   { display: flex; flex-wrap: wrap; gap: 12px; font-size: 12px; color: #a09080; }
+
+    .p-svc { margin-bottom: 22px; }
+    .p-badge { display: inline-block; font-size: 9px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: #6B1F2A; background: rgba(107,31,42,0.08); padding: 4px 10px; border-radius: 4px; margin-bottom: 8px; }
+    .p-sname { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 500; color: #1C1C1A; margin-bottom: 6px; line-height: 1.2; }
+    .p-sdesc { font-size: 12px; color: #6a6057; line-height: 1.7; }
+
+    .p-scope { margin-bottom: 6px; }
+    .p-slabel { font-size: 9px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: #a09080; margin-bottom: 10px; }
+    .p-li { display: flex; justify-content: space-between; align-items: flex-start; padding: 9px 0; border-bottom: 1px solid #f2ece2; font-size: 13px; gap: 12px; }
+    .p-li:last-child { border-bottom: none; }
+    .p-liname { color: #1C1C1A; font-weight: 400; }
+    .p-lisub  { font-size: 11px; color: #a09080; margin-top: 2px; line-height: 1.4; }
+    .p-liprice { color: #8C7A3A; font-weight: 500; white-space: nowrap; flex-shrink: 0; }
+
+    .p-total {
+      display: flex; justify-content: space-between; align-items: baseline;
+      border-top: 1.5px solid #1C1C1A; margin-top: 12px; padding-top: 14px; margin-bottom: 26px;
+    }
+    .p-tlabel { font-size: 10px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: #1C1C1A; }
+    .p-tvalue { font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 500; color: #8C7A3A; }
+
+    .p-pay { background: #f8f4ed; border-radius: 8px; padding: 18px 20px; margin-bottom: 22px; }
+    .p-pay-title { font-size: 9px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: #a09080; margin-bottom: 12px; }
+    .p-pay-row   { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 1px solid #ede7dc; gap: 12px; }
+    .p-pay-row:last-child { border-bottom: none; }
+    .p-pay-lname { font-size: 13px; color: #1C1C1A; }
+    .p-pay-lsub  { font-size: 11px; color: #a09080; margin-top: 2px; }
+    .p-pay-val   { font-family: 'Cormorant Garamond', serif; font-size: 1.25rem; font-weight: 500; color: #6B1F2A; white-space: nowrap; flex-shrink: 0; }
+
+    .p-notes { margin-bottom: 22px; }
+    .p-notes-lbl  { font-size: 9px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: #a09080; margin-bottom: 8px; }
+    .p-notes-body { font-size: 12px; color: #6a6057; line-height: 1.75; white-space: pre-wrap; }
+
+    .p-validity {
+      border: 1px solid rgba(140,122,58,0.3); background: rgba(140,122,58,0.05);
+      border-radius: 6px; padding: 13px 16px; margin-bottom: 22px;
+      font-size: 12px; color: #6a6057; line-height: 1.6;
+    }
+    .p-validity strong { color: #1C1C1A; font-weight: 500; }
+
+    .p-footer {
+      background: #1A2419; padding: 16px 34px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .p-fbrand { font-family: 'Cormorant Garamond', serif; font-size: 14px; font-weight: 500; color: rgba(242,237,228,0.65); }
+    .p-fmeta  { font-size: 10px; color: rgba(242,237,228,0.28); letter-spacing: 0.04em; }
+
+    /* ── PROPOSAL — SERVICES TABLE ──────────────── */
+    .p-stbl { width:100%; border-collapse:collapse; font-size:12.5px; margin-bottom:0; }
+    .p-stbl th {
+      background:#1A2419; color:rgba(242,237,228,0.75);
+      font-size:9px; font-weight:500; letter-spacing:0.14em;
+      text-transform:uppercase; padding:9px 10px; text-align:left;
+    }
+    .p-th-qty  { width:42px; text-align:center !important; }
+    .p-th-amt  { width:90px; text-align:right !important; }
+    .p-th-total{ width:90px; text-align:right !important; }
+    .p-stbl td { padding:10px 10px; border-bottom:1px solid #f0ebe1; color:#1C1C1A; vertical-align:top; }
+    .p-td-qty  { color:#a09080; text-align:center; }
+    .p-td-amt  { color:#a09080; text-align:right; }
+    .p-td-total{ color:#8C7A3A; font-weight:500; text-align:right; }
+    .p-tfoot-row { border-top:1.5px solid #1C1C1A; }
+    .p-tfoot-label {
+      font-size:10px; font-weight:500; letter-spacing:0.14em;
+      text-transform:uppercase; color:#1C1C1A; padding:13px 10px; text-align:right;
+    }
+    .p-tfoot-val {
+      font-family:'Cormorant Garamond',serif; font-size:1.5rem;
+      font-weight:500; color:#8C7A3A; padding:13px 10px; text-align:right; white-space:nowrap;
+    }
+
+    /* ── PROPOSAL — SECTIONS ────────────────────── */
+    .p-section { margin-bottom:24px; }
+    .p-section-title {
+      font-size:9px; font-weight:500; letter-spacing:0.18em;
+      text-transform:uppercase; color:#a09080; margin-bottom:12px;
+      padding-bottom:8px; border-bottom:1px solid #ede7dc;
+    }
+    .p-section-body { font-size:12.5px; color:#4a4035; line-height:1.7; margin-bottom:14px; }
+    .p-proc-fee-row {
+      display:flex; justify-content:space-between; align-items:center;
+      padding:10px 14px; background:rgba(140,122,58,0.08);
+      border:1px solid rgba(140,122,58,0.2); border-radius:6px;
+      font-size:12.5px; color:#1C1C1A; font-weight:500;
+    }
+
+    /* ── PROPOSAL — CHECKLIST ───────────────────── */
+    .p-check-list { display:flex; flex-direction:column; gap:9px; }
+    .p-check-item { display:flex; align-items:flex-start; gap:10px; font-size:12.5px; color:#2C3A2E; line-height:1.55; }
+    .p-check-icon { color:#2C3A2E; font-weight:700; font-size:12px; flex-shrink:0; margin-top:1px; width:16px; }
+
+    /* ── PROPOSAL — BANK DETAILS ────────────────── */
+    .p-bank-block { background:#f8f4ed; border-radius:8px; padding:16px 20px; }
+    .p-bank-row { display:flex; justify-content:space-between; align-items:center; padding:7px 0; border-bottom:1px solid #ede7dc; font-size:12.5px; }
+    .p-bank-row:last-child { border-bottom:none; }
+    .p-bank-label { color:#a09080; font-size:11px; font-weight:500; letter-spacing:0.05em; }
+    .p-bank-val   { color:#1C1C1A; font-weight:500; }
+
+    /* ── PROPOSAL — SIGNATURE BLOCK ─────────────── */
+    .p-sig-grid { display:grid; grid-template-columns:1fr 1fr; gap:40px; margin-top:36px; }
+    .p-sig-block { display:flex; flex-direction:column; }
+    .p-sig-line  { height:1px; background:#1C1C1A; margin-bottom:10px; }
+    .p-sig-name  { font-family:'Cormorant Garamond',serif; font-size:16px; font-weight:500; color:#1C1C1A; }
+    .p-sig-role  { font-size:11px; color:#a09080; margin-top:2px; }
+    .p-sig-date-line { font-size:11px; color:#a09080; margin-top:16px; }
+
+    /* ── PROPOSAL — IMPORTANT NOTES ─────────────── */
+    .p-imp-list { display:flex; flex-direction:column; gap:10px; }
+    .p-imp-item { display:flex; align-items:flex-start; gap:10px; font-size:11.5px; color:#4a4035; line-height:1.6; }
+    .p-imp-num  { color:#a09080; font-weight:500; font-size:11px; flex-shrink:0; width:20px; padding-top:1px; }
+
+    /* ── PROPOSAL — PAGE STRUCTURE ───────────────── */
+    .p-page { position:relative; }
+    .p-pagebreak { border-top:2px solid #e5e0d5; }
+
+    /* ══════════════════════════════════════════
+       PRINT
+    ══════════════════════════════════════════ */
+    @media print {
+      * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+      body { background: white !important; display: block !important; }
+      .page-content { padding: 0 !important; display: block !important; align-items: stretch !important; }
+
+      .topbar, .progress, .settings,
+      .edit-bar, .btn-row, .btn-col,
+      #screen-client, #screen-service, #screen-rooms,
+      #screen-complexity, #screen-result { display: none !important; }
+
+      /* Strip card chrome but keep it in the DOM — screen-proposal is a child */
+      .card {
+        background: transparent !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        border-radius: 0 !important;
+        max-width: 100% !important;
+        width: 100% !important;
+      }
+
+      #screen-proposal { display: block !important; opacity: 1 !important; transform: none !important; width: 100% !important; max-width: 100% !important; }
+
+      .pdoc { box-shadow: none !important; border-radius: 0 !important; }
+      .ph   { background: #1A2419 !important; }
+      .ph-name { color: #F2EDE4 !important; }
+      .ph-doctitle { color: #8C7A3A !important; }
+      .p-footer { background: #1A2419 !important; }
+      .p-fbrand { color: rgba(242,237,228,0.65) !important; }
+      .p-pay { background: #f8f4ed !important; }
+      .p-bank-block { background: #f8f4ed !important; }
+      .p-stbl th { background: #1A2419 !important; }
+      .p-pagebreak { page-break-before: always !important; border-top: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="tb-brand">
+    <span class="tb-rek">REK</span>
+    <span class="tb-sub">Design Studio</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:14px">
+    <button class="tb-proposals" onclick="goProposals()">Proposals</button>
+    <div class="tb-date" id="tbDate"></div>
+  </div>
+</header>
+
+<div class="page-content">
+
+  <div class="progress" id="prog">
+    <div class="pdot" id="pd1"></div>
+    <div class="pdot" id="pd2"></div>
+    <div class="pdot" id="pd3"></div>
+    <span class="plabel" id="plabel"></span>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       CARD — contains quote screens
+  ════════════════════════════════════════ -->
+  <main class="card" id="mainCard">
+
+    <!-- CLIENT ─────────────────────────────── -->
+    <div class="screen visible active" id="screen-client">
+      <p class="eyebrow">New Quote</p>
+      <h1 class="headline">Client <em>details</em></h1>
+      <form onsubmit="return false;" autocomplete="off">
+        <div class="fg">
+          <label class="fl" for="cname">Client Name <span class="req">*</span></label>
+          <input class="fi" type="text" id="cname" placeholder="Full name" oninput="checkClient()">
+        </div>
+        <div class="fg">
+          <label class="fl" for="cproject">Project Name <span style="text-transform:none;letter-spacing:0;font-size:10.5px;font-weight:400;color:var(--muted)"> — optional</span></label>
+          <input class="fi" type="text" id="cproject" placeholder="e.g. La Casita, Alejandro's Home">
+        </div>
+        <div class="form-row">
+          <div class="fg" style="margin-bottom:0">
+            <label class="fl" for="caddr">Address / Neighborhood</label>
+            <input class="fi" type="text" id="caddr" placeholder="e.g. Coral Gables">
+          </div>
+          <div class="fg" style="margin-bottom:0">
+            <label class="fl" for="cdate">Quote Date</label>
+            <input class="fi" type="date" id="cdate">
+          </div>
+        </div>
+        <div class="fg">
+          <label class="fl" for="cnotes">Notes</label>
+          <textarea class="fta" id="cnotes" placeholder="Discovery call context, budget signals, referral source, style preferences…"></textarea>
+        </div>
+      </form>
+      <div class="btn-col" style="margin-top:8px">
+        <button class="btn-p" id="btnClient" disabled onclick="handleClient()">Continue →</button>
+      </div>
+    </div>
+
+    <!-- SERVICE ────────────────────────────── -->
+    <div class="screen" id="screen-service">
+      <p class="eyebrow">Step 1 of 3 · Service</p>
+      <h1 class="headline">Which service<br><em>fits best?</em></h1>
+      <div class="choices" id="ch-service">
+        <button class="choice" onclick="pickSvc('fse',this)">
+          <div class="ct">Full Studio Experience <span class="tag"> — Hourly · In-person</span></div>
+          <div class="cs">End-to-end: concept, sourcing, procurement, installation. Hanna leads every phase on site.</div>
+        </button>
+        <button class="choice" onclick="pickSvc('atelier',this)">
+          <div class="ct">E-Design Atelier <span class="tag"> — Hourly · Virtual</span></div>
+          <div class="cs">Virtual Zoom-based with revision rounds. Full digital deliverables — faster, no site visits.</div>
+        </button>
+        <button class="choice" onclick="pickSvc('signature',this)">
+          <div class="ct">The Signature Room <span class="tag"> — Flat fee · Async</span></div>
+          <div class="cs">Client submits questionnaire + inspiration; Hanna delivers design plan + shoppable selections.</div>
+        </button>
+        <button class="choice" onclick="pickSvc('styling',this)">
+          <div class="ct">The Styling Edit <span class="tag"> — $499/space · Virtual</span></div>
+          <div class="cs">One-time virtual consultation. 90-min Zoom + curated presentation per furnished space.</div>
+        </button>
+        <button class="choice" onclick="pickSvc('call',this)">
+          <div class="ct">Discovery Call <span class="tag"> — $99 · Qualifying</span></div>
+          <div class="cs">Scoping session to assess fit and recommend the right service. Fee credited toward any booked service.</div>
+        </button>
+      </div>
+      <div class="btn-col">
+        <button class="btn-p" id="btnSvc" disabled onclick="handleSvc()">Continue →</button>
+        <button class="btn-g" onclick="go('client')">← Back</button>
+      </div>
+    </div>
+
+    <!-- ROOMS ──────────────────────────────── -->
+    <div class="screen" id="screen-rooms">
+      <p class="eyebrow" id="roomsEyebrow">Step 2 of 3 · Rooms</p>
+      <h1 class="headline">Select<br><em>rooms</em></h1>
+      <p class="subhead" id="roomsDesc"></p>
+      <div class="room-grid" id="roomGrid"></div>
+      <div class="total-strip">
+        <span class="tlabel">Running Total</span>
+        <span class="tvalue" id="runTotal">—</span>
+      </div>
+      <p class="footnote" id="roomsFn"></p>
+      <div class="btn-col" style="margin-top:22px">
+        <button class="btn-p" id="btnRooms" disabled onclick="handleRooms()">Continue →</button>
+        <button class="btn-g" onclick="go('service')">← Back</button>
+      </div>
+    </div>
+
+    <!-- COMPLEXITY ─────────────────────────── -->
+    <div class="screen" id="screen-complexity">
+      <p class="eyebrow">Step 3 of 3 · Details</p>
+      <h1 class="headline">Project<br><em>complexity</em></h1>
+      <div class="choices" id="ch-cx">
+        <button class="choice" onclick="pickCx('standard',this)">
+          <div class="ct">Standard <span class="tag">×1.0</span></div>
+          <div class="cs">Existing layout, retail sourcing, 1–2 revision rounds</div>
+        </button>
+        <button class="choice" onclick="pickCx('elevated',this)">
+          <div class="ct">Elevated <span class="tag">×1.3</span></div>
+          <div class="cs">Some custom pieces, trade sourcing, detailed concept development</div>
+        </button>
+        <button class="choice" onclick="pickCx('highend',this)">
+          <div class="ct">High-end <span class="tag">×1.6</span></div>
+          <div class="cs">Fully custom, trade-only, complex vision, tight execution</div>
+        </button>
+      </div>
+      <div class="fg">
+        <label class="fl" for="procBudget">
+          Furniture &amp; materials budget
+          <span style="text-transform:none;letter-spacing:0;font-size:10.5px;font-weight:400;color:var(--muted)"> — optional</span>
+        </label>
+        <div class="input-prefix-wrap">
+          <span class="input-prefix">$</span>
+          <input class="fi" type="number" id="procBudget" placeholder="e.g. 15000" min="0" step="500">
+        </div>
+      </div>
+      <div class="btn-col" style="margin-top:8px">
+        <button class="btn-p" id="btnCx" disabled onclick="handleCx()">Generate Quote</button>
+        <button class="btn-g" onclick="go('rooms')">← Back</button>
+      </div>
+    </div>
+
+    <!-- RESULT ─────────────────────────────── -->
+    <div class="screen" id="screen-result">
+      <p class="eyebrow">Quote Reference — Internal</p>
+      <h1 class="headline" id="rSvcName"></h1>
+      <p class="result-meta" id="rMeta"></p>
+      <div class="rule"></div>
+      <p class="sec-label">Pricing</p>
+
+      <div class="prop-hero">
+        <div class="prop-hero-lbl">Recommended Proposal Price</div>
+        <div class="prop-hero-desc" id="propDesc">Goes on the client document</div>
+        <div class="prop-hero-val" id="tvProp">—</div>
+      </div>
+
+      <div class="ref-tiers" id="refTiers">
+        <div class="ref-tier">
+          <div class="ref-tier-lbl rtl-rec">Internal Target</div>
+          <div class="ref-tier-val rtv-rec" id="tvRec">—</div>
+        </div>
+        <div class="ref-divider"></div>
+        <div class="ref-tier">
+          <div class="ref-tier-lbl rtl-floor">Floor</div>
+          <div class="ref-tier-val rtv-floor" id="tvFloor">—</div>
+        </div>
+      </div>
+
+      <div class="fee-breakdown" id="feeBreakdown" style="display:none">
+        <div class="fb-row">
+          <span class="fb-lbl">Design Fee</span>
+          <span class="fb-val" id="fbDesign">—</span>
+        </div>
+        <div class="fb-row">
+          <span class="fb-lbl" id="fbProcLabel">Procurement Fee</span>
+          <span class="fb-val" id="fbProc">—</span>
+        </div>
+        <div class="fb-total">
+          <span class="fb-total-lbl">Total</span>
+          <span class="fb-total-val" id="fbTotalVal">—</span>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn-a" onclick="goProposal()">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1" y="1" width="8" height="10" rx="1" stroke="currentColor" stroke-width="1.2"/><path d="M3 4.5h4M3 6.5h4M3 8.5h2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><path d="M10 5l2 2-2 2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Generate Proposal
+        </button>
+      </div>
+      <div class="btn-col">
+        <button class="btn-g" onclick="restart()">← New Quote</button>
+      </div>
+    </div>
+
+    <!-- PROPOSAL ───────────────────────────── -->
+    <div class="screen" id="screen-proposal">
+
+      <div class="edit-bar">
+        <div class="edit-bar-title">Edit before sending</div>
+        <div class="edit-grid">
+          <div class="eg">
+            <label class="elabel">Price override</label>
+            <input class="einput" type="number" id="editPrice" placeholder="Blank = calculated price" oninput="renderProposal()">
+          </div>
+          <div class="eg">
+            <label class="elabel">Valid until</label>
+            <input class="einput" type="date" id="editExpiry" oninput="renderProposal()">
+          </div>
+          <div class="eg">
+            <label class="elabel">Project size (sq ft)</label>
+            <input class="einput" type="text" id="editSqft" placeholder="e.g. 2,400 sq ft" oninput="renderProposal()">
+          </div>
+          <div class="eg"></div>
+          <div class="eg full">
+            <label class="elabel">Additional scope notes</label>
+            <textarea class="einput ta" id="editNotes" placeholder="Clarifications, inclusions, or special terms…" oninput="renderProposal()"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="pdoc" id="pdoc"></div>
+
+      <div class="btn-row" style="border-top:none;padding-top:0;margin-top:0">
+        <button class="btn-a" onclick="window.print()">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="2" y="5" width="9" height="6" rx="1" stroke="currentColor" stroke-width="1.2"/><path d="M4 5V2h5v3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 9h5M4 11h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+          Print / Save PDF
+        </button>
+        <button class="btn-a" id="btnSave" onclick="saveProposal()">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 2h7l2 2v7a1 1 0 01-1 1H2a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="currentColor" stroke-width="1.2"/><path d="M4 2v3h5V2M4 9h5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+          Save Proposal
+        </button>
+        <button class="btn-a" onclick="go('result')">← Edit Quote</button>
+        <button class="btn-a" onclick="restart()">New Quote</button>
+      </div>
+
+    </div>
+
+    <!-- PROPOSALS ──────────────────────────── -->
+    <div class="screen" id="screen-proposals">
+      <div class="plist-header">
+        <div>
+          <p class="eyebrow">Internal</p>
+          <h1 class="headline">Proposals</h1>
+        </div>
+        <button class="btn-a" onclick="restart()">+ New Quote</button>
+      </div>
+      <div id="plist-body">
+        <div class="plist-loading">Loading…</div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- SETTINGS ─────────────────────────────── -->
+  <div class="settings">
+    <button class="s-toggle" id="stoggle" onclick="toggleSettings()">
+      <span>Studio rate card — internal only</span>
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+        <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+    <div class="s-body" id="sbody">
+      <div class="s-row">
+        <span class="s-lbl">Hourly rate ($/hr)</span>
+        <input class="s-inp" type="number" id="setHourly" value="125" min="1" step="5" oninput="updateRates()">
+      </div>
+      <div class="s-row">
+        <span class="s-lbl">Procurement markup (%)</span>
+        <input class="s-inp" type="number" id="setMarkup" value="15" min="0" max="100" step="1" oninput="updateRates()">
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ─── RATE CARD ──────────────────────────────── */
+let HR   = 125;
+let MKUP = 0.15;
+
+/* ─── DATA ───────────────────────────────────── */
+const ROOMS = [
+  { id:'foyer',    name:'Foyer',             sig:300 },
+  { id:'living',   name:'Living Room',        sig:650 },
+  { id:'family',   name:'Family Room',        sig:650 },
+  { id:'dining',   name:'Dining Room',        sig:350 },
+  { id:'kitchen',  name:'Kitchen',            sig:650 },
+  { id:'bedroom',  name:'Bedroom',            sig:550 },
+  { id:'bathroom', name:'Bathroom',           sig:350 },
+  { id:'office',   name:'Office',             sig:550 },
+  { id:'hallway',  name:'Hallway',            sig:300 },
+  { id:'patio',    name:'Patio / Outdoor',    sig:350 },
+  { id:'wallart',  name:'Wall Art Direction', sig:300 },
+];
+
+const FSE = {
+  foyer:{mn:8,mx:12}, hallway:{mn:8,mx:12}, bathroom:{mn:8,mx:12},
+  dining:{mn:8,mx:12}, bedroom:{mn:8,mx:12}, office:{mn:8,mx:12},
+  patio:{mn:8,mx:12}, wallart:{mn:6,mx:10},
+  living:{mn:10,mx:20}, family:{mn:10,mx:20}, kitchen:{mn:20,mx:30},
+};
+const ATL = {
+  foyer:{mn:5,mx:8}, hallway:{mn:5,mx:8}, bathroom:{mn:5,mx:8},
+  dining:{mn:5,mx:8}, bedroom:{mn:5,mx:8}, office:{mn:5,mx:8},
+  patio:{mn:5,mx:8}, wallart:{mn:4,mx:6},
+  living:{mn:6,mx:10}, family:{mn:6,mx:10}, kitchen:{mn:12,mx:18},
+};
+const CMULT = { standard:1.0, elevated:1.3, highend:1.6 };
+
+const SVC = {
+  fse:       { name:'Full Studio Experience', badge:'Hourly · In-person',    desc:'Full-service residential design from concept to completion. Includes concept development, sourcing, procurement, and installation oversight.' },
+  atelier:   { name:'E-Design Atelier',       badge:'Hourly · Virtual',      desc:'A guided virtual design process with live Zoom sessions and revision rounds. All deliverables are digital — faster turnaround, no site visits required.' },
+  signature: { name:'The Signature Room',     badge:'Flat fee · Async',      desc:'Client submits a questionnaire and inspiration images; Hanna delivers a custom design plan and shoppable selections. No meetings required.' },
+  styling:   { name:'The Styling Edit',       badge:'$499 per space · Virtual', desc:'A one-time virtual consultation per furnished space. Includes styling questionnaire, up to 90-minute Zoom session, curated presentation, and follow-up call.' },
+  call:      { name:'Discovery Call',         badge:'Qualifying · $99',      desc:'A scoping session to assess fit, understand the space and goals, and recommend the right service tier. The $99 fee is credited toward any service booked.' },
+};
+
+/* ─── STATE ──────────────────────────────────── */
+const S = {
+  screen:  'client',
+  name:'', project:'', addr:'', date:'', notes:'',
+  svc:     null,
+  rooms:   new Set(),
+  cx:      null,
+  proc:    0,
+  quote:   null,
+};
+
+/* ─── PROGRESS ───────────────────────────────── */
+const PMAP = { service:{n:1,l:'Service'}, rooms:{n:2,l:'Rooms'}, complexity:{n:3,l:'Details'} };
+function setProgress(id) {
+  const p = PMAP[id];
+  const el = document.getElementById('prog');
+  if (!p) { el.classList.remove('show'); return; }
+  el.classList.add('show');
+  document.getElementById('plabel').textContent = p.l;
+  [1,2,3].forEach(i => document.getElementById('pd'+i).classList.toggle('on', i <= p.n));
+}
+
+/* ─── TRANSITION ─────────────────────────────── */
+function go(id) {
+  const cur = document.getElementById('screen-' + S.screen);
+  cur.classList.add('out');
+  cur.classList.remove('active');
+  setTimeout(() => {
+    cur.classList.remove('visible','out');
+    S.screen = id;
+    const nxt = document.getElementById('screen-' + id);
+    nxt.classList.add('visible');
+    void nxt.offsetWidth;
+    nxt.classList.add('active');
+    setProgress(id);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }, 210);
+}
+
+/* ─── HELPERS ────────────────────────────────── */
+const fmt  = n  => '$' + Math.round(n).toLocaleString();
+const r100 = n  => Math.round(n / 100) * 100;
+const esc  = s  => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const fmtD = s  => s ? new Date(s+'T00:00:00').toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}) : '';
+const today = () => new Date().toISOString().split('T')[0];
+function addDays(iso, n) {
+  const d = new Date(iso+'T00:00:00'); d.setDate(d.getDate()+n);
+  return d.toISOString().split('T')[0];
+}
+function roomName(id) { return ROOMS.find(r=>r.id===id)?.name || id; }
+
+/* ─── CLIENT ─────────────────────────────────── */
+function checkClient() {
+  document.getElementById('btnClient').disabled = !document.getElementById('cname').value.trim();
+}
+function handleClient() {
+  S.name    = document.getElementById('cname').value.trim();
+  S.project = document.getElementById('cproject').value.trim();
+  S.addr    = document.getElementById('caddr').value.trim();
+  S.date    = document.getElementById('cdate').value || today();
+  S.notes   = document.getElementById('cnotes').value.trim();
+  if (!S.name) return;
+  go('service');
+}
+
+/* ─── SERVICE ────────────────────────────────── */
+function pickSvc(val, btn) {
+  document.querySelectorAll('#ch-service .choice').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+  S.svc = val;
+  document.getElementById('btnSvc').disabled = false;
+}
+function handleSvc() {
+  if (S.svc === 'call') { buildCallQ(); go('result'); return; }
+  setupRooms();
+  go('rooms');
+}
+
+/* ─── ROOMS ──────────────────────────────────── */
+function setupRooms() {
+  S.rooms = new Set();
+  const svc = S.svc;
+  const ht  = svc === 'fse' ? FSE : (svc === 'atelier' ? ATL : null);
+
+  const DESCS = {
+    fse:       'Select rooms for this project. Estimated in-person design hours shown per room.',
+    atelier:   'Select rooms for this project. Estimated virtual design hours shown per room.',
+    signature: 'Select rooms. Fixed flat fee per room — no hourly billing.',
+    styling:   'Select each space for styling. Billed at $499 per space.',
+  };
+  const FNS = {
+    fse:       'Design fee = estimated hours × hourly rate × complexity multiplier.',
+    atelier:   'Design fee = estimated hours × hourly rate × complexity multiplier.',
+    signature: 'Flat fee covers design plan + shoppable selections. Async delivery.',
+    styling:   'Each space is billed at $499 flat.',
+  };
+  const EYES = {
+    fse:'Step 2 of 3 · Rooms', atelier:'Step 2 of 3 · Rooms',
+    signature:'Step 2 of 2 · Rooms', styling:'Step 2 of 2 · Rooms',
+  };
+  document.getElementById('roomsEyebrow').textContent = EYES[svc] || 'Step 2 · Rooms';
+  document.getElementById('roomsDesc').textContent    = DESCS[svc] || '';
+  document.getElementById('roomsFn').textContent      = FNS[svc]   || '';
+
+  const grid = document.getElementById('roomGrid');
+  grid.innerHTML = '';
+  ROOMS.forEach(r => {
+    let sub = '';
+    if (ht)             sub = (ht[r.id] ? `${ht[r.id].mn}–${ht[r.id].mx} hrs` : '');
+    else if (svc==='signature') sub = fmt(r.sig);
+    else if (svc==='styling')   sub = '$499';
+
+    const tile = document.createElement('div');
+    tile.className   = 'rtile';
+    tile.dataset.rid = r.id;
+    tile.innerHTML   = `
+      <div>
+        <div class="rname">${r.name}</div>
+        <div class="rprice">${sub}</div>
+      </div>
+      <div class="rcheck">
+        <svg class="cksv" width="10" height="8" viewBox="0 0 10 8" fill="none">
+          <path d="M1 3.5L3.8 6.5L9 1" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>`;
+    tile.addEventListener('click', () => toggleRoom(r.id, tile));
+    grid.appendChild(tile);
+  });
+
+  updateRunTotal();
+  document.getElementById('btnRooms').disabled = true;
+}
+
+function toggleRoom(id, tile) {
+  if (S.rooms.has(id)) { S.rooms.delete(id); tile.classList.remove('sel'); }
+  else                  { S.rooms.add(id);    tile.classList.add('sel'); }
+  document.getElementById('btnRooms').disabled = S.rooms.size === 0;
+  updateRunTotal();
+}
+
+function updateRunTotal() {
+  const svc = S.svc;
+  const ht  = svc === 'fse' ? FSE : (svc === 'atelier' ? ATL : null);
+  let display = '—';
+  if (S.rooms.size > 0) {
+    if (ht) {
+      let mn=0, mx=0;
+      S.rooms.forEach(id => { const h=ht[id]||{mn:0,mx:0}; mn+=h.mn; mx+=h.mx; });
+      display = `${mn}–${mx} hrs`;
+    } else {
+      let t=0;
+      S.rooms.forEach(id => {
+        const r = ROOMS.find(x=>x.id===id);
+        t += svc==='styling' ? 499 : (r?r.sig:0);
+      });
+      display = fmt(t);
+    }
+  }
+  document.getElementById('runTotal').textContent = display;
+}
+
+function handleRooms() {
+  if (S.svc==='fse' || S.svc==='atelier') {
+    document.querySelectorAll('#ch-cx .choice').forEach(b=>b.classList.remove('sel'));
+    S.cx = null;
+    document.getElementById('btnCx').disabled = true;
+    go('complexity');
+  } else {
+    buildFlatQ();
+    go('result');
+  }
+}
+
+/* ─── COMPLEXITY ─────────────────────────────── */
+function pickCx(val, btn) {
+  document.querySelectorAll('#ch-cx .choice').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+  S.cx = val;
+  document.getElementById('btnCx').disabled = false;
+}
+function handleCx() {
+  S.proc = parseFloat(document.getElementById('procBudget').value) || 0;
+  buildHourlyQ();
+  go('result');
+}
+
+/* ─── RATE UPDATES ───────────────────────────── */
+function updateRates() {
+  const h = parseFloat(document.getElementById('setHourly').value);
+  const m = parseFloat(document.getElementById('setMarkup').value);
+  if (!isNaN(h) && h > 0)            HR   = h;
+  if (!isNaN(m) && m >= 0 && m <= 100) MKUP = m / 100;
+}
+
+/* ─── QUOTE BUILDERS ─────────────────────────── */
+function buildHourlyQ() {
+  const ht  = S.svc === 'fse' ? FSE : ATL;
+  const mul = CMULT[S.cx] || 1.0;
+  let mn=0, mx=0;
+  S.rooms.forEach(id => { const h=ht[id]||{mn:0,mx:0}; mn+=h.mn; mx+=h.mx; });
+
+  const floor    = r100(mn * HR);                              // min hrs, no multiplier
+  const mid      = r100(((mn+mx)/2) * HR * mul);              // midpoint × complexity
+  const ceiling  = r100(mx * HR * mul);                       // max hrs × complexity
+  const proposal = r100(Math.min(mid * 1.25, ceiling));       // mid×1.25, capped at ceiling
+
+  const procFee  = S.proc > 0 ? r100(S.proc * MKUP) : 0;
+
+  S.quote = {
+    type:'hourly', svc:S.svc,
+    floor:    floor   + procFee,
+    rec:      mid     + procFee,
+    proposal: proposal + procFee,
+    ceiling:  ceiling  + procFee,
+    mn, mx, mul, cx:S.cx,
+    proc:S.proc, procFee,
+  };
+  renderResult();
+}
+
+function buildFlatQ() {
+  let total = 0;
+  S.rooms.forEach(id => {
+    const r = ROOMS.find(x=>x.id===id);
+    total += S.svc==='styling' ? 499 : (r?r.sig:0);
+  });
+  S.quote = { type:'flat', svc:S.svc, floor:total, rec:total, proposal:total, ceiling:total };
+  renderResult();
+}
+
+function buildCallQ() {
+  S.quote = { type:'call', svc:'call', floor:99, rec:99, proposal:99, ceiling:99 };
+  renderResult();
+}
+
+/* ─── RESULT RENDER ──────────────────────────── */
+function renderResult() {
+  const q   = S.quote;
+  const svc = SVC[q.svc];
+
+  document.getElementById('rSvcName').textContent = svc.name;
+
+  // Meta summary line
+  let meta = '';
+  if (q.type === 'hourly') {
+    const cl  = {standard:'Standard', elevated:'Elevated', highend:'High-end'}[q.cx];
+    const rms = Array.from(S.rooms).map(roomName).join(', ');
+    meta = `<strong>${rms}</strong> · ${cl} complexity · ${q.mn}–${q.mx} estimated hours`;
+  } else if (q.type === 'flat') {
+    meta = `<strong>${Array.from(S.rooms).map(roomName).join(', ')}</strong>`;
+  } else {
+    meta = 'Qualifying call — $99 credited toward booked service.';
+  }
+  document.getElementById('rMeta').innerHTML = meta;
+
+  // Hero price
+  document.getElementById('tvProp').textContent = fmt(q.proposal);
+
+  // Prop description
+  const hourly = q.type === 'hourly';
+  document.getElementById('propDesc').textContent = hourly ? 'Goes on the client document' : 'Fixed price';
+
+  // Reference tiers (Internal Target + Floor) — hide for flat/call
+  const refEl = document.getElementById('refTiers');
+  if (hourly) {
+    document.getElementById('tvRec').textContent   = fmt(q.rec);
+    document.getElementById('tvFloor').textContent = fmt(q.floor);
+    refEl.style.display = '';
+  } else {
+    refEl.style.display = 'none';
+  }
+
+  // Fee breakdown — show when proc fee > 0
+  const bdEl = document.getElementById('feeBreakdown');
+  if (q.procFee > 0) {
+    const designFee = q.proposal - q.procFee;
+    document.getElementById('fbDesign').textContent    = fmt(designFee);
+    document.getElementById('fbProcLabel').textContent = `Procurement Fee (${Math.round(MKUP*100)}% on ${fmt(q.proc)})`;
+    document.getElementById('fbProc').textContent      = fmt(q.procFee);
+    document.getElementById('fbTotalVal').textContent  = fmt(q.proposal);
+    bdEl.style.display = '';
+  } else {
+    bdEl.style.display = 'none';
+  }
+}
+
+/* ─── PROPOSAL ───────────────────────────────── */
+function goProposal() {
+  document.getElementById('editExpiry').value = addDays(S.date || today(), 14);
+  document.getElementById('editPrice').value  = '';
+  document.getElementById('editNotes').value  = '';
+  document.getElementById('editSqft').value   = '';
+  renderProposal();
+  go('proposal');
+}
+
+function renderProposal() {
+  const q   = S.quote;
+  const svc = SVC[q.svc];
+
+  const override   = document.getElementById('editPrice').value;
+  const finalPrice = override ? r100(parseFloat(override)) : q.proposal;
+  const expiry     = document.getElementById('editExpiry').value;
+  const extraNotes = document.getElementById('editNotes').value.trim();
+  const sqft       = document.getElementById('editSqft').value.trim();
+
+  const dep = r100(finalPrice * 0.5);
+  const bal = finalPrice - dep;
+
+  const effectiveDate = fmtD(S.date || today());
+  const expiryDate    = expiry ? fmtD(expiry) : '';
+
+  // ── Page 1: Services table rows ──────────────────────────────────────
+  const roomList = Array.from(S.rooms);
+  let tableRows  = '';
+
+  if (q.type === 'hourly') {
+    const ht = q.svc === 'fse' ? FSE : ATL;
+    // Separate design price from proc fee so distribution is accurate
+    const designPrice = (q.procFee > 0) ? finalPrice - q.procFee : finalPrice;
+    const roomMids    = roomList.map(id => { const h = ht[id]||{mn:0,mx:0}; return { id, mid:(h.mn+h.mx)/2 }; });
+    const totalMid    = roomMids.reduce((s,r) => s + r.mid, 0);
+    let prices        = roomMids.map(r => r100((r.mid / totalMid) * designPrice));
+    const sumPrices   = prices.reduce((s,p) => s + p, 0);
+    prices[prices.length - 1] += (designPrice - sumPrices); // absorb rounding
+
+    roomList.forEach((id, i) => {
+      tableRows += `
+        <tr>
+          <td class="p-td-area">${esc(roomName(id))}</td>
+          <td class="p-td-qty">1</td>
+          <td class="p-td-desc">${esc(svc.name)}</td>
+          <td class="p-td-amt">${fmt(prices[i])}</td>
+          <td class="p-td-total">${fmt(prices[i])}</td>
+        </tr>`;
+    });
+
+    if (q.procFee > 0) {
+      tableRows += `
+        <tr>
+          <td class="p-td-area">Procurement</td>
+          <td class="p-td-qty">—</td>
+          <td class="p-td-desc">Procurement &amp; Coordination (${Math.round(MKUP*100)}% on ${fmt(q.proc)} budget)</td>
+          <td class="p-td-amt">${fmt(q.procFee)}</td>
+          <td class="p-td-total">${fmt(q.procFee)}</td>
+        </tr>`;
+    }
+  } else if (q.type === 'flat' && q.svc !== 'call') {
+    roomList.forEach(id => {
+      const r     = ROOMS.find(x => x.id === id);
+      const price = q.svc === 'styling' ? 499 : (r ? r.sig : 0);
+      tableRows += `
+        <tr>
+          <td class="p-td-area">${esc(r?.name||id)}</td>
+          <td class="p-td-qty">1</td>
+          <td class="p-td-desc">${esc(svc.name)}</td>
+          <td class="p-td-amt">${fmt(price)}</td>
+          <td class="p-td-total">${fmt(price)}</td>
+        </tr>`;
+    });
+  } else {
+    tableRows = `
+      <tr>
+        <td class="p-td-area">Discovery</td>
+        <td class="p-td-qty">1</td>
+        <td class="p-td-desc">Space &amp; goal discovery, style assessment, service recommendation</td>
+        <td class="p-td-amt">$99</td>
+        <td class="p-td-total">$99</td>
+      </tr>`;
+  }
+
+  // ── Page 2: Description checklist ───────────────────────────────────
+  const INCLUDES = {
+    fse:       ['Initial space assessment and client brief','Concept development and mood board presentation','Space planning and furniture layout','Material, finish, and color specifications','Custom and trade furniture sourcing','Procurement coordination and vendor management','Installation oversight and on-site direction','Final styling and accessory placement','Project management throughout all phases'],
+    atelier:   ['Virtual discovery session (Zoom)','Concept development and mood board','Digital floor plan and space planning','Material, finish, and color specifications','Furniture and decor sourcing with shopping list','Up to 2 rounds of revisions','Final digital presentation deck'],
+    signature: ['Style questionnaire and inspiration review','Custom design plan for each room','Shoppable furniture and decor selections','Color and material recommendations','Async digital delivery — no meetings required'],
+    styling:   ['Styling questionnaire prior to session','Up to 90-minute Zoom session per space','Curated styling and accessory presentation','Follow-up recommendations summary'],
+    call:      ['Space and goal discovery conversation','Style and vision assessment','Service tier recommendation','$99 fee credited toward booked service'],
+  };
+  const checklistHTML = (INCLUDES[q.svc] || []).map(item =>
+    `<div class="p-check-item"><span class="p-check-icon">✓</span><span>${esc(item)}</span></div>`
+  ).join('');
+
+  // ── Page 2: Procurement section (conditional) ───────────────────────
+  const procHTML = (q.type === 'hourly' && q.procFee > 0) ? `
+    <div class="p-section">
+      <div class="p-section-title">Procurement &amp; Coordination</div>
+      <p class="p-section-body">A procurement coordination fee of <strong>${Math.round(MKUP*100)}%</strong> is applied to the total furniture and materials budget of <strong>${fmt(q.proc)}</strong>. This covers vendor communication, purchase order management, shipping coordination, and delivery oversight on all items sourced through Rek Design Studio.</p>
+      <div class="p-proc-fee-row"><span>Procurement Fee (${Math.round(MKUP*100)}% of ${fmt(q.proc)})</span><span>${fmt(q.procFee)}</span></div>
+    </div>` : '';
+
+  const notesHTML = extraNotes ? `
+    <div class="p-section" style="margin-top:18px">
+      <div class="p-section-title">Project Notes</div>
+      <p class="p-section-body" style="white-space:pre-wrap;margin-bottom:0">${esc(extraNotes)}</p>
+    </div>` : '';
+
+  const validityHTML = expiryDate ? `
+    <p class="p-validity" style="margin-top:14px;margin-bottom:0">This proposal is valid until <strong>${expiryDate}</strong>. Submit your deposit by this date to confirm the project and secure your start date.</p>` : '';
+
+  // ── Page 4: Important Notes list ────────────────────────────────────
+  const NOTES_FULL = [
+    'This proposal is valid for 14 days from the Effective Date above.',
+    'A non-refundable deposit of 50% is required to confirm the project and secure your start date on our calendar.',
+    'The remaining balance of 50% is due upon final delivery of all design deliverables and project completion.',
+    'Design fees cover professional design services only and do not include the cost of furniture, materials, fixtures, or installation labor unless explicitly listed.',
+    'Procurement coordination (15% of furniture &amp; materials budget) is billed separately when applicable.',
+    'Any additions or changes to the project scope after confirmation will be documented via a written change order and may result in a revised fee.',
+    'Travel time and expenses for site visits outside Miami-Dade County are billed at the standard hourly design rate.',
+    'The client is responsible for providing accurate measurements, existing floor plans, and timely site access as needed.',
+    'Rek Design Studio retains full creative ownership of all concepts, renderings, and design documents until payment is received in full.',
+    'Rek Design Studio reserves the right to photograph completed projects for portfolio and marketing use unless a written opt-out is submitted prior to project completion.',
+    'We are not responsible for delays caused by contractors, vendors, third-party suppliers, or circumstances outside our control.',
+    'All custom orders and special-order items are final sale. Returns and exchanges are governed by individual vendor policies.',
+    'Client approvals at each project phase (concept, sourcing, final) are binding. Revisions requested after written sign-off are considered additional scope and will be billed accordingly.',
+    'This proposal does not include structural, electrical, plumbing, or any construction modifications unless specifically noted.',
+    'All specified materials and products are subject to availability at time of order. Approved substitutions will be presented for client confirmation.',
+    'Any disputes arising from this agreement shall be resolved under the laws of the State of Florida.',
+  ];
+  const NOTES_SHORT = [
+    'This proposal is valid for 14 days from the Effective Date above.',
+    'Full payment is due upon booking to confirm your session.',
+    'Design fees cover professional design services only and do not include the cost of furniture, materials, or installation.',
+    'Cancellations made within 48 hours of the scheduled session are non-refundable.',
+    'Rek Design Studio retains creative ownership of all concepts and deliverables until payment is received in full.',
+    'Rek Design Studio reserves the right to photograph completed projects for portfolio and marketing use unless a written opt-out is submitted.',
+    'Any disputes arising from this agreement shall be resolved under the laws of the State of Florida.',
+  ];
+  const notesList   = (q.svc === 'fse' || q.svc === 'atelier') ? NOTES_FULL : NOTES_SHORT;
+  const notesListHTML = notesList.map((n, i) =>
+    `<div class="p-imp-item"><span class="p-imp-num">${i+1}.</span><span>${n}</span></div>`
+  ).join('');
+
+  // ── Shared page header ────────────────────────────────────────────────
+  const pageHeader = `
+    <div class="ph">
+      <div class="ph-brand">
+        <div class="ph-name">Rek Design Studio</div>
+        <div class="ph-sub">Interior Design Studio · Miami</div>
+      </div>
+      <div class="ph-right">
+        <div class="ph-doclabel">Document</div>
+        <div class="ph-doctitle">Design Proposal</div>
+      </div>
+    </div>`;
+
+  document.getElementById('pdoc').innerHTML = `
+
+    <!-- PAGE 1 -->
+    <div class="p-page">
+      ${pageHeader}
+      <div class="pb">
+        <div class="p-client">
+          <div class="p-prepfor">Prepared for</div>
+          <div class="p-cname">${esc(S.name)}</div>
+          ${S.project ? `<div class="p-project-name">${esc(S.project)}</div>` : ''}
+          <div class="p-cmeta">
+            ${S.addr ? `<span><strong>Project Location:</strong> ${esc(S.addr)}</span>` : ''}
+            ${sqft    ? `<span><strong>Project Size:</strong> ${esc(sqft)}</span>` : ''}
+            <span><strong>Effective Date:</strong> ${effectiveDate}</span>
+          </div>
+        </div>
+
+        <div class="p-section-title" style="margin-top:24px;margin-bottom:12px">Services</div>
+        <table class="p-stbl">
+          <thead>
+            <tr>
+              <th>Area</th>
+              <th class="p-th-qty">Qty</th>
+              <th>Description</th>
+              <th class="p-th-amt">Amount</th>
+              <th class="p-th-total">Total</th>
+            </tr>
+          </thead>
+          <tbody>${tableRows}</tbody>
+          <tfoot>
+            <tr class="p-tfoot-row">
+              <td colspan="4" class="p-tfoot-label">Total Design Investment</td>
+              <td class="p-tfoot-val">${fmt(finalPrice)}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+    <!-- PAGE 2 -->
+    <div class="p-page p-pagebreak">
+      ${pageHeader}
+      <div class="pb">
+        ${procHTML}
+        <div class="p-section">
+          <div class="p-section-title">Description</div>
+          <p class="p-section-body">The following services are included under the <strong>${esc(svc.name)}</strong> engagement:</p>
+          <div class="p-check-list">${checklistHTML}</div>
+        </div>
+        <div class="p-section" style="margin-top:28px">
+          <div class="p-section-title">Payment Terms</div>
+          <div class="p-pay">
+            <div class="p-pay-row">
+              <div><div class="p-pay-lname">Deposit — 50%</div><div class="p-pay-lsub">Due upon signing to confirm project &amp; secure start date</div></div>
+              <div class="p-pay-val">${fmt(dep)}</div>
+            </div>
+            <div class="p-pay-row">
+              <div><div class="p-pay-lname">Balance — 50%</div><div class="p-pay-lsub">Due upon final delivery and project completion</div></div>
+              <div class="p-pay-val">${fmt(bal)}</div>
+            </div>
+            <div class="p-pay-row" style="border-top:1.5px solid #d9cfc2;margin-top:4px;padding-top:12px">
+              <div><div class="p-pay-lname" style="font-weight:600">Total</div></div>
+              <div class="p-pay-val" style="font-size:1.4rem">${fmt(finalPrice)}</div>
+            </div>
+          </div>
+          ${validityHTML}
+        </div>
+        ${notesHTML}
+      </div>
+    </div>
+
+    <!-- PAGE 3 -->
+    <div class="p-page p-pagebreak">
+      ${pageHeader}
+      <div class="pb">
+        <div class="p-section">
+          <div class="p-section-title">Payment Method</div>
+          <div class="p-bank-block">
+            <div class="p-bank-row"><span class="p-bank-label">Bank</span><span class="p-bank-val">Bank of America</span></div>
+            <div class="p-bank-row"><span class="p-bank-label">Account Name</span><span class="p-bank-val">Double Rook LLC</span></div>
+            <div class="p-bank-row"><span class="p-bank-label">Account Number</span><span class="p-bank-val">8981 3879 0410</span></div>
+            <div class="p-bank-row"><span class="p-bank-label">Routing Number</span><span class="p-bank-val">063100277</span></div>
+            <div class="p-bank-row"><span class="p-bank-label">ABA / Wire</span><span class="p-bank-val">026009593</span></div>
+          </div>
+          <div class="p-bank-block" style="margin-top:14px">
+            <div class="p-bank-row"><span class="p-bank-label">Zelle</span><span class="p-bank-val">doublerookllc@gmail.com</span></div>
+            <div class="p-bank-row"><span class="p-bank-label">Phone</span><span class="p-bank-val">+1 786-617-5017</span></div>
+          </div>
+        </div>
+
+        <div class="p-section" style="margin-top:44px">
+          <div class="p-section-title">Agreement &amp; Signature</div>
+          <p class="p-section-body">By signing below, the client acknowledges and accepts the scope of work, pricing, and terms outlined in this proposal.</p>
+          <div class="p-sig-grid">
+            <div class="p-sig-block">
+              <div class="p-sig-line"></div>
+              <div class="p-sig-name">${esc(S.name)}</div>
+              <div class="p-sig-role">Client</div>
+              <div class="p-sig-date-line">Date: ___________________</div>
+            </div>
+            <div class="p-sig-block">
+              <div class="p-sig-line"></div>
+              <div class="p-sig-name">Hanna Rek</div>
+              <div class="p-sig-role">Creative Director, Rek Design Studio</div>
+              <div class="p-sig-date-line">Date: ___________________</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE 4 -->
+    <div class="p-page p-pagebreak">
+      ${pageHeader}
+      <div class="pb">
+        <div class="p-section">
+          <div class="p-section-title">Important Notes</div>
+          <div class="p-imp-list">${notesListHTML}</div>
+        </div>
+      </div>
+      <div class="p-footer">
+        <div class="p-fbrand">Rek Design Studio</div>
+        <div class="p-fmeta">rekdesignstudio.com · Miami, FL</div>
+      </div>
+    </div>`;
+}
+
+/* ─── SETTINGS ───────────────────────────────── */
+function toggleSettings() {
+  document.getElementById('sbody').classList.toggle('open');
+  document.getElementById('stoggle').classList.toggle('open');
+}
+
+/* ─── MISC ───────────────────────────────────── */
+function restart() {
+  Object.assign(S, {screen:'client',name:'',addr:'',date:'',notes:'',svc:null,rooms:new Set(),cx:null,proc:0,quote:null});
+  // Clear client fields
+  document.getElementById('cname').value    = '';
+  document.getElementById('cproject').value = '';
+  document.getElementById('caddr').value    = '';
+  document.getElementById('cdate').value    = today();
+  document.getElementById('cnotes').value   = '';
+  document.getElementById('btnClient').disabled = true;
+  // Clear service + complexity selections
+  document.querySelectorAll('#ch-service .choice, #ch-cx .choice').forEach(b => b.classList.remove('sel'));
+  document.getElementById('btnSvc').disabled = true;
+  document.getElementById('procBudget').value = '';
+  // Clear proposal edit bar
+  document.getElementById('editPrice').value  = '';
+  document.getElementById('editExpiry').value = '';
+  document.getElementById('editSqft').value   = '';
+  document.getElementById('editNotes').value  = '';
+  document.getElementById('pdoc').innerHTML   = '';
+  go('client');
+}
+
+/* ─── SUPABASE ───────────────────────────────── */
+const SUPA_URL = 'https://danfcudpvzjcjxhwwqhp.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRhbmZjdWRwdnpqY2p4aHd3cWhwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwMTg3NjMsImV4cCI6MjA5MzU5NDc2M30.KdDpMNteoNFnnPX-47ZLlDJQnwlsH4ohHMjo20goDFE';
+let _db = null;
+function getDb() {
+  if (!_db) {
+    try { _db = supabase.createClient(SUPA_URL, SUPA_KEY); } catch(e) { return null; }
+  }
+  return _db;
+}
+
+async function saveProposal() {
+  const db = getDb(); if (!db) return;
+  const btn = document.getElementById('btnSave');
+  const origHTML = btn.innerHTML;
+  btn.textContent = 'Saving…'; btn.disabled = true;
+
+  const override   = document.getElementById('editPrice').value;
+  const finalPrice = override ? r100(parseFloat(override)) : S.quote.proposal;
+
+  const { error } = await db.from('proposals').insert({
+    client_name:   S.name,
+    project_name:  S.project || null,
+    service:       S.svc,
+    total_amount:  finalPrice,
+    status:        'draft',
+    proposal_data: {
+      client: { name:S.name, addr:S.addr, date:S.date, notes:S.notes },
+      quote:  S.quote,
+      rooms:  Array.from(S.rooms),
+      cx:     S.cx,
+      edit: {
+        price:  document.getElementById('editPrice').value,
+        expiry: document.getElementById('editExpiry').value,
+        sqft:   document.getElementById('editSqft').value,
+        notes:  document.getElementById('editNotes').value,
+      }
+    }
+  });
+
+  if (error) {
+    btn.textContent = 'Save failed — retry';
+    setTimeout(() => { btn.innerHTML = origHTML; btn.disabled = false; }, 3000);
+  } else {
+    btn.textContent = '✓ Saved';
+    setTimeout(() => { btn.innerHTML = origHTML; btn.disabled = false; }, 2500);
+  }
+}
+
+async function goProposals() {
+  if (S.screen === 'proposals') return;
+  go('proposals');
+  const body = document.getElementById('plist-body');
+  body.innerHTML = '<div class="plist-loading">Loading…</div>';
+  const db = getDb();
+  if (!db) { body.innerHTML = '<div class="plist-empty">Database not connected.</div>'; return; }
+  const { data, error } = await db.from('proposals').select('*').order('created_at', { ascending: false });
+  if (error || !data) { body.innerHTML = '<div class="plist-empty">Could not load proposals.</div>'; return; }
+  renderProposalsList(data);
+}
+
+let _proposalCache = {};
+
+function renderProposalsList(list) {
+  _proposalCache = {};
+  list.forEach(p => { _proposalCache[p.id] = p; });
+
+  const body = document.getElementById('plist-body');
+  if (list.length === 0) {
+    body.innerHTML = '<div class="plist-empty">No saved proposals yet.<br>Generate a quote and hit "Save Proposal."</div>';
+    return;
+  }
+  const SL = { draft:'Draft', 'in-progress':'In Progress', signed:'Signed', closed:'Closed' };
+  const SS = { fse:'Full Studio Experience', atelier:'E-Design Atelier', signature:'Signature Room', styling:'Styling Edit', call:'Discovery Call' };
+  body.innerHTML = list.map(p => {
+    const d    = new Date(p.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    const btns = ['draft','in-progress','signed','closed'].map(s =>
+      `<button class="status-btn st-${s}${s===p.status?' active':''}" onclick="setStatus('${p.id}','${s}',this)">${SL[s]}</button>`
+    ).join('');
+    return `
+      <div class="plist-item" id="pi-${p.id}">
+        <div class="plist-item-top">
+          <div>
+            <div class="plist-cname">${esc(p.client_name)}</div>
+            ${p.project_name ? `<div class="plist-project">${esc(p.project_name)}</div>` : ''}
+          </div>
+          <span class="status-badge st-${p.status}">${SL[p.status]}</span>
+        </div>
+        <div class="plist-meta">${SS[p.service]||p.service} · ${fmt(p.total_amount)} · ${d}</div>
+        <div class="plist-item-footer">
+          <div class="plist-actions">${btns}</div>
+          <button class="ctrl-btn" onclick="openEditModal('${p.id}')">Edit</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+/* ─── EDIT / DELETE MODAL ────────────────────── */
+let _editId = null;
+
+function openEditModal(id) {
+  const p = _proposalCache[id]; if (!p) return;
+  _editId = id;
+  document.getElementById('meClient').value  = p.client_name;
+  document.getElementById('meProject').value = p.project_name || '';
+  document.getElementById('meAmount').value  = p.total_amount;
+  document.getElementById('meSaveBtn').textContent = 'Save Changes';
+  document.getElementById('meSaveBtn').disabled    = false;
+  document.getElementById('editModal').style.display = 'flex';
+}
+
+function closeEditModal(e) {
+  if (e && e.target !== document.getElementById('editModal')) return;
+  document.getElementById('editModal').style.display = 'none';
+  _editId = null;
+}
+
+async function saveEdit() {
+  if (!_editId) return;
+  const db = getDb(); if (!db) return;
+  const btn = document.getElementById('meSaveBtn');
+  btn.textContent = 'Saving…'; btn.disabled = true;
+
+  const clientName  = document.getElementById('meClient').value.trim();
+  const projectName = document.getElementById('meProject').value.trim();
+  const amount      = parseInt(document.getElementById('meAmount').value) || 0;
+
+  const { error } = await db.from('proposals').update({
+    client_name:  clientName,
+    project_name: projectName || null,
+    total_amount: amount,
+    updated_at:   new Date().toISOString(),
+  }).eq('id', _editId);
+
+  if (!error) {
+    // Update cache + DOM immediately, then close
+    _proposalCache[_editId] = { ..._proposalCache[_editId], client_name:clientName, project_name:projectName, total_amount:amount };
+    const item = document.getElementById('pi-' + _editId);
+    if (item) {
+      item.querySelector('.plist-cname').textContent = clientName;
+      const proj = item.querySelector('.plist-project');
+      if (proj) proj.textContent = projectName;
+      item.querySelector('.plist-meta').textContent =
+        item.querySelector('.plist-meta').textContent.replace(/\$[\d,]+/, fmt(amount));
+    }
+    document.getElementById('editModal').style.display = 'none';
+    _editId = null;
+  } else {
+    btn.textContent = 'Save Changes'; btn.disabled = false;
+  }
+}
+
+async function deleteProposal() {
+  if (!_editId) return;
+  const p = _proposalCache[_editId];
+  const label = p?.project_name || p?.client_name || 'this proposal';
+  if (!confirm(`Delete "${label}"?\nThis cannot be undone.`)) return;
+  const db = getDb(); if (!db) return;
+
+  const { error } = await db.from('proposals').delete().eq('id', _editId);
+  if (!error) {
+    const item = document.getElementById('pi-' + _editId);
+    if (item) { item.style.transition = 'opacity 0.2s'; item.style.opacity = '0'; setTimeout(() => item.remove(), 220); }
+    document.getElementById('editModal').style.display = 'none';
+    delete _proposalCache[_editId];
+    _editId = null;
+  }
+}
+
+async function setStatus(id, status, btn) {
+  const db = getDb(); if (!db) return;
+  const SL   = { draft:'Draft', 'in-progress':'In Progress', signed:'Signed', closed:'Closed' };
+  const item = document.getElementById('pi-' + id); if (!item) return;
+  // Optimistic UI update
+  item.querySelector('.status-badge').className   = `status-badge st-${status}`;
+  item.querySelector('.status-badge').textContent = SL[status];
+  item.querySelectorAll('.status-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  // Persist to database
+  await db.from('proposals').update({ status, updated_at: new Date().toISOString() }).eq('id', id);
+}
+
+/* ─── GOOGLE MAPS AUTOCOMPLETE ───────────────── */
+function initAutocomplete() {
+  const input = document.getElementById('caddr');
+  const ac = new google.maps.places.Autocomplete(input, {
+    fields: ['formatted_address'],
+  });
+  ac.addListener('place_changed', () => {
+    const place = ac.getPlace();
+    if (place.formatted_address) {
+      input.value = place.formatted_address;
+    }
+  });
+}
+
+// Init
+document.getElementById('tbDate').textContent = new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+document.getElementById('cdate').value = today();
+</script>
+<!-- EDIT MODAL ──────────────────────────────── -->
+<div class="modal-overlay" id="editModal" style="display:none" onclick="closeEditModal(event)">
+  <div class="modal-card">
+    <div class="modal-title">Edit Proposal</div>
+    <div class="fg">
+      <label class="fl" for="meClient">Client Name</label>
+      <input class="fi" type="text" id="meClient" placeholder="Client name">
+    </div>
+    <div class="fg">
+      <label class="fl" for="meProject">Project Name</label>
+      <input class="fi" type="text" id="meProject" placeholder="e.g. La Casita">
+    </div>
+    <div class="fg" style="margin-bottom:0">
+      <label class="fl" for="meAmount">Total Amount</label>
+      <div class="input-prefix-wrap">
+        <span class="input-prefix">$</span>
+        <input class="fi" type="number" id="meAmount" placeholder="0">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-p" id="meSaveBtn" onclick="saveEdit()">Save Changes</button>
+      <button class="btn-g" onclick="closeEditModal()">Cancel</button>
+      <button class="modal-delete" onclick="deleteProposal()">Delete proposal</button>
+    </div>
+  </div>
+</div>
+
+<script src="/shared/nav.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBh774hHdIz_0t-LbF8V4b2YMthT7KEJIk&libraries=places&callback=initAutocomplete"></script>
+</body>
+</html>
