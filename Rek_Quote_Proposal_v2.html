@@ -275,6 +275,69 @@
     }
     .input-prefix-wrap .fi { padding-left: 24px; }
 
+    /* ── TOPBAR — PROPOSALS BUTTON ──────────── */
+    .tb-proposals {
+      font-family: 'Inter', sans-serif;
+      font-size: 10px; font-weight: 500; letter-spacing: 0.12em;
+      text-transform: uppercase; color: rgba(242,237,228,0.38);
+      background: transparent; border: 1px solid rgba(242,237,228,0.15);
+      border-radius: 5px; padding: 5px 12px; cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .tb-proposals:hover { color: rgba(242,237,228,0.7); border-color: rgba(242,237,228,0.3); }
+
+    /* ── PROPOSALS SCREEN ────────────────────── */
+    .plist-header {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      margin-bottom: 22px;
+    }
+    .plist-loading, .plist-empty {
+      text-align: center; padding: 44px 20px;
+      font-size: 13px; color: var(--muted); line-height: 1.7;
+    }
+    .plist-item {
+      border: 1px solid var(--border); border-radius: 8px;
+      padding: 14px 16px; margin-bottom: 10px;
+      background: rgba(255,255,255,0.5);
+    }
+    .plist-item-top {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 4px; gap: 12px;
+    }
+    .plist-cname {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px; font-weight: 500; color: var(--char);
+    }
+    .plist-meta  { font-size: 12px; color: var(--muted); margin-bottom: 12px; }
+    .plist-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+
+    /* Status badges */
+    .status-badge {
+      font-size: 9px; font-weight: 500; letter-spacing: 0.12em;
+      text-transform: uppercase; padding: 3px 9px; border-radius: 4px;
+      white-space: nowrap; flex-shrink: 0;
+    }
+    .st-draft       { color: var(--muted);   background: rgba(0,0,0,0.06); }
+    .st-in-progress { color: var(--rec-c);   background: var(--gold-t); }
+    .st-signed      { color: var(--floor-c); background: rgba(61,122,82,0.08); }
+    .st-closed      { color: var(--burg);    background: var(--burg-t); }
+
+    /* Status action buttons */
+    .status-btn {
+      font-family: 'Inter', sans-serif;
+      font-size: 10px; font-weight: 500; letter-spacing: 0.08em;
+      text-transform: uppercase; padding: 5px 11px;
+      border-radius: 5px; border: 1px solid var(--border);
+      background: transparent; color: var(--muted); cursor: pointer;
+      transition: all 0.15s;
+    }
+    .status-btn:hover { border-color: var(--burg); color: var(--burg); }
+    .status-btn.active { pointer-events: none; }
+    .status-btn.active.st-draft       { border-color: rgba(0,0,0,0.15);      color: var(--muted);   background: rgba(0,0,0,0.06); }
+    .status-btn.active.st-in-progress { border-color: rgba(140,122,58,0.35); color: var(--rec-c);   background: var(--gold-t); }
+    .status-btn.active.st-signed      { border-color: rgba(61,122,82,0.35);  color: var(--floor-c); background: rgba(61,122,82,0.08); }
+    .status-btn.active.st-closed      { border-color: rgba(107,31,42,0.35);  color: var(--burg);    background: var(--burg-t); }
+
     /* ── GOOGLE MAPS AUTOCOMPLETE ───────────── */
     .pac-container {
       font-family: 'Inter', sans-serif;
@@ -530,7 +593,10 @@
     <span class="tb-rek">REK</span>
     <span class="tb-sub">Design Studio</span>
   </div>
-  <div class="tb-date" id="tbDate"></div>
+  <div style="display:flex;align-items:center;gap:14px">
+    <button class="tb-proposals" onclick="goProposals()">Proposals</button>
+    <div class="tb-date" id="tbDate"></div>
+  </div>
 </header>
 
 <div class="page-content">
@@ -743,10 +809,28 @@
           <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="2" y="5" width="9" height="6" rx="1" stroke="currentColor" stroke-width="1.2"/><path d="M4 5V2h5v3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 9h5M4 11h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
           Print / Save PDF
         </button>
+        <button class="btn-a" id="btnSave" onclick="saveProposal()">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 2h7l2 2v7a1 1 0 01-1 1H2a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="currentColor" stroke-width="1.2"/><path d="M4 2v3h5V2M4 9h5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+          Save Proposal
+        </button>
         <button class="btn-a" onclick="go('result')">← Edit Quote</button>
         <button class="btn-a" onclick="restart()">New Quote</button>
       </div>
 
+    </div>
+
+    <!-- PROPOSALS ──────────────────────────── -->
+    <div class="screen" id="screen-proposals">
+      <div class="plist-header">
+        <div>
+          <p class="eyebrow">Internal</p>
+          <h1 class="headline">Proposals</h1>
+        </div>
+        <button class="btn-a" onclick="restart()">+ New Quote</button>
+      </div>
+      <div id="plist-body">
+        <div class="plist-loading">Loading…</div>
+      </div>
     </div>
 
   </main>
@@ -1414,6 +1498,104 @@ function restart() {
   go('client');
 }
 
+/* ─── SUPABASE ───────────────────────────────── */
+const SUPA_URL = 'https://danfcudpvzjcjxhwwqhp.supabase.co';
+const SUPA_KEY = 'sb_publishable_giCWFZ6Nb_R1jTzlCYDiGA_EXvGpN6C';
+let _db = null;
+function getDb() {
+  if (!_db) {
+    try { _db = supabase.createClient(SUPA_URL, SUPA_KEY); } catch(e) { return null; }
+  }
+  return _db;
+}
+
+async function saveProposal() {
+  const db = getDb(); if (!db) return;
+  const btn = document.getElementById('btnSave');
+  const origHTML = btn.innerHTML;
+  btn.textContent = 'Saving…'; btn.disabled = true;
+
+  const override   = document.getElementById('editPrice').value;
+  const finalPrice = override ? r100(parseFloat(override)) : S.quote.proposal;
+
+  const { error } = await db.from('proposals').insert({
+    client_name:   S.name,
+    service:       S.svc,
+    total_amount:  finalPrice,
+    status:        'draft',
+    proposal_data: {
+      client: { name:S.name, addr:S.addr, date:S.date, notes:S.notes },
+      quote:  S.quote,
+      rooms:  Array.from(S.rooms),
+      cx:     S.cx,
+      edit: {
+        price:  document.getElementById('editPrice').value,
+        expiry: document.getElementById('editExpiry').value,
+        sqft:   document.getElementById('editSqft').value,
+        notes:  document.getElementById('editNotes').value,
+      }
+    }
+  });
+
+  if (error) {
+    btn.textContent = 'Save failed — retry';
+    setTimeout(() => { btn.innerHTML = origHTML; btn.disabled = false; }, 3000);
+  } else {
+    btn.textContent = '✓ Saved';
+    setTimeout(() => { btn.innerHTML = origHTML; btn.disabled = false; }, 2500);
+  }
+}
+
+async function goProposals() {
+  if (S.screen === 'proposals') return;
+  go('proposals');
+  const body = document.getElementById('plist-body');
+  body.innerHTML = '<div class="plist-loading">Loading…</div>';
+  const db = getDb();
+  if (!db) { body.innerHTML = '<div class="plist-empty">Database not connected.</div>'; return; }
+  const { data, error } = await db.from('proposals').select('*').order('created_at', { ascending: false });
+  if (error || !data) { body.innerHTML = '<div class="plist-empty">Could not load proposals.</div>'; return; }
+  renderProposalsList(data);
+}
+
+function renderProposalsList(list) {
+  const body = document.getElementById('plist-body');
+  if (list.length === 0) {
+    body.innerHTML = '<div class="plist-empty">No saved proposals yet.<br>Generate a quote and hit "Save Proposal."</div>';
+    return;
+  }
+  const SL = { draft:'Draft', 'in-progress':'In Progress', signed:'Signed', closed:'Closed' };
+  const SS = { fse:'Full Studio Experience', atelier:'E-Design Atelier', signature:'Signature Room', styling:'Styling Edit', call:'Discovery Call' };
+  body.innerHTML = list.map(p => {
+    const d    = new Date(p.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    const btns = ['draft','in-progress','signed','closed'].map(s =>
+      `<button class="status-btn st-${s}${s===p.status?' active':''}" onclick="setStatus('${p.id}','${s}',this)">${SL[s]}</button>`
+    ).join('');
+    return `
+      <div class="plist-item" id="pi-${p.id}">
+        <div class="plist-item-top">
+          <div class="plist-cname">${esc(p.client_name)}</div>
+          <span class="status-badge st-${p.status}">${SL[p.status]}</span>
+        </div>
+        <div class="plist-meta">${SS[p.service]||p.service} · ${fmt(p.total_amount)} · ${d}</div>
+        <div class="plist-actions">${btns}</div>
+      </div>`;
+  }).join('');
+}
+
+async function setStatus(id, status, btn) {
+  const db = getDb(); if (!db) return;
+  const SL   = { draft:'Draft', 'in-progress':'In Progress', signed:'Signed', closed:'Closed' };
+  const item = document.getElementById('pi-' + id); if (!item) return;
+  // Optimistic UI update
+  item.querySelector('.status-badge').className   = `status-badge st-${status}`;
+  item.querySelector('.status-badge').textContent = SL[status];
+  item.querySelectorAll('.status-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  // Persist to database
+  await db.from('proposals').update({ status, updated_at: new Date().toISOString() }).eq('id', id);
+}
+
 /* ─── GOOGLE MAPS AUTOCOMPLETE ───────────────── */
 function initAutocomplete() {
   const input = document.getElementById('caddr');
@@ -1432,6 +1614,7 @@ function initAutocomplete() {
 document.getElementById('tbDate').textContent = new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
 document.getElementById('cdate').value = today();
 </script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBh774hHdIz_0t-LbF8V4b2YMthT7KEJIk&libraries=places&callback=initAutocomplete"></script>
 </body>
 </html>
