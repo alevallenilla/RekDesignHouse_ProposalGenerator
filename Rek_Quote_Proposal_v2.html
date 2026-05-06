@@ -275,6 +275,46 @@
     }
     .input-prefix-wrap .fi { padding-left: 24px; }
 
+    /* ── EDIT MODAL ──────────────────────────── */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,0.45); backdrop-filter: blur(3px);
+      display: flex; align-items: center; justify-content: center; padding: 20px;
+    }
+    .modal-card {
+      background: var(--cream); border-radius: 12px;
+      padding: 32px 36px; width: 100%; max-width: 420px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.28);
+    }
+    .modal-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.5rem; font-weight: 500; color: var(--char); margin-bottom: 22px;
+    }
+    .modal-actions { display: flex; gap: 10px; margin-top: 22px; align-items: center; }
+    .modal-delete  { margin-left: auto; font-size: 11px; color: var(--burg); background: none; border: none; cursor: pointer; font-family: 'Inter', sans-serif; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; padding: 4px 0; }
+    .modal-delete:hover { text-decoration: underline; }
+
+    /* ── PROPOSALS — ITEM FOOTER ─────────────── */
+    .plist-item-footer {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--bsub);
+      gap: 8px;
+    }
+    .plist-project { font-size: 12px; color: var(--gold); font-style: italic; margin-top: 1px; }
+    .ctrl-btn {
+      font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 500;
+      letter-spacing: 0.08em; text-transform: uppercase; padding: 5px 12px;
+      border-radius: 5px; border: 1px solid var(--border);
+      background: transparent; color: var(--muted); cursor: pointer; transition: all 0.15s;
+    }
+    .ctrl-btn:hover { border-color: var(--gold); color: var(--char); }
+
+    /* ── PROPOSAL DOC — PROJECT NAME ─────────── */
+    .p-project-name {
+      font-size: 13px; color: #8C7A3A; font-style: italic;
+      margin-top: 2px; margin-bottom: 5px;
+    }
+
     /* ── TOPBAR — PROPOSALS BUTTON ──────────── */
     .tb-proposals {
       font-family: 'Inter', sans-serif;
@@ -622,6 +662,10 @@
           <label class="fl" for="cname">Client Name <span class="req">*</span></label>
           <input class="fi" type="text" id="cname" placeholder="Full name" oninput="checkClient()">
         </div>
+        <div class="fg">
+          <label class="fl" for="cproject">Project Name <span style="text-transform:none;letter-spacing:0;font-size:10.5px;font-weight:400;color:var(--muted)"> — optional</span></label>
+          <input class="fi" type="text" id="cproject" placeholder="e.g. La Casita, Alejandro's Home">
+        </div>
         <div class="form-row">
           <div class="fg" style="margin-bottom:0">
             <label class="fl" for="caddr">Address / Neighborhood</label>
@@ -902,7 +946,7 @@ const SVC = {
 /* ─── STATE ──────────────────────────────────── */
 const S = {
   screen:  'client',
-  name:'', addr:'', date:'', notes:'',
+  name:'', project:'', addr:'', date:'', notes:'',
   svc:     null,
   rooms:   new Set(),
   cx:      null,
@@ -955,10 +999,11 @@ function checkClient() {
   document.getElementById('btnClient').disabled = !document.getElementById('cname').value.trim();
 }
 function handleClient() {
-  S.name  = document.getElementById('cname').value.trim();
-  S.addr  = document.getElementById('caddr').value.trim();
-  S.date  = document.getElementById('cdate').value || today();
-  S.notes = document.getElementById('cnotes').value.trim();
+  S.name    = document.getElementById('cname').value.trim();
+  S.project = document.getElementById('cproject').value.trim();
+  S.addr    = document.getElementById('caddr').value.trim();
+  S.date    = document.getElementById('cdate').value || today();
+  S.notes   = document.getElementById('cnotes').value.trim();
   if (!S.name) return;
   go('service');
 }
@@ -1353,6 +1398,7 @@ function renderProposal() {
         <div class="p-client">
           <div class="p-prepfor">Prepared for</div>
           <div class="p-cname">${esc(S.name)}</div>
+          ${S.project ? `<div class="p-project-name">${esc(S.project)}</div>` : ''}
           <div class="p-cmeta">
             ${S.addr ? `<span><strong>Project Location:</strong> ${esc(S.addr)}</span>` : ''}
             ${sqft    ? `<span><strong>Project Size:</strong> ${esc(sqft)}</span>` : ''}
@@ -1480,10 +1526,11 @@ function toggleSettings() {
 function restart() {
   Object.assign(S, {screen:'client',name:'',addr:'',date:'',notes:'',svc:null,rooms:new Set(),cx:null,proc:0,quote:null});
   // Clear client fields
-  document.getElementById('cname').value  = '';
-  document.getElementById('caddr').value  = '';
-  document.getElementById('cdate').value  = today();
-  document.getElementById('cnotes').value = '';
+  document.getElementById('cname').value    = '';
+  document.getElementById('cproject').value = '';
+  document.getElementById('caddr').value    = '';
+  document.getElementById('cdate').value    = today();
+  document.getElementById('cnotes').value   = '';
   document.getElementById('btnClient').disabled = true;
   // Clear service + complexity selections
   document.querySelectorAll('#ch-service .choice, #ch-cx .choice').forEach(b => b.classList.remove('sel'));
@@ -1520,6 +1567,7 @@ async function saveProposal() {
 
   const { error } = await db.from('proposals').insert({
     client_name:   S.name,
+    project_name:  S.project || null,
     service:       S.svc,
     total_amount:  finalPrice,
     status:        'draft',
@@ -1558,7 +1606,12 @@ async function goProposals() {
   renderProposalsList(data);
 }
 
+let _proposalCache = {};
+
 function renderProposalsList(list) {
+  _proposalCache = {};
+  list.forEach(p => { _proposalCache[p.id] = p; });
+
   const body = document.getElementById('plist-body');
   if (list.length === 0) {
     body.innerHTML = '<div class="plist-empty">No saved proposals yet.<br>Generate a quote and hit "Save Proposal."</div>';
@@ -1574,13 +1627,91 @@ function renderProposalsList(list) {
     return `
       <div class="plist-item" id="pi-${p.id}">
         <div class="plist-item-top">
-          <div class="plist-cname">${esc(p.client_name)}</div>
+          <div>
+            <div class="plist-cname">${esc(p.client_name)}</div>
+            ${p.project_name ? `<div class="plist-project">${esc(p.project_name)}</div>` : ''}
+          </div>
           <span class="status-badge st-${p.status}">${SL[p.status]}</span>
         </div>
         <div class="plist-meta">${SS[p.service]||p.service} · ${fmt(p.total_amount)} · ${d}</div>
-        <div class="plist-actions">${btns}</div>
+        <div class="plist-item-footer">
+          <div class="plist-actions">${btns}</div>
+          <button class="ctrl-btn" onclick="openEditModal('${p.id}')">Edit</button>
+        </div>
       </div>`;
   }).join('');
+}
+
+/* ─── EDIT / DELETE MODAL ────────────────────── */
+let _editId = null;
+
+function openEditModal(id) {
+  const p = _proposalCache[id]; if (!p) return;
+  _editId = id;
+  document.getElementById('meClient').value  = p.client_name;
+  document.getElementById('meProject').value = p.project_name || '';
+  document.getElementById('meAmount').value  = p.total_amount;
+  document.getElementById('meSaveBtn').textContent = 'Save Changes';
+  document.getElementById('meSaveBtn').disabled    = false;
+  document.getElementById('editModal').style.display = 'flex';
+}
+
+function closeEditModal(e) {
+  if (e && e.target !== document.getElementById('editModal')) return;
+  document.getElementById('editModal').style.display = 'none';
+  _editId = null;
+}
+
+async function saveEdit() {
+  if (!_editId) return;
+  const db = getDb(); if (!db) return;
+  const btn = document.getElementById('meSaveBtn');
+  btn.textContent = 'Saving…'; btn.disabled = true;
+
+  const clientName  = document.getElementById('meClient').value.trim();
+  const projectName = document.getElementById('meProject').value.trim();
+  const amount      = parseInt(document.getElementById('meAmount').value) || 0;
+
+  const { error } = await db.from('proposals').update({
+    client_name:  clientName,
+    project_name: projectName || null,
+    total_amount: amount,
+    updated_at:   new Date().toISOString(),
+  }).eq('id', _editId);
+
+  if (!error) {
+    // Update cache + DOM immediately, then close
+    _proposalCache[_editId] = { ..._proposalCache[_editId], client_name:clientName, project_name:projectName, total_amount:amount };
+    const item = document.getElementById('pi-' + _editId);
+    if (item) {
+      item.querySelector('.plist-cname').textContent = clientName;
+      const proj = item.querySelector('.plist-project');
+      if (proj) proj.textContent = projectName;
+      item.querySelector('.plist-meta').textContent =
+        item.querySelector('.plist-meta').textContent.replace(/\$[\d,]+/, fmt(amount));
+    }
+    document.getElementById('editModal').style.display = 'none';
+    _editId = null;
+  } else {
+    btn.textContent = 'Save Changes'; btn.disabled = false;
+  }
+}
+
+async function deleteProposal() {
+  if (!_editId) return;
+  const p = _proposalCache[_editId];
+  const label = p?.project_name || p?.client_name || 'this proposal';
+  if (!confirm(`Delete "${label}"?\nThis cannot be undone.`)) return;
+  const db = getDb(); if (!db) return;
+
+  const { error } = await db.from('proposals').delete().eq('id', _editId);
+  if (!error) {
+    const item = document.getElementById('pi-' + _editId);
+    if (item) { item.style.transition = 'opacity 0.2s'; item.style.opacity = '0'; setTimeout(() => item.remove(), 220); }
+    document.getElementById('editModal').style.display = 'none';
+    delete _proposalCache[_editId];
+    _editId = null;
+  }
 }
 
 async function setStatus(id, status, btn) {
@@ -1614,6 +1745,33 @@ function initAutocomplete() {
 document.getElementById('tbDate').textContent = new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
 document.getElementById('cdate').value = today();
 </script>
+<!-- EDIT MODAL ──────────────────────────────── -->
+<div class="modal-overlay" id="editModal" style="display:none" onclick="closeEditModal(event)">
+  <div class="modal-card">
+    <div class="modal-title">Edit Proposal</div>
+    <div class="fg">
+      <label class="fl" for="meClient">Client Name</label>
+      <input class="fi" type="text" id="meClient" placeholder="Client name">
+    </div>
+    <div class="fg">
+      <label class="fl" for="meProject">Project Name</label>
+      <input class="fi" type="text" id="meProject" placeholder="e.g. La Casita">
+    </div>
+    <div class="fg" style="margin-bottom:0">
+      <label class="fl" for="meAmount">Total Amount</label>
+      <div class="input-prefix-wrap">
+        <span class="input-prefix">$</span>
+        <input class="fi" type="number" id="meAmount" placeholder="0">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-p" id="meSaveBtn" onclick="saveEdit()">Save Changes</button>
+      <button class="btn-g" onclick="closeEditModal()">Cancel</button>
+      <button class="modal-delete" onclick="deleteProposal()">Delete proposal</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBh774hHdIz_0t-LbF8V4b2YMthT7KEJIk&libraries=places&callback=initAutocomplete"></script>
 </body>
