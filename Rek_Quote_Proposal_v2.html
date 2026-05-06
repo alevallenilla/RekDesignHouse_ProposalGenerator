@@ -275,6 +275,24 @@
     }
     .input-prefix-wrap .fi { padding-left: 24px; }
 
+    /* ── GOOGLE MAPS AUTOCOMPLETE ───────────── */
+    .pac-container {
+      font-family: 'Inter', sans-serif;
+      border: 1px solid var(--border); border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.13); margin-top: 4px;
+      overflow: hidden;
+    }
+    .pac-item {
+      font-family: 'Inter', sans-serif; font-size: 12.5px;
+      padding: 9px 13px; cursor: pointer; color: var(--char);
+      border-top: 1px solid var(--bsub);
+    }
+    .pac-item:first-child { border-top: none; }
+    .pac-item:hover, .pac-item-selected { background: var(--burg-t); }
+    .pac-icon { display: none; }
+    .pac-item-query { font-size: 12.5px; color: var(--char); }
+    .pac-matched { font-weight: 500; color: var(--burg); }
+
     /* ── SETTINGS ───────────────────────────── */
     .settings {
       width: 100%; max-width: 680px; margin-top: 14px;
@@ -1396,9 +1414,24 @@ function restart() {
   go('client');
 }
 
+/* ─── GOOGLE MAPS AUTOCOMPLETE ───────────────── */
+function initAutocomplete() {
+  const input = document.getElementById('caddr');
+  const ac = new google.maps.places.Autocomplete(input, {
+    fields: ['formatted_address'],
+  });
+  ac.addListener('place_changed', () => {
+    const place = ac.getPlace();
+    if (place.formatted_address) {
+      input.value = place.formatted_address;
+    }
+  });
+}
+
 // Init
 document.getElementById('tbDate').textContent = new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
 document.getElementById('cdate').value = today();
 </script>
+<script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBh774hHdIz_0t-LbF8V4b2YMthT7KEJIk&libraries=places&callback=initAutocomplete"></script>
 </body>
 </html>
