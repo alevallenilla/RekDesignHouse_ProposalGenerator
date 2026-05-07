@@ -23,7 +23,7 @@
       --moss:      #5E5639;
 
       /* ── Mapped aliases — slate as accent hero ── */
-      --page:    var(--moss);
+      --page:    var(--ink);
       --header:  var(--ink);
       --card:    var(--linen);
       --cream:   var(--parchment);
@@ -58,42 +58,64 @@
 
     /* ── TOPBAR ─────────────────────────────── */
     .topbar {
-      width: 100%; background: var(--burgundy);
-      border-bottom: none;
+      width: 100%; background: var(--ivory);
+      border-bottom: 1px solid rgba(37,14,15,0.10);
       padding: 0 28px; height: 56px;
       display: flex; align-items: center; justify-content: space-between;
       position: sticky; top: 0; z-index: 100; flex-shrink: 0;
     }
     .tb-brand { display: flex; align-items: center; gap: 12px; }
     .tb-logo  { height: 28px; width: auto; display: block; }
-    .tb-sub   { font-family: 'Inter', sans-serif; font-size: 9px; font-weight: 500; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(245,245,245,0.55); margin-left: 2px; }
-    .tb-date  { font-family: 'Inter', sans-serif; font-size: 11px; color: rgba(245,245,245,0.55); }
+    .tb-sub   { font-family: 'Inter', sans-serif; font-size: 9px; font-weight: 500; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(37,14,15,0.38); margin-left: 2px; }
+    .tb-date  { font-family: 'Inter', sans-serif; font-size: 11px; color: rgba(37,14,15,0.45); }
 
     /* ── LAYOUT ─────────────────────────────── */
     .app-shell {
       display: flex; flex: 1; min-height: 0;
     }
-    .ws-panel {
-      width: 200px; flex-shrink: 0;
-      background: var(--ivory);
-      border-right: 1px solid rgba(37,14,15,0.10);
-      padding: 32px 20px;
-      display: flex; flex-direction: column; gap: 24px;
+
+    /* ── PRODUCT NAV SIDEBAR ─────────────────── */
+    .nav-panel {
+      width: 220px; flex-shrink: 0;
+      background: #1A2419;
+      display: flex; flex-direction: column;
+      padding: 28px 0 24px;
     }
-    .ws-label {
+    .np-header {
+      padding: 0 20px 24px;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      margin-bottom: 12px;
+    }
+    .np-title {
       font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 600;
-      letter-spacing: 0.22em; text-transform: uppercase; color: rgba(37,14,15,0.40);
+      letter-spacing: 0.24em; text-transform: uppercase;
+      color: rgba(245,245,245,0.40);
     }
-    .ws-nav {
-      display: flex; flex-direction: column; gap: 4px;
-    }
-    .ws-link {
+    .np-menu { display: flex; flex-direction: column; gap: 2px; padding: 0 10px; }
+    .np-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px; border-radius: 7px;
       font-family: 'Inter', sans-serif; font-size: 12.5px; font-weight: 400;
-      color: rgba(37,14,15,0.65); background: none; border: none;
-      padding: 8px 10px; border-radius: 6px; text-align: left; cursor: pointer;
+      color: rgba(245,245,245,0.38); cursor: pointer;
+      background: none; border: none; text-align: left; width: 100%;
       transition: background 0.15s, color 0.15s;
+      border-left: 2px solid transparent;
     }
-    .ws-link:hover { background: rgba(37,14,15,0.06); color: var(--ink); }
+    .np-item:hover { background: rgba(255,255,255,0.05); color: rgba(245,245,245,0.65); }
+    .np-item.active {
+      background: rgba(124,49,53,0.18); color: #F5F5F5; font-weight: 500;
+      border-left-color: #7C3135;
+    }
+    .np-item svg { flex-shrink: 0; opacity: 0.55; }
+    .np-item.active svg { opacity: 1; }
+    .np-badge {
+      margin-left: auto; font-size: 9px; font-weight: 600;
+      letter-spacing: 0.10em; text-transform: uppercase;
+      background: rgba(180,155,60,0.20); color: #C8A84B;
+      padding: 2px 6px; border-radius: 3px;
+    }
+    .np-item-text { flex: 1; }
+
     .page-content {
       flex: 1; display: flex; flex-direction: column;
       align-items: center; padding: 36px 16px 80px;
@@ -355,12 +377,12 @@
     .tb-proposals {
       font-family: 'Inter', sans-serif;
       font-size: 10px; font-weight: 500; letter-spacing: 0.12em;
-      text-transform: uppercase; color: rgba(245,245,245,0.65);
-      background: transparent; border: 1px solid rgba(245,245,245,0.28);
+      text-transform: uppercase; color: rgba(37,14,15,0.45);
+      background: transparent; border: 1px solid rgba(37,14,15,0.18);
       border-radius: 5px; padding: 5px 12px; cursor: pointer;
       transition: color 0.15s, border-color 0.15s;
     }
-    .tb-proposals:hover { color: #fff; border-color: rgba(245,245,245,0.55); }
+    .tb-proposals:hover { color: rgba(37,14,15,0.75); border-color: rgba(37,14,15,0.35); }
 
     /* ── PROPOSALS SCREEN ────────────────────── */
     .plist-header {
@@ -666,7 +688,7 @@
 
 <header class="topbar">
   <div class="tb-brand">
-    <img class="tb-logo" src="../logos/rek-wordmark-white.svg" alt="Rek Design Studio">
+    <img class="tb-logo" src="../logos/rek-wordmark-ink.svg" alt="Rek Design Studio">
     <span class="tb-sub">Design Studio</span>
   </div>
   <div style="display:flex;align-items:center;gap:14px">
@@ -676,13 +698,42 @@
 </header>
 
 <div class="app-shell">
-<aside class="ws-panel">
-  <div class="ws-label">Work Suite</div>
-  <nav class="ws-nav">
-    <button class="ws-link" onclick="restart()">New Quote</button>
-    <button class="ws-link" onclick="goProposals()">Proposals</button>
-  </nav>
-</aside>
+<nav class="nav-panel">
+  <div class="np-header">
+    <div class="np-title">Work Suite</div>
+  </div>
+  <div class="np-menu">
+    <button class="np-item active" onclick="restart()">
+      <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="1" width="9" height="11" rx="1"/><path d="M3 5h5M3 7.5h5M3 10h3"/><path d="M11.5 6l2 2-2 2"/></svg>
+      <span class="np-item-text">Proposal Generator</span>
+    </button>
+    <button class="np-item" disabled>
+      <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="7.5" r="6"/><path d="M7.5 4v3.5l2 2"/></svg>
+      <span class="np-item-text">Concept Design</span>
+      <span class="np-badge">Soon</span>
+    </button>
+    <button class="np-item" disabled>
+      <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="11" height="11" rx="1"/><path d="M5 7h5M5 9.5h3"/><path d="M5 4.5h5"/></svg>
+      <span class="np-item-text">Invoice Generator</span>
+      <span class="np-badge">Soon</span>
+    </button>
+    <button class="np-item" disabled>
+      <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1L13 4v7l-5.5 3L2 11V4z"/><path d="M7.5 1v13M2 4l5.5 3 5.5-3"/></svg>
+      <span class="np-item-text">Procurement Tool</span>
+      <span class="np-badge">Soon</span>
+    </button>
+    <button class="np-item" disabled>
+      <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="1" width="5.5" height="5.5" rx="1"/><rect x="8.5" y="1" width="5.5" height="5.5" rx="1"/><rect x="1" y="8.5" width="5.5" height="5.5" rx="1"/><rect x="8.5" y="8.5" width="5.5" height="5.5" rx="1"/></svg>
+      <span class="np-item-text">Dashboard</span>
+      <span class="np-badge">Soon</span>
+    </button>
+    <button class="np-item" disabled>
+      <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="1,10 4,6 7,8 10,4 14,7"/></svg>
+      <span class="np-item-text">Finance / RevOps</span>
+      <span class="np-badge">Soon</span>
+    </button>
+  </div>
+</nav>
 <div class="page-content">
 
   <div class="progress" id="prog">
