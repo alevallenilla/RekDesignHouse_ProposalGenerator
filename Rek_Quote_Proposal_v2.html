@@ -70,55 +70,8 @@
     .tb-date  { font-family: 'Inter', sans-serif; font-size: 11px; color: rgba(245,245,245,0.45); }
 
     /* ── LAYOUT ─────────────────────────────── */
-    .app-shell {
-      display: flex; flex: 1; min-height: 0;
-    }
-
-    /* ── PRODUCT NAV SIDEBAR ─────────────────── */
-    .nav-panel {
-      width: 220px; flex-shrink: 0;
-      background: var(--ivory);
-      border-right: 1px solid rgba(37,14,15,0.10);
-      display: flex; flex-direction: column;
-      padding: 28px 0 24px;
-    }
-    .np-header {
-      padding: 0 20px 24px;
-      border-bottom: 1px solid rgba(37,14,15,0.08);
-      margin-bottom: 12px;
-    }
-    .np-title {
-      font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 600;
-      letter-spacing: 0.24em; text-transform: uppercase;
-      color: rgba(37,14,15,0.38);
-    }
-    .np-menu { display: flex; flex-direction: column; gap: 2px; padding: 0 10px; }
-    .np-item {
-      display: flex; align-items: center; gap: 10px;
-      padding: 10px 12px; border-radius: 7px;
-      font-family: 'Inter', sans-serif; font-size: 12.5px; font-weight: 400;
-      color: rgba(37,14,15,0.45); cursor: pointer;
-      background: none; border: none; text-align: left; width: 100%;
-      transition: background 0.15s, color 0.15s;
-      border-left: 2px solid transparent;
-    }
-    .np-item:hover { background: rgba(37,14,15,0.05); color: rgba(37,14,15,0.75); }
-    .np-item.active {
-      background: rgba(124,49,53,0.08); color: var(--ink); font-weight: 500;
-      border-left-color: #7C3135;
-    }
-    .np-item svg { flex-shrink: 0; opacity: 0.40; }
-    .np-item.active svg { opacity: 0.85; }
-    .np-badge {
-      margin-left: auto; font-size: 9px; font-weight: 600;
-      letter-spacing: 0.10em; text-transform: uppercase;
-      background: rgba(120,100,30,0.12); color: rgba(37,14,15,0.40);
-      padding: 2px 6px; border-radius: 3px;
-    }
-    .np-item-text { flex: 1; }
-
     .page-content {
-      flex: 1; display: flex; flex-direction: column;
+      display: flex; flex-direction: column;
       align-items: center; padding: 36px 16px 80px;
     }
 
@@ -698,43 +651,6 @@
   </div>
 </header>
 
-<div class="app-shell">
-<nav class="nav-panel">
-  <div class="np-header">
-    <div class="np-title">Work Suite</div>
-  </div>
-  <div class="np-menu">
-    <button class="np-item active" onclick="restart()">
-      <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="1" width="9" height="11" rx="1"/><path d="M3 5h5M3 7.5h5M3 10h3"/><path d="M11.5 6l2 2-2 2"/></svg>
-      <span class="np-item-text">Proposal Generator</span>
-    </button>
-    <button class="np-item" disabled>
-      <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="7.5" r="6"/><path d="M7.5 4v3.5l2 2"/></svg>
-      <span class="np-item-text">Concept Design</span>
-      <span class="np-badge">Soon</span>
-    </button>
-    <button class="np-item" disabled>
-      <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="11" height="11" rx="1"/><path d="M5 7h5M5 9.5h3"/><path d="M5 4.5h5"/></svg>
-      <span class="np-item-text">Invoice Generator</span>
-      <span class="np-badge">Soon</span>
-    </button>
-    <button class="np-item" disabled>
-      <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1L13 4v7l-5.5 3L2 11V4z"/><path d="M7.5 1v13M2 4l5.5 3 5.5-3"/></svg>
-      <span class="np-item-text">Procurement Tool</span>
-      <span class="np-badge">Soon</span>
-    </button>
-    <button class="np-item" disabled>
-      <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="1" width="5.5" height="5.5" rx="1"/><rect x="8.5" y="1" width="5.5" height="5.5" rx="1"/><rect x="1" y="8.5" width="5.5" height="5.5" rx="1"/><rect x="8.5" y="8.5" width="5.5" height="5.5" rx="1"/></svg>
-      <span class="np-item-text">Dashboard</span>
-      <span class="np-badge">Soon</span>
-    </button>
-    <button class="np-item" disabled>
-      <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="1,10 4,6 7,8 10,4 14,7"/></svg>
-      <span class="np-item-text">Finance / RevOps</span>
-      <span class="np-badge">Soon</span>
-    </button>
-  </div>
-</nav>
 <div class="page-content">
 
   <div class="progress" id="prog">
@@ -996,7 +912,6 @@
     </div>
   </div>
 
-</div>
 </div>
 
 <script>
