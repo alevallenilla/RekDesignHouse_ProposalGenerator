@@ -58,16 +58,16 @@
 
     /* ── TOPBAR ─────────────────────────────── */
     .topbar {
-      width: 100%; background: var(--ivory);
-      border-bottom: 1px solid rgba(37,14,15,0.10);
+      width: 100%; background: var(--ink);
+      border-bottom: none;
       padding: 0 28px; height: 56px;
       display: flex; align-items: center; justify-content: space-between;
       position: sticky; top: 0; z-index: 100; flex-shrink: 0;
     }
     .tb-brand { display: flex; align-items: center; gap: 12px; }
     .tb-logo  { height: 28px; width: auto; display: block; }
-    .tb-sub   { font-family: 'Inter', sans-serif; font-size: 9px; font-weight: 500; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(37,14,15,0.38); margin-left: 2px; }
-    .tb-date  { font-family: 'Inter', sans-serif; font-size: 11px; color: rgba(37,14,15,0.45); }
+    .tb-sub   { font-family: 'Inter', sans-serif; font-size: 9px; font-weight: 500; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(245,245,245,0.48); margin-left: 2px; }
+    .tb-date  { font-family: 'Inter', sans-serif; font-size: 11px; color: rgba(245,245,245,0.45); }
 
     /* ── LAYOUT ─────────────────────────────── */
     .app-shell {
@@ -77,41 +77,42 @@
     /* ── PRODUCT NAV SIDEBAR ─────────────────── */
     .nav-panel {
       width: 220px; flex-shrink: 0;
-      background: #1A2419;
+      background: var(--ivory);
+      border-right: 1px solid rgba(37,14,15,0.10);
       display: flex; flex-direction: column;
       padding: 28px 0 24px;
     }
     .np-header {
       padding: 0 20px 24px;
-      border-bottom: 1px solid rgba(255,255,255,0.07);
+      border-bottom: 1px solid rgba(37,14,15,0.08);
       margin-bottom: 12px;
     }
     .np-title {
       font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 600;
       letter-spacing: 0.24em; text-transform: uppercase;
-      color: rgba(245,245,245,0.40);
+      color: rgba(37,14,15,0.38);
     }
     .np-menu { display: flex; flex-direction: column; gap: 2px; padding: 0 10px; }
     .np-item {
       display: flex; align-items: center; gap: 10px;
       padding: 10px 12px; border-radius: 7px;
       font-family: 'Inter', sans-serif; font-size: 12.5px; font-weight: 400;
-      color: rgba(245,245,245,0.38); cursor: pointer;
+      color: rgba(37,14,15,0.45); cursor: pointer;
       background: none; border: none; text-align: left; width: 100%;
       transition: background 0.15s, color 0.15s;
       border-left: 2px solid transparent;
     }
-    .np-item:hover { background: rgba(255,255,255,0.05); color: rgba(245,245,245,0.65); }
+    .np-item:hover { background: rgba(37,14,15,0.05); color: rgba(37,14,15,0.75); }
     .np-item.active {
-      background: rgba(124,49,53,0.18); color: #F5F5F5; font-weight: 500;
+      background: rgba(124,49,53,0.08); color: var(--ink); font-weight: 500;
       border-left-color: #7C3135;
     }
-    .np-item svg { flex-shrink: 0; opacity: 0.55; }
-    .np-item.active svg { opacity: 1; }
+    .np-item svg { flex-shrink: 0; opacity: 0.40; }
+    .np-item.active svg { opacity: 0.85; }
     .np-badge {
       margin-left: auto; font-size: 9px; font-weight: 600;
       letter-spacing: 0.10em; text-transform: uppercase;
-      background: rgba(180,155,60,0.20); color: #C8A84B;
+      background: rgba(120,100,30,0.12); color: rgba(37,14,15,0.40);
       padding: 2px 6px; border-radius: 3px;
     }
     .np-item-text { flex: 1; }
@@ -377,12 +378,12 @@
     .tb-proposals {
       font-family: 'Inter', sans-serif;
       font-size: 10px; font-weight: 500; letter-spacing: 0.12em;
-      text-transform: uppercase; color: rgba(37,14,15,0.45);
-      background: transparent; border: 1px solid rgba(37,14,15,0.18);
+      text-transform: uppercase; color: rgba(245,245,245,0.55);
+      background: transparent; border: 1px solid rgba(245,245,245,0.22);
       border-radius: 5px; padding: 5px 12px; cursor: pointer;
       transition: color 0.15s, border-color 0.15s;
     }
-    .tb-proposals:hover { color: rgba(37,14,15,0.75); border-color: rgba(37,14,15,0.35); }
+    .tb-proposals:hover { color: #fff; border-color: rgba(245,245,245,0.50); }
 
     /* ── PROPOSALS SCREEN ────────────────────── */
     .plist-header {
@@ -688,7 +689,7 @@
 
 <header class="topbar">
   <div class="tb-brand">
-    <img class="tb-logo" src="logos/rek-wordmark-ink.svg" alt="Rek Design Studio">
+    <img class="tb-logo" src="logos/rek-wordmark-white.svg" alt="Rek Design Studio">
     <span class="tb-sub">Design Studio</span>
   </div>
   <div style="display:flex;align-items:center;gap:14px">
