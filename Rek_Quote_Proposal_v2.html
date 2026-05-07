@@ -6,38 +6,49 @@
   <title>REK Design Studio — Quote & Proposal</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Adamina&family=Glegoo&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --page:    #2C3A2E;
-      --header:  #233020;
-      --card:    #EDE8DC;
-      --cream:   #F2EDE4;
-      --burg:    #6B1F2A;
-      --burg-dk: #561929;
-      --burg-t:  rgba(107,31,42,0.08);
-      --gold:    #8C7A3A;
-      --gold-t:  rgba(140,122,58,0.12);
-      --char:    #1C1C1A;
-      --muted:   rgba(28,28,26,0.50);
-      --border:  #C8C0B0;
-      --bsub:    rgba(28,28,26,0.10);
-      --notebg:  #faf6e8;
-      --notebd:  #d9c96a;
-      --noteacc: #9a7818;
-      --notetxt: #4a3900;
-      --floor-c: #3d7a52;
-      --rec-c:   #8C7A3A;
-      --prop-c:  #6B1F2A;
-      --ceil-c:  #7a7060;
+      /* ── Rek Design Studio brand tokens ── */
+      --ink:       #250E0F;
+      --espresso:  #2B1E0F;
+      --parchment: #F5F5F5;
+      --linen:     #EAE6E1;
+      --ivory:     #FAF9F5;
+      --burgundy:  #7C3135;
+      --burg-dk:   #62262A;
+      --slate:     #4C6270;
+      --moss:      #5E5639;
+
+      /* ── Mapped aliases (keep old names working) ── */
+      --page:    var(--ink);
+      --header:  var(--ink);
+      --card:    var(--linen);
+      --cream:   var(--parchment);
+      --burg:    var(--burgundy);
+      --burg-t:  rgba(124,49,53,0.08);
+      --gold:    var(--burgundy);
+      --gold-t:  rgba(124,49,53,0.10);
+      --char:    var(--ink);
+      --muted:   rgba(37,14,15,0.50);
+      --border:  rgba(37,14,15,0.15);
+      --bsub:    rgba(37,14,15,0.08);
+      --notebg:  rgba(124,49,53,0.05);
+      --notebd:  rgba(124,49,53,0.25);
+      --noteacc: var(--burgundy);
+      --notetxt: var(--ink);
+      --floor-c: var(--slate);
+      --rec-c:   var(--burgundy);
+      --prop-c:  var(--burgundy);
+      --ceil-c:  var(--moss);
     }
 
     body {
       background: var(--page);
       color: var(--char);
-      font-family: 'Inter', sans-serif;
+      font-family: 'Glegoo', Georgia, serif;
       font-weight: 400;
       min-height: 100vh;
       display: flex;
@@ -52,10 +63,10 @@
       display: flex; align-items: center; justify-content: space-between;
       position: sticky; top: 0; z-index: 100; flex-shrink: 0;
     }
-    .tb-brand { display: flex; align-items: baseline; gap: 9px; }
-    .tb-rek   { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 600; color: var(--cream); letter-spacing: 0.03em; }
-    .tb-sub   { font-size: 10px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(242,237,228,0.45); }
-    .tb-date  { font-size: 12px; color: rgba(242,237,228,0.38); }
+    .tb-brand { display: flex; align-items: center; gap: 12px; }
+    .tb-logo  { height: 28px; width: auto; display: block; }
+    .tb-sub   { font-family: 'Inter', sans-serif; font-size: 9px; font-weight: 500; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(245,245,245,0.35); margin-left: 2px; }
+    .tb-date  { font-family: 'Inter', sans-serif; font-size: 11px; color: rgba(245,245,245,0.32); }
 
     /* ── LAYOUT ─────────────────────────────── */
     .page-content {
@@ -147,7 +158,7 @@
       transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
     }
     .choice:hover:not(.sel) { border-color: var(--burg); background: rgba(255,255,255,0.78); box-shadow: 0 0 0 3px var(--burg-t); }
-    .choice.sel { background: var(--burg); border-color: var(--burg); box-shadow: 0 2px 8px rgba(107,31,42,0.25); }
+    .choice.sel { background: var(--burg); border-color: var(--burg); box-shadow: 0 2px 8px rgba(124,49,53,0.25); }
     .ct { font-size: 13px; font-weight: 500; color: var(--char); line-height: 1.4; transition: color 0.15s; }
     .choice.sel .ct { color: var(--cream); }
     .cs { font-size: 12px; color: var(--muted); margin-top: 2px; line-height: 1.45; transition: color 0.15s; }
@@ -163,7 +174,7 @@
       padding: 12px 32px; border: none; border-radius: 6px; cursor: pointer;
       transition: background 0.15s, box-shadow 0.15s;
     }
-    .btn-p:hover    { background: var(--burg-dk); box-shadow: 0 2px 8px rgba(107,31,42,0.3); }
+    .btn-p:hover    { background: var(--burg-dk); box-shadow: 0 2px 8px rgba(124,49,53,0.3); }
     .btn-p:disabled { opacity: 0.35; cursor: default; pointer-events: none; }
     .btn-g {
       display: inline-block; background: transparent; color: var(--muted);
@@ -191,7 +202,7 @@
       transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
     }
     .rtile:hover:not(.sel) { border-color: var(--burg); background: rgba(255,255,255,0.78); box-shadow: 0 0 0 3px var(--burg-t); }
-    .rtile.sel { background: var(--burg); border-color: var(--burg); box-shadow: 0 2px 8px rgba(107,31,42,0.2); align-items: flex-start; }
+    .rtile.sel { background: var(--burg); border-color: var(--burg); box-shadow: 0 2px 8px rgba(124,49,53,0.2); align-items: flex-start; }
     .rname  { font-size: 12.5px; font-weight: 500; color: var(--char); transition: color 0.15s; }
     .rprice { font-size: 11.5px; font-weight: 500; color: var(--gold); margin-top: 1px; transition: color 0.15s; }
     .rtile.sel .rname  { color: var(--cream); }
@@ -221,7 +232,7 @@
     .prop-hero {
       text-align: center; background: var(--burg); border-radius: 10px;
       padding: 26px 24px 24px; margin: 4px 0 10px;
-      box-shadow: 0 4px 18px rgba(107,31,42,0.22);
+      box-shadow: 0 4px 18px rgba(124,49,53,0.22);
     }
     .prop-hero-lbl {
       font-size: 9.5px; font-weight: 500; letter-spacing: 0.18em;
@@ -311,7 +322,7 @@
 
     /* ── PROPOSAL DOC — PROJECT NAME ─────────── */
     .p-project-name {
-      font-size: 13px; color: #8C7A3A; font-style: italic;
+      font-size: 13px; color: #7C3135; font-style: italic;
       margin-top: 2px; margin-bottom: 5px;
     }
 
@@ -374,9 +385,9 @@
     .status-btn:hover { border-color: var(--burg); color: var(--burg); }
     .status-btn.active { pointer-events: none; }
     .status-btn.active.st-draft       { border-color: rgba(0,0,0,0.15);      color: var(--muted);   background: rgba(0,0,0,0.06); }
-    .status-btn.active.st-in-progress { border-color: rgba(140,122,58,0.35); color: var(--rec-c);   background: var(--gold-t); }
+    .status-btn.active.st-in-progress { border-color: rgba(124,49,53,0.35); color: var(--rec-c);   background: var(--gold-t); }
     .status-btn.active.st-signed      { border-color: rgba(61,122,82,0.35);  color: var(--floor-c); background: rgba(61,122,82,0.08); }
-    .status-btn.active.st-closed      { border-color: rgba(107,31,42,0.35);  color: var(--burg);    background: var(--burg-t); }
+    .status-btn.active.st-closed      { border-color: rgba(124,49,53,0.35);  color: var(--burg);    background: var(--burg-t); }
 
     /* ── GOOGLE MAPS AUTOCOMPLETE ───────────── */
     .pac-container {
@@ -428,7 +439,7 @@
        PROPOSAL SCREEN
     ══════════════════════════════════════════ */
     .edit-bar {
-      background: rgba(107,31,42,0.07); border: 1px solid rgba(107,31,42,0.2);
+      background: rgba(124,49,53,0.07); border: 1px solid rgba(124,49,53,0.2);
       border-radius: 8px; padding: 18px 20px; margin-bottom: 22px;
     }
     .edit-bar-title {
@@ -456,15 +467,15 @@
       overflow: hidden; margin-bottom: 22px;
     }
     .ph {
-      background: #1A2419; padding: 26px 34px;
+      background: #250E0F; padding: 26px 34px;
       display: flex; justify-content: space-between; align-items: flex-end;
     }
-    .ph-brand {}
+    .ph-brand { display: flex; align-items: flex-end; }
     .ph-name { font-family: 'Cormorant Garamond', serif; font-size: 24px; font-weight: 500; color: #F2EDE4; letter-spacing: 0.04em; line-height: 1; }
     .ph-sub  { font-size: 9px; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(242,237,228,0.40); margin-top: 5px; }
     .ph-right { text-align: right; }
     .ph-doclabel { font-size: 9px; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(242,237,228,0.38); margin-bottom: 4px; }
-    .ph-doctitle { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 400; font-style: italic; color: #8C7A3A; }
+    .ph-doctitle { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 400; font-style: italic; color: #7C3135; }
 
     .pb { padding: 30px 34px; }
 
@@ -474,7 +485,7 @@
     .p-cmeta   { display: flex; flex-wrap: wrap; gap: 12px; font-size: 12px; color: #a09080; }
 
     .p-svc { margin-bottom: 22px; }
-    .p-badge { display: inline-block; font-size: 9px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: #6B1F2A; background: rgba(107,31,42,0.08); padding: 4px 10px; border-radius: 4px; margin-bottom: 8px; }
+    .p-badge { display: inline-block; font-size: 9px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: #7C3135; background: rgba(124,49,53,0.08); padding: 4px 10px; border-radius: 4px; margin-bottom: 8px; }
     .p-sname { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 500; color: #1C1C1A; margin-bottom: 6px; line-height: 1.2; }
     .p-sdesc { font-size: 12px; color: #6a6057; line-height: 1.7; }
 
@@ -484,14 +495,14 @@
     .p-li:last-child { border-bottom: none; }
     .p-liname { color: #1C1C1A; font-weight: 400; }
     .p-lisub  { font-size: 11px; color: #a09080; margin-top: 2px; line-height: 1.4; }
-    .p-liprice { color: #8C7A3A; font-weight: 500; white-space: nowrap; flex-shrink: 0; }
+    .p-liprice { color: #7C3135; font-weight: 500; white-space: nowrap; flex-shrink: 0; }
 
     .p-total {
       display: flex; justify-content: space-between; align-items: baseline;
       border-top: 1.5px solid #1C1C1A; margin-top: 12px; padding-top: 14px; margin-bottom: 26px;
     }
     .p-tlabel { font-size: 10px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: #1C1C1A; }
-    .p-tvalue { font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 500; color: #8C7A3A; }
+    .p-tvalue { font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 500; color: #7C3135; }
 
     .p-pay { background: #f8f4ed; border-radius: 8px; padding: 18px 20px; margin-bottom: 22px; }
     .p-pay-title { font-size: 9px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: #a09080; margin-bottom: 12px; }
@@ -499,21 +510,21 @@
     .p-pay-row:last-child { border-bottom: none; }
     .p-pay-lname { font-size: 13px; color: #1C1C1A; }
     .p-pay-lsub  { font-size: 11px; color: #a09080; margin-top: 2px; }
-    .p-pay-val   { font-family: 'Cormorant Garamond', serif; font-size: 1.25rem; font-weight: 500; color: #6B1F2A; white-space: nowrap; flex-shrink: 0; }
+    .p-pay-val   { font-family: 'Cormorant Garamond', serif; font-size: 1.25rem; font-weight: 500; color: #7C3135; white-space: nowrap; flex-shrink: 0; }
 
     .p-notes { margin-bottom: 22px; }
     .p-notes-lbl  { font-size: 9px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: #a09080; margin-bottom: 8px; }
     .p-notes-body { font-size: 12px; color: #6a6057; line-height: 1.75; white-space: pre-wrap; }
 
     .p-validity {
-      border: 1px solid rgba(140,122,58,0.3); background: rgba(140,122,58,0.05);
+      border: 1px solid rgba(124,49,53,0.3); background: rgba(124,49,53,0.05);
       border-radius: 6px; padding: 13px 16px; margin-bottom: 22px;
       font-size: 12px; color: #6a6057; line-height: 1.6;
     }
     .p-validity strong { color: #1C1C1A; font-weight: 500; }
 
     .p-footer {
-      background: #1A2419; padding: 16px 34px;
+      background: #250E0F; padding: 16px 34px;
       display: flex; justify-content: space-between; align-items: center;
     }
     .p-fbrand { font-family: 'Cormorant Garamond', serif; font-size: 14px; font-weight: 500; color: rgba(242,237,228,0.65); }
@@ -522,7 +533,7 @@
     /* ── PROPOSAL — SERVICES TABLE ──────────────── */
     .p-stbl { width:100%; border-collapse:collapse; font-size:12.5px; margin-bottom:0; }
     .p-stbl th {
-      background:#1A2419; color:rgba(242,237,228,0.75);
+      background:#250E0F; color:rgba(242,237,228,0.75);
       font-size:9px; font-weight:500; letter-spacing:0.14em;
       text-transform:uppercase; padding:9px 10px; text-align:left;
     }
@@ -532,7 +543,7 @@
     .p-stbl td { padding:10px 10px; border-bottom:1px solid #f0ebe1; color:#1C1C1A; vertical-align:top; }
     .p-td-qty  { color:#a09080; text-align:center; }
     .p-td-amt  { color:#a09080; text-align:right; }
-    .p-td-total{ color:#8C7A3A; font-weight:500; text-align:right; }
+    .p-td-total{ color:#7C3135; font-weight:500; text-align:right; }
     .p-tfoot-row { border-top:1.5px solid #1C1C1A; }
     .p-tfoot-label {
       font-size:10px; font-weight:500; letter-spacing:0.14em;
@@ -540,7 +551,7 @@
     }
     .p-tfoot-val {
       font-family:'Cormorant Garamond',serif; font-size:1.5rem;
-      font-weight:500; color:#8C7A3A; padding:13px 10px; text-align:right; white-space:nowrap;
+      font-weight:500; color:#7C3135; padding:13px 10px; text-align:right; white-space:nowrap;
     }
 
     /* ── PROPOSAL — SECTIONS ────────────────────── */
@@ -553,15 +564,15 @@
     .p-section-body { font-size:12.5px; color:#4a4035; line-height:1.7; margin-bottom:14px; }
     .p-proc-fee-row {
       display:flex; justify-content:space-between; align-items:center;
-      padding:10px 14px; background:rgba(140,122,58,0.08);
-      border:1px solid rgba(140,122,58,0.2); border-radius:6px;
+      padding:10px 14px; background:rgba(124,49,53,0.08);
+      border:1px solid rgba(124,49,53,0.2); border-radius:6px;
       font-size:12.5px; color:#1C1C1A; font-weight:500;
     }
 
     /* ── PROPOSAL — CHECKLIST ───────────────────── */
     .p-check-list { display:flex; flex-direction:column; gap:9px; }
-    .p-check-item { display:flex; align-items:flex-start; gap:10px; font-size:12.5px; color:#2C3A2E; line-height:1.55; }
-    .p-check-icon { color:#2C3A2E; font-weight:700; font-size:12px; flex-shrink:0; margin-top:1px; width:16px; }
+    .p-check-item { display:flex; align-items:flex-start; gap:10px; font-size:12.5px; color:#250E0F; line-height:1.55; }
+    .p-check-icon { color:#250E0F; font-weight:700; font-size:12px; flex-shrink:0; margin-top:1px; width:16px; }
 
     /* ── PROPOSAL — BANK DETAILS ────────────────── */
     .p-bank-block { background:#f8f4ed; border-radius:8px; padding:16px 20px; }
@@ -614,14 +625,14 @@
       #screen-proposal { display: block !important; opacity: 1 !important; transform: none !important; width: 100% !important; max-width: 100% !important; }
 
       .pdoc { box-shadow: none !important; border-radius: 0 !important; }
-      .ph   { background: #1A2419 !important; }
+      .ph   { background: #250E0F !important; }
       .ph-name { color: #F2EDE4 !important; }
-      .ph-doctitle { color: #8C7A3A !important; }
-      .p-footer { background: #1A2419 !important; }
+      .ph-doctitle { color: #7C3135 !important; }
+      .p-footer { background: #250E0F !important; }
       .p-fbrand { color: rgba(242,237,228,0.65) !important; }
       .p-pay { background: #f8f4ed !important; }
       .p-bank-block { background: #f8f4ed !important; }
-      .p-stbl th { background: #1A2419 !important; }
+      .p-stbl th { background: #250E0F !important; }
       .p-pagebreak { page-break-before: always !important; border-top: none !important; }
     }
   </style>
@@ -630,7 +641,7 @@
 
 <header class="topbar">
   <div class="tb-brand">
-    <span class="tb-rek">REK</span>
+    <img class="tb-logo" src="logos/rek-wordmark-white.svg" alt="Rek Design Studio">
     <span class="tb-sub">Design Studio</span>
   </div>
   <div style="display:flex;align-items:center;gap:14px">
@@ -1380,8 +1391,7 @@ function renderProposal() {
   const pageHeader = `
     <div class="ph">
       <div class="ph-brand">
-        <div class="ph-name">Rek Design Studio</div>
-        <div class="ph-sub">Interior Design Studio · Miami</div>
+        <img src="logos/rek-full-wordmark-white.svg" style="height:34px;width:auto;display:block;" alt="Rek Design Studio">
       </div>
       <div class="ph-right">
         <div class="ph-doclabel">Document</div>
@@ -1510,7 +1520,7 @@ function renderProposal() {
         </div>
       </div>
       <div class="p-footer">
-        <div class="p-fbrand">Rek Design Studio</div>
+        <img src="logos/rek-full-wordmark-white.svg" style="height:20px;width:auto;opacity:0.65;" alt="Rek Design Studio">
         <div class="p-fmeta">rekdesignstudio.com · Miami, FL</div>
       </div>
     </div>`;
