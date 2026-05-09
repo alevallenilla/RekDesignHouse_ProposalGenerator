@@ -8,7 +8,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Adamina&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
 :root {
   --ink:      #250E0F;
   --parchment:#F5F5F5;
@@ -20,349 +19,218 @@
   --muted:    rgba(37,14,15,0.45);
   --border:   rgba(37,14,15,0.10);
 }
-
 body { font-family:'Inter',sans-serif; background:var(--ivory); color:var(--ink); min-height:100vh; }
 
-/* ── TOPBAR ─────────────────────────────────────── */
+/* ── TOPBAR ─────────────────────────────── */
 .topbar {
   position:sticky; top:0; width:100%; height:56px;
   background:var(--ink); z-index:100;
   display:flex; align-items:center; padding:0 28px;
   justify-content:space-between; flex-shrink:0;
 }
-.tb-brand{ display:flex; align-items:center; gap:12px; }
-.tb-logo { height:28px; width:auto; display:block; }
-.tb-sub  {
-  font-family:'Inter',sans-serif; font-size:9px; font-weight:500;
-  letter-spacing:0.22em; text-transform:uppercase;
-  color:rgba(245,245,245,0.48); margin-left:2px;
-}
-.tb-right{ display:flex; align-items:center; }
-.tb-date { font-family:'Inter',sans-serif; font-size:11px; color:rgba(245,245,245,0.45); }
+.tb-brand { display:flex; align-items:center; gap:12px; }
+.tb-logo  { height:28px; width:auto; display:block; }
+.tb-sub   { font-family:'Inter',sans-serif; font-size:9px; font-weight:500; letter-spacing:0.22em; text-transform:uppercase; color:rgba(245,245,245,0.48); margin-left:2px; }
+.tb-right { display:flex; align-items:center; }
+.tb-date  { font-family:'Inter',sans-serif; font-size:11px; color:rgba(245,245,245,0.45); }
 
-/* ── LAYOUT ─────────────────────────────────────── */
-.page-wrap{ min-height:100vh; }
-.screen   { display:none; }
-.screen.active{ display:block; }
+/* ── LAYOUT ─────────────────────────────── */
+.page-wrap { min-height:100vh; }
+.screen    { display:none; }
+.screen.active { display:block; }
 
-/* ── SHARED ELEMENTS ────────────────────────────── */
-.page-hd {
-  padding:36px 32px 28px; border-bottom:1px solid var(--border);
-  display:flex; align-items:flex-end; justify-content:space-between;
-}
-.eyebrow {
-  font-size:10px; font-weight:600; letter-spacing:0.24em;
-  text-transform:uppercase; color:var(--muted); margin-bottom:8px;
-}
+/* ── SHARED ──────────────────────────────── */
+.eyebrow { font-size:10px; font-weight:600; letter-spacing:0.24em; text-transform:uppercase; color:var(--muted); margin-bottom:8px; }
+.page-hd { padding:36px 32px 28px; border-bottom:1px solid var(--border); display:flex; align-items:flex-end; justify-content:space-between; }
 .page-hd h1 { font-family:'Adamina',serif; font-size:32px; font-weight:400; line-height:1.1; }
 
-.btn-primary {
-  font-family:'Inter',sans-serif; font-size:12px; font-weight:500;
-  background:var(--ink); color:var(--parchment);
-  border:none; border-radius:6px; padding:10px 18px; cursor:pointer;
-  transition:opacity 0.15s; display:inline-flex; align-items:center; gap:6px;
-}
-.btn-primary:hover{ opacity:0.85; }
-.btn-primary:disabled{ opacity:0.45; cursor:default; }
-.btn-ghost {
-  font-family:'Inter',sans-serif; font-size:12px; font-weight:500;
-  background:none; color:var(--muted); border:1px solid var(--border);
-  border-radius:6px; padding:10px 18px; cursor:pointer; transition:background 0.15s;
-}
-.btn-ghost:hover{ background:rgba(37,14,15,0.05); }
+.btn-primary { font-family:'Inter',sans-serif; font-size:12px; font-weight:500; background:var(--ink); color:var(--parchment); border:none; border-radius:6px; padding:10px 18px; cursor:pointer; transition:opacity 0.15s; }
+.btn-primary:hover  { opacity:0.85; }
+.btn-primary:disabled { opacity:0.45; cursor:default; }
+.btn-ghost  { font-family:'Inter',sans-serif; font-size:12px; font-weight:500; background:none; color:var(--muted); border:1px solid var(--border); border-radius:6px; padding:10px 18px; cursor:pointer; transition:background 0.15s; }
+.btn-ghost:hover { background:rgba(37,14,15,0.05); }
+.back-btn { font-size:11px; color:var(--muted); background:none; border:none; cursor:pointer; padding:0; margin-bottom:28px; display:inline-flex; align-items:center; gap:6px; transition:color 0.15s; }
+.back-btn:hover { color:var(--ink); }
 
-.back-btn {
-  font-size:11px; color:var(--muted); background:none; border:none; cursor:pointer;
-  padding:0; margin-bottom:28px; display:inline-flex; align-items:center; gap:6px;
-  transition:color 0.15s;
-}
-.back-btn:hover{ color:var(--ink); }
+.fg  { display:flex; flex-direction:column; gap:5px; }
+.fl  { font-size:10px; font-weight:600; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted); }
+.fi, .fsel { font-family:'Inter',sans-serif; font-size:13px; color:var(--ink); background:white; border:1px solid var(--border); border-radius:6px; padding:9px 12px; outline:none; transition:border-color 0.15s; width:100%; }
+.fi:focus, .fsel:focus { border-color:rgba(37,14,15,0.35); }
+.fsel { cursor:pointer; }
+textarea.fi { resize:vertical; }
 
-.fg { display:flex; flex-direction:column; gap:5px; }
-.fl {
-  font-size:10px; font-weight:600; letter-spacing:0.14em;
-  text-transform:uppercase; color:var(--muted);
-}
-.fi, .fsel {
-  font-family:'Inter',sans-serif; font-size:13px; color:var(--ink);
-  background:white; border:1px solid var(--border);
-  border-radius:6px; padding:9px 12px; outline:none;
-  transition:border-color 0.15s; width:100%;
-}
-.fi:focus, .fsel:focus{ border-color:rgba(37,14,15,0.35); }
-.fsel{ cursor:pointer; }
-textarea.fi{ resize:vertical; }
-
-/* ── LIST SCREEN ────────────────────────────────── */
+/* ── PO LIST ─────────────────────────────── */
 .list-body { padding:32px; }
-.client-group { margin-bottom:40px; }
-.client-group-hd {
-  font-size:11px; font-weight:600; letter-spacing:0.18em;
-  text-transform:uppercase; color:var(--muted); margin-bottom:16px;
-}
-.project-group { margin-bottom:24px; }
-.project-group-hd {
-  font-size:13px; font-weight:500; color:var(--ink);
-  margin-bottom:10px; padding-bottom:8px; border-bottom:1px solid var(--border);
-}
+.client-group    { margin-bottom:40px; }
+.client-group-hd { font-size:11px; font-weight:600; letter-spacing:0.18em; text-transform:uppercase; color:var(--muted); margin-bottom:16px; }
+.project-group    { margin-bottom:24px; }
+.project-group-hd { font-size:13px; font-weight:500; margin-bottom:10px; padding-bottom:8px; border-bottom:1px solid var(--border); }
 .po-cards { display:flex; flex-direction:column; gap:8px; }
-.po-card {
+.po-card  {
   display:flex; align-items:center; gap:16px;
   background:white; border:1px solid var(--border); border-radius:8px;
   padding:14px 18px; cursor:pointer;
   transition:border-color 0.15s, box-shadow 0.15s;
 }
-.po-card:hover{ border-color:rgba(37,14,15,0.20); box-shadow:0 2px 8px rgba(37,14,15,0.06); }
-.po-card-num { font-size:12px; font-weight:600; color:var(--ink); min-width:60px; }
-.po-card-info{ flex:1; }
-.po-card-notes{ font-size:13px; font-weight:500; color:var(--ink); }
-.po-card-date { font-size:11px; color:var(--muted); margin-top:3px; }
-.po-card-total{ text-align:right; min-width:90px; }
-.po-card-total-amt { font-size:14px; font-weight:500; color:var(--ink); }
+.po-card:hover { border-color:rgba(37,14,15,0.20); box-shadow:0 2px 8px rgba(37,14,15,0.06); }
+.po-card-num   { font-size:12px; font-weight:600; color:var(--ink); min-width:60px; }
+.po-card-info  { flex:1; }
+.po-card-notes { font-size:13px; font-weight:500; }
+.po-card-date  { font-size:11px; color:var(--muted); margin-top:3px; }
+.po-card-total { text-align:right; min-width:90px; }
+.po-card-total-amt { font-size:14px; font-weight:500; }
 .po-card-total-lbl { font-size:10px; color:var(--muted); display:block; margin-bottom:2px; }
 
-.status-badge {
-  font-size:9px; font-weight:600; letter-spacing:0.12em;
-  text-transform:uppercase; padding:3px 8px; border-radius:3px; white-space:nowrap;
-}
-.s-draft   { background:rgba(37,14,15,0.07);   color:rgba(37,14,15,0.50); }
-.s-ordered { background:rgba(76,98,112,0.12);  color:var(--slate); }
-.s-received{ background:rgba(61,92,58,0.12);   color:var(--moss); }
-.s-invoiced{ background:rgba(124,49,53,0.10);  color:var(--burgundy); }
+.status-badge { font-size:9px; font-weight:600; letter-spacing:0.12em; text-transform:uppercase; padding:3px 8px; border-radius:3px; white-space:nowrap; }
+.s-draft    { background:rgba(37,14,15,0.07);  color:rgba(37,14,15,0.50); }
+.s-ordered  { background:rgba(76,98,112,0.12); color:var(--slate); }
+.s-received { background:rgba(61,92,58,0.12);  color:var(--moss); }
+.s-invoiced { background:rgba(124,49,53,0.10); color:var(--burgundy); }
 
-.empty-state{ text-align:center; padding:80px 24px; }
-.empty-state h2{ font-family:'Adamina',serif; font-size:24px; margin-bottom:12px; }
-.empty-state p { font-size:14px; color:var(--muted); }
+.del-po-btn { background:none; border:none; cursor:pointer; color:rgba(37,14,15,0.25); padding:6px 8px; border-radius:4px; transition:color 0.15s, background 0.15s; flex-shrink:0; }
+.del-po-btn:hover { color:#b03030; background:rgba(176,48,48,0.07); }
 
-/* ── PO EDITOR ──────────────────────────────────── */
-.po-editor { max-width:1160px; margin:0 auto; padding:36px 32px 140px; }
+.empty-state    { text-align:center; padding:80px 24px; }
+.empty-state h2 { font-family:'Adamina',serif; font-size:24px; margin-bottom:12px; }
+.empty-state p  { font-size:14px; color:var(--muted); }
 
-.po-hd-grid {
-  display:grid; grid-template-columns:1fr 1fr 150px 160px;
-  gap:16px; margin-bottom:16px;
-}
-.po-hd-full { margin-bottom:32px; }
+/* ── PO EDITOR ──────────────────────────── */
+.po-editor  { max-width:1160px; margin:0 auto; padding:36px 32px 160px; }
+.hd-row     { display:grid; gap:16px; margin-bottom:16px; }
+.hd-row-4   { grid-template-columns:1fr 1fr 150px 150px; }
+.hd-row-5   { grid-template-columns:160px 90px 130px 90px 1fr; }
+.hd-row-2   { grid-template-columns:1fr 1fr; }
+.hd-row-1   { margin-bottom:24px; }
 
 .new-inline { display:none; margin-top:8px; gap:8px; align-items:flex-end; }
-.new-inline.show{ display:flex; }
-.btn-sm {
-  font-family:'Inter',sans-serif; font-size:11px; font-weight:500;
-  background:var(--ink); color:var(--parchment);
-  border:none; border-radius:5px; padding:8px 12px; cursor:pointer; white-space:nowrap;
-}
-.btn-sm-ghost {
-  font-family:'Inter',sans-serif; font-size:11px; color:var(--muted);
-  background:none; border:1px solid var(--border);
-  border-radius:5px; padding:8px 12px; cursor:pointer;
-}
+.new-inline.show { display:flex; }
+.btn-sm { font-family:'Inter',sans-serif; font-size:11px; font-weight:500; background:var(--ink); color:var(--parchment); border:none; border-radius:5px; padding:8px 12px; cursor:pointer; white-space:nowrap; }
+.btn-sm-g { font-family:'Inter',sans-serif; font-size:11px; color:var(--muted); background:none; border:1px solid var(--border); border-radius:5px; padding:8px 12px; cursor:pointer; }
+.edit-link { font-size:10px; color:var(--slate); background:none; border:none; cursor:pointer; padding:0; text-decoration:underline; margin-top:4px; display:block; width:fit-content; }
 
-.section-hd {
-  display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;
-}
-.section-hd h2{ font-size:13px; font-weight:600; }
-.item-count  { font-size:11px; color:var(--muted); }
+.section-hd { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+.section-hd h2 { font-size:13px; font-weight:600; }
+.item-count { font-size:11px; color:var(--muted); }
 
-/* Item table */
-.item-table-wrap{ overflow-x:auto; }
-.item-table{ width:100%; border-collapse:collapse; font-size:12.5px; }
-.item-table th {
-  font-size:9.5px; font-weight:600; letter-spacing:0.14em; text-transform:uppercase;
-  color:var(--muted); text-align:left; padding:8px 8px 10px;
-  border-bottom:1px solid var(--border); white-space:nowrap;
-}
-.item-table th.r{ text-align:right; }
-.item-table td{ padding:5px 6px; vertical-align:top; border-bottom:1px solid rgba(37,14,15,0.04); }
-
-/* table cell widths */
-.c-num   { width:28px; text-align:center; color:var(--muted); font-size:11px; padding-top:10px !important; }
-.c-cat   { width:130px; }
-.c-name  { min-width:165px; }
-.c-src   { min-width:120px; }
-.c-qty   { width:60px; }
-.c-cost  { width:96px; }
-.c-tax   { width:62px; }
-.c-mkup  { width:68px; }
-.c-total { width:100px; text-align:right; padding-top:10px !important; font-weight:500; color:var(--ink); }
-.c-act   { width:60px; white-space:nowrap; padding-top:7px !important; }
-
-/* table inputs */
-.ti {
-  font-family:'Inter',sans-serif; font-size:12.5px; color:var(--ink);
-  background:transparent; border:1px solid transparent;
-  border-radius:4px; padding:5px 7px; width:100%; outline:none;
-  transition:border-color 0.15s, background 0.15s;
-}
+/* Line item table */
+.item-table-wrap { overflow-x:auto; }
+.item-table { width:100%; border-collapse:collapse; font-size:12.5px; }
+.item-table th { font-size:9.5px; font-weight:600; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted); text-align:left; padding:8px 8px 10px; border-bottom:1px solid var(--border); white-space:nowrap; }
+.item-table th.r { text-align:right; }
+.item-table td  { padding:5px 6px; vertical-align:top; border-bottom:1px solid rgba(37,14,15,0.04); }
+.c-num  { width:28px; text-align:center; color:var(--muted); font-size:11px; padding-top:10px !important; }
+.c-cat  { width:130px; }
+.c-name { min-width:165px; }
+.c-src  { min-width:110px; }
+.c-qty  { width:58px; }
+.c-prc  { width:96px; }
+.c-tot  { width:96px; text-align:right; padding-top:10px !important; font-weight:500; }
+.c-act  { width:56px; white-space:nowrap; padding-top:7px !important; }
+.ti { font-family:'Inter',sans-serif; font-size:12.5px; color:var(--ink); background:transparent; border:1px solid transparent; border-radius:4px; padding:5px 7px; width:100%; outline:none; transition:border-color 0.15s, background 0.15s; }
 .ti:hover { border-color:var(--border); background:white; }
 .ti:focus { border-color:rgba(37,14,15,0.30); background:white; }
-.ti.r{ text-align:right; }
-
-.xbtn, .dbtn {
-  background:none; border:none; cursor:pointer; color:var(--muted);
-  padding:4px 5px; border-radius:4px; font-size:13px;
-  transition:color 0.15s, background 0.15s;
-}
-.xbtn:hover{ color:var(--ink); background:rgba(37,14,15,0.05); }
-.dbtn:hover{ color:#b03030; background:rgba(176,48,48,0.07); }
+.ti.r { text-align:right; }
+.xbtn, .dbtn { background:none; border:none; cursor:pointer; color:var(--muted); padding:4px 5px; border-radius:4px; font-size:13px; transition:color 0.15s, background 0.15s; }
+.xbtn:hover { color:var(--ink); background:rgba(37,14,15,0.05); }
+.dbtn:hover { color:#b03030; background:rgba(176,48,48,0.07); }
 
 /* Details sub-row */
-.det-row{ display:none; }
-.det-row.open{ display:table-row; }
-.det-row td {
-  background:rgba(37,14,15,0.018) !important;
-  border-bottom:1px solid var(--border) !important;
-  padding:14px 16px 18px 36px !important;
-}
-.det-grid {
-  display:grid; grid-template-columns:2fr 2fr 1fr; gap:14px;
-}
-.img-row { display:flex; gap:8px; align-items:flex-end; margin-top:10px; }
-.img-row .fi{ flex:1; margin-bottom:0; }
-.img-thumb {
-  width:52px; height:52px; object-fit:cover;
-  border-radius:4px; border:1px solid var(--border); flex-shrink:0;
-}
-.img-ph {
-  width:52px; height:52px; background:var(--linen);
-  border:1px solid var(--border); border-radius:4px;
-  display:flex; align-items:center; justify-content:center; flex-shrink:0;
-}
-.fetch-btn {
-  font-size:10px; font-weight:500; color:var(--slate);
-  background:rgba(76,98,112,0.08); border:1px solid rgba(76,98,112,0.18);
-  border-radius:4px; padding:5px 10px; cursor:pointer; white-space:nowrap;
-  align-self:flex-end; transition:background 0.15s;
-}
-.fetch-btn:hover{ background:rgba(76,98,112,0.15); }
-.fetch-btn:disabled{ opacity:0.45; cursor:default; }
+.det-row { display:none; }
+.det-row.open { display:table-row; }
+.det-row td { background:rgba(37,14,15,0.018) !important; border-bottom:1px solid var(--border) !important; padding:14px 16px 18px 36px !important; }
+.det-grid { display:grid; grid-template-columns:2fr 1.5fr 1.5fr; gap:14px; }
+.img-upload-box { display:flex; flex-direction:column; gap:8px; }
+.img-preview { width:80px; height:80px; object-fit:cover; border-radius:6px; border:1px solid var(--border); display:block; }
+.img-ph { width:80px; height:80px; background:var(--linen); border:1px dashed rgba(37,14,15,0.20); border-radius:6px; display:flex; align-items:center; justify-content:center; }
+.upload-btn { font-size:10.5px; font-weight:500; color:var(--slate); background:rgba(76,98,112,0.08); border:1px solid rgba(76,98,112,0.18); border-radius:4px; padding:5px 10px; cursor:pointer; transition:background 0.15s; display:inline-block; }
+.upload-btn:hover { background:rgba(76,98,112,0.15); }
+.file-input { display:none; }
+.remove-img { font-size:10px; color:rgba(37,14,15,0.35); background:none; border:none; cursor:pointer; padding:0; }
+.remove-img:hover { color:#b03030; }
 
-.add-row-btn {
-  display:flex; align-items:center; gap:8px; font-size:12px; color:var(--muted);
-  background:none; border:1px dashed rgba(37,14,15,0.18); border-radius:6px;
-  padding:10px 16px; cursor:pointer; margin-top:8px; width:100%;
-  transition:color 0.15s, border-color 0.15s;
-}
-.add-row-btn:hover{ color:var(--ink); border-color:rgba(37,14,15,0.35); }
+.add-row-btn { display:flex; align-items:center; gap:8px; font-size:12px; color:var(--muted); background:none; border:1px dashed rgba(37,14,15,0.18); border-radius:6px; padding:10px 16px; cursor:pointer; margin-top:8px; width:100%; transition:color 0.15s, border-color 0.15s; }
+.add-row-btn:hover { color:var(--ink); border-color:rgba(37,14,15,0.35); }
 
 /* Totals bar */
-.totals-bar {
-  position:fixed; bottom:0; left:220px; right:0;
-  background:white; border-top:1px solid var(--border);
-  padding:14px 32px; display:flex; align-items:center;
-  justify-content:space-between; z-index:50;
-  box-shadow:0 -4px 20px rgba(37,14,15,0.06);
-}
+.totals-bar { position:fixed; bottom:0; left:220px; right:0; background:white; border-top:1px solid var(--border); padding:14px 32px; display:flex; align-items:center; justify-content:space-between; z-index:50; box-shadow:0 -4px 20px rgba(37,14,15,0.06); }
 .totals-cols { display:flex; gap:48px; }
-.totals-col h3 {
-  font-size:9.5px; font-weight:600; letter-spacing:0.16em;
-  text-transform:uppercase; color:var(--muted); margin-bottom:8px;
-}
-.tot-rows{ display:flex; flex-direction:column; gap:3px; }
-.tot-row {
-  display:flex; justify-content:space-between; gap:36px;
-  font-size:12px; color:var(--muted);
-}
-.tot-row.grand {
-  font-size:13px; font-weight:600; color:var(--ink);
-  border-top:1px solid var(--border); padding-top:5px; margin-top:3px;
-}
-.tot-row span:last-child{ min-width:88px; text-align:right; }
-.totals-actions{ display:flex; gap:10px; align-items:center; }
+.totals-col h3 { font-size:9.5px; font-weight:600; letter-spacing:0.16em; text-transform:uppercase; color:var(--muted); margin-bottom:8px; }
+.tot-rows { display:flex; flex-direction:column; gap:3px; }
+.tot-row { display:flex; justify-content:space-between; gap:36px; font-size:12px; color:var(--muted); }
+.tot-row.grand { font-size:13px; font-weight:600; color:var(--ink); border-top:1px solid var(--border); padding-top:5px; margin-top:3px; }
+.tot-row span:last-child { min-width:88px; text-align:right; }
+.totals-actions { display:flex; gap:10px; align-items:center; }
 
-/* ── DOCUMENT SCREEN ────────────────────────────── */
-.doc-screen{ background:var(--linen); min-height:calc(100vh - 52px); padding:40px 24px; }
-.doc-toolbar{
-  max-width:860px; margin:0 auto 24px;
-  display:flex; justify-content:space-between; align-items:center;
-}
-.doc-wrap{
-  max-width:860px; margin:0 auto; background:white;
-  box-shadow:0 4px 32px rgba(37,14,15,0.10);
-}
+/* ── DOCUMENT ────────────────────────────── */
+.doc-screen  { background:var(--linen); min-height:calc(100vh - 56px); padding:40px 24px; }
+.doc-toolbar { max-width:860px; margin:0 auto 24px; display:flex; justify-content:space-between; align-items:center; }
+.doc-wrap    { max-width:860px; margin:0 auto; background:white; box-shadow:0 4px 32px rgba(37,14,15,0.10); }
 
-/* Document header */
-.doc-ph {
-  background:var(--ink); padding:36px 48px 32px;
-  display:flex; justify-content:space-between; align-items:flex-start;
-}
-.doc-ph-brand img{ height:28px; display:block; }
-.doc-ph-sub{
-  font-size:9.5px; letter-spacing:0.22em; text-transform:uppercase;
-  color:rgba(245,245,245,0.38); margin-top:7px;
-}
-.doc-ph-right{ text-align:right; }
-.doc-ph-label{
-  font-size:9px; letter-spacing:0.20em; text-transform:uppercase;
-  color:rgba(245,245,245,0.35); margin-bottom:4px;
-}
-.doc-ph-num{ font-family:'Adamina',serif; font-size:22px; color:var(--parchment); line-height:1; }
-.doc-ph-date{ font-size:11px; color:rgba(245,245,245,0.45); margin-top:7px; }
+.doc-ph { background:var(--ink); padding:36px 48px 28px; display:flex; justify-content:space-between; align-items:flex-start; }
+.doc-ph-brand img { height:28px; display:block; }
+.doc-ph-sub { font-size:9.5px; letter-spacing:0.22em; text-transform:uppercase; color:rgba(245,245,245,0.38); margin-top:7px; }
+.doc-ph-right { text-align:right; }
+.doc-ph-label { font-size:9px; letter-spacing:0.20em; text-transform:uppercase; color:rgba(245,245,245,0.35); margin-bottom:4px; }
+.doc-ph-num  { font-family:'Adamina',serif; font-size:22px; color:var(--parchment); line-height:1; }
+.doc-ph-date { font-size:11px; color:rgba(245,245,245,0.45); margin-top:6px; }
 
-.doc-meta{
-  padding:22px 48px; display:flex; gap:48px;
-  border-bottom:1px solid var(--linen); background:#FDFCF9;
-}
-.doc-meta-block label{
-  font-size:9px; font-weight:600; letter-spacing:0.18em;
-  text-transform:uppercase; color:var(--muted); display:block; margin-bottom:4px;
-}
-.doc-meta-block span{ font-size:14px; font-weight:500; color:var(--ink); }
+.doc-status  { background:#2d1213; padding:10px 48px; }
+.doc-status span { font-size:9.5px; font-weight:600; letter-spacing:0.20em; text-transform:uppercase; color:rgba(245,245,245,0.45); }
 
-.doc-items-wrap{ padding:32px 48px; }
-.doc-tbl{ width:100%; border-collapse:collapse; }
-.doc-tbl th{
-  font-size:9px; font-weight:600; letter-spacing:0.16em; text-transform:uppercase;
-  color:var(--muted); text-align:left; padding:0 12px 10px;
-  border-bottom:1px solid var(--linen);
-}
-.doc-tbl th.r{ text-align:right; }
-.doc-tbl td{
-  padding:14px 12px; vertical-align:top;
-  border-bottom:1px solid rgba(37,14,15,0.05);
-  font-size:12.5px; color:var(--ink);
-}
-.doc-tbl td.r{ text-align:right; }
-.doc-item-img{ width:54px; height:54px; object-fit:cover; border-radius:3px; border:1px solid var(--linen); display:block; }
-.doc-item-img-ph{ width:54px; height:54px; background:var(--linen); border-radius:3px; display:block; }
-.doc-item-cat{
-  font-size:9.5px; font-weight:600; letter-spacing:0.12em;
-  text-transform:uppercase; color:var(--muted); margin-bottom:3px;
-}
-.doc-item-name{ font-weight:500; margin-bottom:3px; }
-.doc-item-desc{ font-size:11px; color:var(--muted); }
+.doc-info { padding:24px 48px; display:grid; grid-template-columns:1fr 1fr; gap:32px; border-bottom:1px solid var(--linen); background:#FDFCF9; }
+.doc-info-block label { font-size:9px; font-weight:600; letter-spacing:0.18em; text-transform:uppercase; color:var(--muted); display:block; margin-bottom:8px; }
+.doc-info-name  { font-size:14px; font-weight:600; color:var(--ink); }
+.doc-info-line  { font-size:12.5px; color:var(--ink); line-height:1.6; }
+.doc-info-muted { font-size:11px; color:var(--muted); margin-top:4px; }
 
-.doc-totals{ padding:20px 48px 36px; display:flex; justify-content:flex-end; }
-.doc-tot-table{ min-width:270px; }
-.doc-tot-row{
-  display:flex; justify-content:space-between; gap:48px;
-  font-size:13px; color:var(--muted); padding:4px 0;
-}
-.doc-tot-row.grand{
-  font-size:15px; font-weight:600; color:var(--ink);
-  border-top:1px solid var(--linen); padding-top:10px; margin-top:4px;
-}
-.doc-tot-row span:last-child{ min-width:100px; text-align:right; }
+.doc-meta-row { padding:16px 48px; display:flex; gap:40px; background:#FDFCF9; border-bottom:1px solid var(--linen); }
+.doc-meta-item label { font-size:9px; font-weight:600; letter-spacing:0.18em; text-transform:uppercase; color:var(--muted); display:block; margin-bottom:3px; }
+.doc-meta-item span  { font-size:12.5px; color:var(--ink); }
 
-.doc-footer{
-  background:var(--ink); padding:18px 48px;
-  display:flex; justify-content:space-between; align-items:center;
-}
-.doc-footer span{ font-size:10px; color:rgba(245,245,245,0.28); letter-spacing:0.08em; }
+.doc-items-wrap { padding:28px 48px 16px; }
+.doc-tbl { width:100%; border-collapse:collapse; }
+.doc-tbl th { font-size:9px; font-weight:600; letter-spacing:0.16em; text-transform:uppercase; color:var(--muted); text-align:left; padding:0 12px 10px; border-bottom:1px solid var(--linen); }
+.doc-tbl th.r { text-align:right; }
+.doc-tbl td { padding:12px 12px; vertical-align:top; border-bottom:1px solid rgba(37,14,15,0.05); font-size:12.5px; color:var(--ink); }
+.doc-tbl td.r { text-align:right; }
+.doc-item-img  { width:54px; height:54px; object-fit:cover; border-radius:3px; border:1px solid var(--linen); display:block; }
+.doc-item-cat  { font-size:9.5px; font-weight:600; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); margin-bottom:3px; }
+.doc-item-name { font-weight:500; margin-bottom:2px; }
+.doc-item-desc { font-size:11px; color:var(--muted); }
 
-/* ── PRINT ──────────────────────────────────────── */
+.doc-totals { padding:20px 48px 24px; display:flex; justify-content:flex-end; border-top:1px solid var(--linen); }
+.doc-tot-table  { min-width:280px; }
+.doc-tot-row    { display:flex; justify-content:space-between; gap:48px; font-size:13px; color:var(--muted); padding:4px 0; }
+.doc-tot-row span:last-child { min-width:100px; text-align:right; }
+.doc-tot-row.grand { font-size:15px; font-weight:600; color:var(--ink); border-top:1px solid var(--linen); padding-top:10px; margin-top:6px; }
+
+.doc-payment { padding:20px 48px; border-top:1px solid var(--linen); background:#FDFCF9; }
+.doc-payment-row { display:flex; gap:40px; }
+.doc-payment-block label { font-size:9px; font-weight:600; letter-spacing:0.18em; text-transform:uppercase; color:var(--muted); display:block; margin-bottom:4px; }
+.doc-payment-block span  { font-size:13px; color:var(--ink); font-weight:500; }
+
+.doc-note { padding:20px 48px 24px; border-top:1px solid var(--linen); }
+.doc-note-title { font-size:9px; font-weight:600; letter-spacing:0.18em; text-transform:uppercase; color:var(--muted); margin-bottom:10px; }
+.doc-note-item  { font-size:11.5px; color:var(--muted); line-height:1.6; padding-left:14px; position:relative; margin-bottom:4px; }
+.doc-note-item::before { content:'—'; position:absolute; left:0; }
+
+.doc-footer { background:var(--ink); padding:20px 48px; display:flex; justify-content:space-between; align-items:center; }
+.doc-footer-main { font-size:11px; font-weight:500; letter-spacing:0.12em; text-transform:uppercase; color:rgba(245,245,245,0.55); }
+.doc-footer-sub  { font-size:10px; color:rgba(245,245,245,0.28); }
+
+/* ── PRINT ───────────────────────────────── */
 @media print {
   .topbar, #ws-nav, .doc-toolbar, .back-btn, .totals-bar { display:none !important; }
-  body    { padding-left:0 !important; padding-top:0 !important; }
-  .page-wrap{ padding-top:0; }
-  .doc-screen{ background:white; padding:0; }
-  .doc-wrap  { box-shadow:none; }
-  #screen-list, #screen-po{ display:none !important; }
-  #screen-doc{ display:block !important; }
+  body { padding-left:0 !important; padding-top:0 !important; }
+  .doc-screen { background:white; padding:0; }
+  .doc-wrap   { box-shadow:none; }
+  #screen-list, #screen-po { display:none !important; }
+  #screen-doc { display:block !important; }
 }
 </style>
 </head>
 <body>
 
-<!-- ── TOPBAR ────────────────────────────────────── -->
 <header class="topbar">
   <div class="tb-brand">
     <img class="tb-logo" src="/logos/rek-wordmark-white.svg" alt="Rek Design Studio">
@@ -373,9 +241,9 @@ textarea.fi{ resize:vertical; }
 
 <div class="page-wrap">
 
-<!-- ════════════════════════════════════════════════
-     SCREEN: PO LIST
-════════════════════════════════════════════════ -->
+<!-- ══════════════════════════════════════
+     SCREEN: LIST
+══════════════════════════════════════ -->
 <div class="screen active" id="screen-list">
   <div class="page-hd">
     <div>
@@ -384,36 +252,30 @@ textarea.fi{ resize:vertical; }
     </div>
     <button class="btn-primary" onclick="newPO()">+ New PO</button>
   </div>
-  <div class="list-body" id="listBody">
-    <div class="empty-state">
-      <h2>No purchase orders yet.</h2>
-      <p>Create your first PO to start tracking procurement for a project.</p>
-    </div>
-  </div>
+  <div class="list-body" id="listBody"></div>
 </div>
 
-<!-- ════════════════════════════════════════════════
+<!-- ══════════════════════════════════════
      SCREEN: PO EDITOR
-════════════════════════════════════════════════ -->
+══════════════════════════════════════ -->
 <div class="screen" id="screen-po">
   <div class="po-editor">
     <button class="back-btn" onclick="go('list')">← All Purchase Orders</button>
 
-    <!-- PO Header -->
-    <div class="po-hd-grid">
-      <!-- Client -->
+    <!-- Row 1: Client / Project / Date / Due Date -->
+    <div class="hd-row hd-row-4">
       <div class="fg">
         <label class="fl">Client <span style="color:var(--burgundy)">*</span></label>
         <select class="fsel" id="clientSel" onchange="onClientChange(this.value)">
           <option value="">Select client…</option>
         </select>
+        <button class="edit-link" id="editClientBtn" style="display:none" onclick="toggleClientEdit()">Edit client details</button>
         <div class="new-inline" id="newClientForm">
-          <input class="fi" type="text" id="newClientName" placeholder="Client name">
+          <input class="fi" type="text" id="newClientName" placeholder="Name">
           <button class="btn-sm" onclick="createClient()">Add</button>
-          <button class="btn-sm-ghost" onclick="hideNewClient()">✕</button>
+          <button class="btn-sm-g" onclick="hideNewClient()">✕</button>
         </div>
       </div>
-      <!-- Project -->
       <div class="fg">
         <label class="fl">Project <span style="color:var(--burgundy)">*</span></label>
         <select class="fsel" id="projectSel" onchange="onProjectChange(this.value)" disabled>
@@ -422,15 +284,37 @@ textarea.fi{ resize:vertical; }
         <div class="new-inline" id="newProjectForm">
           <input class="fi" type="text" id="newProjectName" placeholder="Project name">
           <button class="btn-sm" onclick="createProject()">Add</button>
-          <button class="btn-sm-ghost" onclick="hideNewProject()">✕</button>
+          <button class="btn-sm-g" onclick="hideNewProject()">✕</button>
         </div>
       </div>
-      <!-- Date -->
       <div class="fg">
         <label class="fl">Date</label>
         <input class="fi" type="date" id="poDate">
       </div>
-      <!-- Status -->
+      <div class="fg">
+        <label class="fl">Due Date</label>
+        <input class="fi" type="date" id="poDueDate">
+      </div>
+    </div>
+
+    <!-- Client detail edit panel -->
+    <div id="clientEditPanel" style="display:none;background:rgba(37,14,15,0.03);border:1px solid var(--border);border-radius:8px;padding:18px 20px;margin-bottom:16px;">
+      <p class="eyebrow" style="margin-bottom:14px">Client Details</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+        <div class="fg"><label class="fl">Email</label><input class="fi" type="email" id="ceEmail" placeholder="client@email.com"></div>
+        <div class="fg"><label class="fl">Address</label><input class="fi" type="text" id="ceAddress" placeholder="Street address, Apt #"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px">
+        <div class="fg"><label class="fl">City</label><input class="fi" type="text" id="ceCity"></div>
+        <div class="fg"><label class="fl">State</label><input class="fi" type="text" id="ceState"></div>
+        <div class="fg"><label class="fl">ZIP</label><input class="fi" type="text" id="ceZip"></div>
+      </div>
+      <button class="btn-sm" onclick="saveClientDetails()">Save Client Details</button>
+      <button class="btn-sm-g" onclick="toggleClientEdit()" style="margin-left:8px">Close</button>
+    </div>
+
+    <!-- Row 2: Status / Tax / Shipping / Procurement Fee -->
+    <div class="hd-row hd-row-5" style="margin-bottom:16px">
       <div class="fg">
         <label class="fl">Status</label>
         <select class="fsel" id="poStatus">
@@ -440,11 +324,41 @@ textarea.fi{ resize:vertical; }
           <option value="invoiced">Invoiced</option>
         </select>
       </div>
+      <div class="fg">
+        <label class="fl">Tax Rate %</label>
+        <input class="fi" type="number" id="poTaxRate" value="7" min="0" max="100" step="0.1" oninput="renderTotals()">
+      </div>
+      <div class="fg">
+        <label class="fl">Shipping $</label>
+        <input class="fi" type="number" id="poShipping" value="0" min="0" step="0.01" oninput="renderTotals()">
+      </div>
+      <div class="fg">
+        <label class="fl">Procurement Fee %</label>
+        <input class="fi" type="number" id="poMarkup" value="15" min="0" step="0.5" oninput="renderTotals()">
+      </div>
+      <div class="fg">
+        <label class="fl">Payment Method</label>
+        <input class="fi" type="text" id="poPayMethod" placeholder="e.g. Zelle">
+      </div>
     </div>
-    <div class="po-hd-full">
+
+    <!-- Row 3: Payment account -->
+    <div class="hd-row hd-row-2" style="margin-bottom:16px">
+      <div class="fg">
+        <label class="fl">Payment Account</label>
+        <input class="fi" type="text" id="poPayAccount" placeholder="e.g. doublerookllc@gmail.com">
+      </div>
       <div class="fg">
         <label class="fl">Notes (internal)</label>
-        <textarea class="fi" id="poNotes" rows="2" placeholder="Phase notes, delivery instructions, context…"></textarea>
+        <input class="fi" type="text" id="poNotes" placeholder="Phase, context, delivery info…">
+      </div>
+    </div>
+
+    <!-- Please Note -->
+    <div class="hd-row-1">
+      <div class="fg">
+        <label class="fl">Please Note — Client-facing disclaimers</label>
+        <textarea class="fi" id="poNote" rows="4" placeholder="Enter disclaimers, one per line…"></textarea>
       </div>
     </div>
 
@@ -462,11 +376,9 @@ textarea.fi{ resize:vertical; }
             <th class="c-name">Item Name</th>
             <th class="c-src">Source / Vendor</th>
             <th class="c-qty r">Qty</th>
-            <th class="c-cost r">Unit Cost</th>
-            <th class="c-tax r">Tax %</th>
-            <th class="c-mkup r">Markup %</th>
-            <th class="c-total r">Client Total</th>
-            <th style="width:60px"></th>
+            <th class="c-prc r">Price</th>
+            <th class="c-tot r">Total</th>
+            <th style="width:56px"></th>
           </tr>
         </thead>
         <tbody id="itemTbody"></tbody>
@@ -478,23 +390,26 @@ textarea.fi{ resize:vertical; }
     </button>
   </div>
 
-  <!-- Sticky Totals Bar -->
+  <!-- Totals Bar -->
   <div class="totals-bar">
     <div class="totals-cols">
       <div class="totals-col">
         <h3>Internal — Her Cost</h3>
         <div class="tot-rows">
-          <div class="tot-row"><span>Goods</span><span id="t-gc">—</span></div>
-          <div class="tot-row"><span>Tax</span><span id="t-tx">—</span></div>
-          <div class="tot-row grand"><span>Total She Pays</span><span id="t-tc">—</span></div>
+          <div class="tot-row"><span>Subtotal</span><span id="t-sub">—</span></div>
+          <div class="tot-row"><span>Shipping</span><span id="t-ship">—</span></div>
+          <div class="tot-row"><span>Tax</span><span id="t-tax">—</span></div>
+          <div class="tot-row grand"><span>She Pays</span><span id="t-total">—</span></div>
         </div>
       </div>
       <div class="totals-col">
         <h3>Client Invoice</h3>
         <div class="tot-rows">
-          <div class="tot-row"><span>Goods</span><span id="c-gc">—</span></div>
-          <div class="tot-row"><span>Tax</span><span id="c-tx">—</span></div>
-          <div class="tot-row grand"><span>Client Total</span><span id="c-tc">—</span></div>
+          <div class="tot-row"><span>Subtotal</span><span id="c-sub">—</span></div>
+          <div class="tot-row"><span>Shipping</span><span id="c-ship">—</span></div>
+          <div class="tot-row"><span>Tax</span><span id="c-tax">—</span></div>
+          <div class="tot-row"><span id="c-fee-label">Procurement Fee</span><span id="c-fee">—</span></div>
+          <div class="tot-row grand"><span>Client Total</span><span id="c-total">—</span></div>
         </div>
       </div>
     </div>
@@ -506,15 +421,15 @@ textarea.fi{ resize:vertical; }
   </div>
 </div>
 
-<!-- ════════════════════════════════════════════════
+<!-- ══════════════════════════════════════
      SCREEN: DOCUMENT
-════════════════════════════════════════════════ -->
+══════════════════════════════════════ -->
 <div class="screen" id="screen-doc">
   <div class="doc-screen">
     <div class="doc-toolbar">
       <button class="btn-ghost" onclick="go('po')">← Edit PO</button>
       <button class="btn-primary" onclick="window.print()">
-        <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="2" y="5" width="9" height="6" rx="1" stroke="currentColor" stroke-width="1.2"/><path d="M4 5V2h5v3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 9h5M4 11h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none" style="vertical-align:-2px;margin-right:5px"><rect x="2" y="5" width="9" height="6" rx="1" stroke="currentColor" stroke-width="1.2"/><path d="M4 5V2h5v3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 9h5M4 11h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
         Print / Save PDF
       </button>
     </div>
@@ -522,45 +437,27 @@ textarea.fi{ resize:vertical; }
   </div>
 </div>
 
-</div><!-- /page-wrap -->
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/shared/nav.js"></script>
 <script>
-/* ═══════════════════════════════════════════════════
-   SUPABASE — run this SQL once before first use:
+/*
+  SUPABASE — run these ALTER statements once (tables already created):
 
-   create table procurement_clients (
-     id uuid primary key default gen_random_uuid(),
-     name text not null, email text, address text,
-     created_at timestamptz default now()
-   );
-   create table procurement_projects (
-     id uuid primary key default gen_random_uuid(),
-     client_id uuid references procurement_clients(id) on delete cascade,
-     name text not null,
-     created_at timestamptz default now()
-   );
-   create table purchase_orders (
-     id uuid primary key default gen_random_uuid(),
-     project_id uuid references procurement_projects(id) on delete cascade,
-     po_number text not null,
-     date date, status text default 'draft', notes text,
-     created_at timestamptz default now(),
-     updated_at timestamptz default now()
-   );
-   create table po_line_items (
-     id uuid primary key default gen_random_uuid(),
-     po_id uuid references purchase_orders(id) on delete cascade,
-     sort_order int default 0,
-     category text, item_name text, description text,
-     source text, product_url text, image_url text,
-     qty numeric default 1, unit_cost numeric default 0,
-     tax_rate numeric default 0, markup_pct numeric default 15,
-     internal_notes text,
-     created_at timestamptz default now()
-   );
-═══════════════════════════════════════════════════ */
+  alter table purchase_orders add column if not exists due_date date;
+  alter table purchase_orders add column if not exists shipping numeric default 0;
+  alter table purchase_orders add column if not exists markup_pct numeric default 15;
+  alter table purchase_orders add column if not exists tax_rate numeric default 7;
+  alter table purchase_orders add column if not exists payment_method text;
+  alter table purchase_orders add column if not exists payment_account text;
+  alter table purchase_orders add column if not exists please_note text;
+  alter table procurement_clients add column if not exists email2 text;
+  alter table procurement_clients add column if not exists address2 text;
+  alter table procurement_clients add column if not exists city text;
+  alter table procurement_clients add column if not exists state text;
+  alter table procurement_clients add column if not exists zip text;
+*/
 
 const SUPA_URL = 'https://danfcudpvzjcjxhwwqhp.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRhbmZjdWRwdnpqY2p4aHd3cWhwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwMTg3NjMsImV4cCI6MjA5MzU5NDc2M30.KdDpMNteoNFnnPX-47ZLlDJQnwlsH4ohHMjo20goDFE';
@@ -568,55 +465,54 @@ let _db = null;
 const DB = () => { if (!_db) _db = supabase.createClient(SUPA_URL, SUPA_KEY); return _db; };
 
 const CATS = ['','Furniture','Lighting','Textiles','Accessories','Art','Materials','Plumbing','Hardware','Other'];
+const DEFAULT_NOTE = `All pricing is based on current vendor availability and subject to change prior to purchase.
+Shipping timelines, delays, damages, or backorders are determined by each individual vendor and remain outside of Rek Design Studio's control.
+Procurement fee includes sourcing, purchasing coordination, order tracking, and logistics management.
+Client approval is required prior to all purchases.
+Custom orders and opened items may be subject to vendor return policies.`;
 
-/* ── STATE ────────────────────────────────────── */
+const STUDIO = {
+  name:    'Rek Design Studio',
+  address: 'rekdesignstudio.com'
+};
+
+/* ── STATE ──────────────────────────────── */
 let allClients  = [];
 let allProjects = [];
 let allPOs      = [];
 
 const P = {
   id: null, client_id: null, project_id: null,
-  po_number: '', date: today(), status: 'draft', notes: '',
+  po_number: '', date: today(), due_date: '',
+  status: 'draft', notes: '', please_note: DEFAULT_NOTE,
+  tax_rate: 7, shipping: 0, markup_pct: 15,
+  payment_method: '', payment_account: '',
   items: []
 };
 
 let _seq = 0;
 function blankItem() {
-  return {
-    _k: ++_seq, id: null,
-    category: '', item_name: '', description: '',
-    source: '', product_url: '', image_url: '',
-    qty: 1, unit_cost: 0, tax_rate: 7, markup_pct: 15,
-    internal_notes: '', _open: false
-  };
+  return { _k: ++_seq, id: null, category: '', item_name: '', description: '', source: '', product_url: '', image_url: '', qty: 1, unit_cost: 0, internal_notes: '', _open: false };
 }
 
-/* ── NAVIGATION ───────────────────────────────── */
+/* ── NAV ────────────────────────────────── */
 function go(name) {
-  ['list','po','doc'].forEach(s => {
-    const el = document.getElementById('screen-' + s);
-    if (el) el.classList.remove('active');
-  });
-  const t = document.getElementById('screen-' + name);
-  if (t) t.classList.add('active');
+  ['list','po','doc'].forEach(s => { const el = document.getElementById('screen-'+s); if (el) el.classList.remove('active'); });
+  const t = document.getElementById('screen-'+name); if (t) t.classList.add('active');
   window.scrollTo(0,0);
 }
 
-/* ── BOOT ─────────────────────────────────────── */
+/* ── INIT ───────────────────────────────── */
 async function init() {
-  document.getElementById('tbDate').textContent =
-    new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'});
-  document.getElementById('poDate').value = P.date;
+  document.getElementById('tbDate').textContent = new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'});
   await loadAll();
 }
 
 async function loadAll() {
-  const [cr, pr, por] = await Promise.all([
+  const [cr,pr,por] = await Promise.all([
     DB().from('procurement_clients').select('*').order('name'),
     DB().from('procurement_projects').select('*').order('name'),
-    DB().from('purchase_orders')
-      .select('*, procurement_projects(name, client_id, procurement_clients(name))')
-      .order('created_at', { ascending: false })
+    DB().from('purchase_orders').select('*, procurement_projects(name, client_id, procurement_clients(name))').order('created_at',{ascending:false})
   ]);
   allClients  = cr.data  || [];
   allProjects = pr.data  || [];
@@ -624,24 +520,21 @@ async function loadAll() {
   renderPoList();
 }
 
-/* ── PO LIST ──────────────────────────────────── */
+/* ── LIST ───────────────────────────────── */
 function renderPoList() {
   const body = document.getElementById('listBody');
   if (!allPOs.length) {
-    body.innerHTML = `<div class="empty-state">
-      <h2>No purchase orders yet.</h2>
-      <p>Create your first PO to start tracking procurement for a project.</p>
-    </div>`;
+    body.innerHTML = `<div class="empty-state"><h2>No purchase orders yet.</h2><p>Create your first PO to start tracking procurement.</p></div>`;
     return;
   }
   const grouped = {};
   allPOs.forEach(po => {
-    const proj        = po.procurement_projects || {};
-    const clientName  = proj.procurement_clients?.name || 'Unknown Client';
-    const projName    = proj.name || 'Unknown Project';
-    if (!grouped[clientName]) grouped[clientName] = {};
-    if (!grouped[clientName][projName]) grouped[clientName][projName] = [];
-    grouped[clientName][projName].push(po);
+    const proj = po.procurement_projects || {};
+    const cn = proj.procurement_clients?.name || 'Unknown Client';
+    const pn = proj.name || 'Unknown Project';
+    if (!grouped[cn]) grouped[cn] = {};
+    if (!grouped[cn][pn]) grouped[cn][pn] = [];
+    grouped[cn][pn].push(po);
   });
   let html = '';
   for (const [client, projects] of Object.entries(grouped)) {
@@ -649,19 +542,21 @@ function renderPoList() {
     for (const [proj, pos] of Object.entries(projects)) {
       html += `<div class="project-group"><div class="project-group-hd">${esc(proj)}</div><div class="po-cards">`;
       pos.forEach(po => {
-        const badge = `<span class="status-badge s-${po.status}">${po.status}</span>`;
         html += `<div class="po-card" onclick="openPO('${po.id}')">
           <div class="po-card-num">${esc(po.po_number)}</div>
           <div class="po-card-info">
-            <div class="po-card-notes">${esc(po.notes || '—')}</div>
-            <div class="po-card-date">${po.date ? fmtDate(po.date) : 'No date'}</div>
+            <div class="po-card-notes">${esc(po.notes||'—')}</div>
+            <div class="po-card-date">${po.date ? fmtDate(po.date) : 'No date'}${po.due_date ? ' · Due '+fmtDate(po.due_date):''}</div>
           </div>
-          ${badge}
+          <span class="status-badge s-${po.status}">${po.status}</span>
           <div class="po-card-total">
             <span class="po-card-total-lbl">Client Total</span>
             <div class="po-card-total-amt" id="pct-${po.id}">—</div>
           </div>
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="color:var(--muted);flex-shrink:0"><path d="M4 7h6M7 4l3 3-3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <button class="del-po-btn" onclick="deletePO(event,'${po.id}')" title="Delete PO">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 4h10M5 4V2h4v2M6 7v4M8 7v4M3 4l1 8h6l1-8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
         </div>`;
       });
       html += `</div></div>`;
@@ -669,29 +564,40 @@ function renderPoList() {
     html += `</div>`;
   }
   body.innerHTML = html;
-  // Load totals for each PO asynchronously
   allPOs.forEach(po => loadPoTotal(po.id));
 }
 
-async function loadPoTotal(poId) {
-  const { data } = await DB().from('po_line_items').select('qty,unit_cost,tax_rate,markup_pct').eq('po_id', poId);
+async function loadPoTotal(id) {
+  const po = allPOs.find(p => p.id === id); if (!po) return;
+  const { data } = await DB().from('po_line_items').select('qty,unit_cost').eq('po_id', id);
   if (!data) return;
-  let total = 0;
-  data.forEach(it => {
-    total += it.unit_cost * (1 + it.markup_pct/100) * it.qty
-           + it.unit_cost * it.qty * (it.tax_rate/100);
-  });
-  const el = document.getElementById('pct-' + poId);
+  const sub = data.reduce((a,it) => a + (+it.unit_cost||0) * (+it.qty||0), 0);
+  const ship = +po.shipping || 0;
+  const tax  = sub * ((+po.tax_rate||0)/100);
+  const fee  = sub * ((+po.markup_pct||15)/100);
+  const total = sub + ship + tax + fee;
+  const el = document.getElementById('pct-'+id);
   if (el) el.textContent = total > 0 ? fmtMoney(total) : '—';
 }
 
-/* ── NEW / OPEN PO ────────────────────────────── */
+async function deletePO(e, id) {
+  e.stopPropagation();
+  if (!confirm('Delete this purchase order? This cannot be undone.')) return;
+  const { error } = await DB().from('purchase_orders').delete().eq('id', id);
+  if (error) { alert('Delete failed: ' + error.message); return; }
+  allPOs = allPOs.filter(p => p.id !== id);
+  renderPoList();
+}
+
+/* ── NEW / OPEN PO ──────────────────────── */
 function newPO() {
   P.id = null; P.client_id = null; P.project_id = null;
-  P.po_number = ''; P.date = today(); P.status = 'draft'; P.notes = '';
+  P.po_number = ''; P.date = today(); P.due_date = '';
+  P.status = 'draft'; P.notes = ''; P.please_note = DEFAULT_NOTE;
+  P.tax_rate = 7; P.shipping = 0; P.markup_pct = 15;
+  P.payment_method = ''; P.payment_account = '';
   P.items = [blankItem()];
-  renderEditor();
-  go('po');
+  renderEditor(); go('po');
 }
 
 async function openPO(id) {
@@ -700,42 +606,48 @@ async function openPO(id) {
     DB().from('po_line_items').select('*').eq('po_id', id).order('sort_order')
   ]);
   if (!po) return;
-  P.id = po.id; P.po_number = po.po_number; P.date = po.date || '';
-  P.status = po.status; P.notes = po.notes || '';
+  P.id = po.id; P.po_number = po.po_number; P.date = po.date||'';
+  P.due_date = po.due_date||''; P.status = po.status; P.notes = po.notes||'';
+  P.please_note = po.please_note || DEFAULT_NOTE;
+  P.tax_rate = po.tax_rate ?? 7; P.shipping = po.shipping ?? 0; P.markup_pct = po.markup_pct ?? 15;
+  P.payment_method = po.payment_method||''; P.payment_account = po.payment_account||'';
   const proj = allProjects.find(p => p.id === po.project_id);
-  P.project_id = po.project_id;
-  P.client_id  = proj?.client_id || null;
-  P.items = (items || []).map(it => ({
-    _k: ++_seq, id: it.id,
-    category: it.category || '', item_name: it.item_name || '',
-    description: it.description || '', source: it.source || '',
-    product_url: it.product_url || '', image_url: it.image_url || '',
-    qty: +it.qty || 1, unit_cost: +it.unit_cost || 0,
-    tax_rate: it.tax_rate ?? 7, markup_pct: it.markup_pct ?? 15,
-    internal_notes: it.internal_notes || '', _open: false
+  P.project_id = po.project_id; P.client_id = proj?.client_id || null;
+  P.items = (items||[]).map(it => ({
+    _k: ++_seq, id: it.id, category: it.category||'', item_name: it.item_name||'',
+    description: it.description||'', source: it.source||'',
+    product_url: it.product_url||'', image_url: it.image_url||'',
+    qty: +it.qty||1, unit_cost: +it.unit_cost||0,
+    internal_notes: it.internal_notes||'', _open: false
   }));
   if (!P.items.length) P.items = [blankItem()];
-  renderEditor();
-  go('po');
+  renderEditor(); go('po');
 }
 
-/* ── EDITOR ───────────────────────────────────── */
+/* ── EDITOR ─────────────────────────────── */
 function renderEditor() {
-  document.getElementById('poDate').value   = P.date;
-  document.getElementById('poStatus').value = P.status;
-  document.getElementById('poNotes').value  = P.notes;
-  const csel = document.getElementById('clientSel');
+  gid('poDate').value       = P.date;
+  gid('poDueDate').value    = P.due_date;
+  gid('poStatus').value     = P.status;
+  gid('poTaxRate').value    = P.tax_rate;
+  gid('poShipping').value   = P.shipping;
+  gid('poMarkup').value     = P.markup_pct;
+  gid('poPayMethod').value  = P.payment_method;
+  gid('poPayAccount').value = P.payment_account;
+  gid('poNotes').value      = P.notes;
+  gid('poNote').value       = P.please_note;
+  const csel = gid('clientSel');
   csel.innerHTML = '<option value="">Select client…</option>'
     + allClients.map(c => `<option value="${c.id}"${c.id===P.client_id?' selected':''}>${esc(c.name)}</option>`).join('')
     + '<option value="__new__">+ Add new client…</option>';
+  gid('editClientBtn').style.display = P.client_id ? 'block' : 'none';
   populateProjects();
-  renderItems();
-  renderTotals();
-  document.getElementById('btnViewDoc').disabled = !P.id;
+  renderItems(); renderTotals();
+  gid('btnViewDoc').disabled = !P.id;
 }
 
 function populateProjects() {
-  const psel = document.getElementById('projectSel');
+  const psel = gid('projectSel');
   const list = allProjects.filter(p => p.client_id === P.client_id);
   psel.disabled = !P.client_id;
   psel.innerHTML = '<option value="">Select project…</option>'
@@ -745,64 +657,75 @@ function populateProjects() {
 
 function onClientChange(v) {
   if (v === '__new__') {
-    document.getElementById('clientSel').value = P.client_id || '';
-    document.getElementById('newClientForm').classList.add('show');
-    document.getElementById('newClientName').focus();
-    return;
+    gid('clientSel').value = P.client_id||'';
+    gid('newClientForm').classList.add('show');
+    gid('newClientName').focus(); return;
   }
-  P.client_id = v || null; P.project_id = null;
+  P.client_id = v||null; P.project_id = null;
+  gid('editClientBtn').style.display = P.client_id ? 'block' : 'none';
   populateProjects();
 }
-
 function onProjectChange(v) {
-  if (v === '__new__') {
-    document.getElementById('projectSel').value = P.project_id || '';
-    document.getElementById('newProjectForm').classList.add('show');
-    document.getElementById('newProjectName').focus();
-    return;
-  }
-  P.project_id = v || null;
+  if (v === '__new__') { gid('projectSel').value = P.project_id||''; gid('newProjectForm').classList.add('show'); gid('newProjectName').focus(); return; }
+  P.project_id = v||null;
 }
 
 async function createClient() {
-  const nameEl = document.getElementById('newClientName');
-  const name = nameEl.value.trim();
+  const nameEl = gid('newClientName'); const name = nameEl.value.trim();
   if (!name) { nameEl.focus(); return; }
   const { data, error } = await DB().from('procurement_clients').insert({ name }).select().single();
   if (error) { alert('Could not create client: ' + error.message); return; }
-  if (data) { allClients.push(data); P.client_id = data.id; hideNewClient(); renderEditor(); }
+  allClients.push(data); P.client_id = data.id; hideNewClient(); renderEditor();
 }
-function hideNewClient() {
-  document.getElementById('newClientForm').classList.remove('show');
-  document.getElementById('newClientName').value = '';
-}
+function hideNewClient() { gid('newClientForm').classList.remove('show'); gid('newClientName').value = ''; }
 
 async function createProject() {
-  const nameEl = document.getElementById('newProjectName');
-  const name = nameEl.value.trim();
+  const nameEl = gid('newProjectName'); const name = nameEl.value.trim();
   if (!name) { nameEl.focus(); return; }
   if (!P.client_id) { alert('Select a client first.'); return; }
   const { data, error } = await DB().from('procurement_projects').insert({ name, client_id: P.client_id }).select().single();
   if (error) { alert('Could not create project: ' + error.message); return; }
-  if (data) {
-    allProjects.push(data); P.project_id = data.id;
-    hideNewProject(); populateProjects();
-    document.getElementById('projectSel').value = data.id;
-  }
+  allProjects.push(data); P.project_id = data.id;
+  hideNewProject(); populateProjects(); gid('projectSel').value = data.id;
 }
-function hideNewProject() {
-  document.getElementById('newProjectForm').classList.remove('show');
-  document.getElementById('newProjectName').value = '';
+function hideNewProject() { gid('newProjectForm').classList.remove('show'); gid('newProjectName').value = ''; }
+
+function toggleClientEdit() {
+  const panel = gid('clientEditPanel');
+  const showing = panel.style.display !== 'none';
+  if (!showing && P.client_id) {
+    const c = allClients.find(x => x.id === P.client_id);
+    if (c) {
+      gid('ceEmail').value   = c.email||c.email2||'';
+      gid('ceAddress').value = c.address||'';
+      gid('ceCity').value    = c.city||'';
+      gid('ceState').value   = c.state||'';
+      gid('ceZip').value     = c.zip||'';
+    }
+  }
+  panel.style.display = showing ? 'none' : 'block';
 }
 
-/* ── LINE ITEMS ───────────────────────────────── */
+async function saveClientDetails() {
+  if (!P.client_id) return;
+  const payload = {
+    email:   gid('ceEmail').value.trim(),
+    address: gid('ceAddress').value.trim(),
+    city:    gid('ceCity').value.trim(),
+    state:   gid('ceState').value.trim(),
+    zip:     gid('ceZip').value.trim()
+  };
+  const { error } = await DB().from('procurement_clients').update(payload).eq('id', P.client_id);
+  if (error) { alert('Save failed: ' + error.message); return; }
+  const idx = allClients.findIndex(c => c.id === P.client_id);
+  if (idx >= 0) allClients[idx] = { ...allClients[idx], ...payload };
+  toggleClientEdit();
+}
+
+/* ── LINE ITEMS ─────────────────────────── */
 function addRow() {
-  P.items.push(blankItem());
-  renderItems(); renderTotals();
-  setTimeout(() => {
-    const nn = document.querySelectorAll('.ti-name');
-    if (nn.length) nn[nn.length-1].focus();
-  }, 50);
+  P.items.push(blankItem()); renderItems(); renderTotals();
+  setTimeout(() => { const nn = document.querySelectorAll('.ti-name'); if (nn.length) nn[nn.length-1].focus(); }, 50);
 }
 
 function deleteRow(k) {
@@ -812,12 +735,10 @@ function deleteRow(k) {
 }
 
 function toggleDet(k) {
-  const it = P.items.find(i => i._k === k);
-  if (!it) return;
+  const it = P.items.find(i => i._k === k); if (!it) return;
   it._open = !it._open;
-  document.getElementById('det-' + k)?.classList.toggle('open', it._open);
-  const btn = document.getElementById('xbtn-' + k);
-  if (btn) btn.textContent = it._open ? '▲' : '▼';
+  gid('det-'+k)?.classList.toggle('open', it._open);
+  const btn = gid('xbtn-'+k); if (btn) btn.textContent = it._open ? '▲' : '▼';
 }
 
 function readRow(k) {
@@ -827,76 +748,31 @@ function readRow(k) {
   it.source         = gv('src-'+k);
   it.qty            = parseFloat(gv('qty-'+k)) || 0;
   it.unit_cost      = parseFloat(gv('uc-'+k))  || 0;
-  it.tax_rate       = parseFloat(gv('tr-'+k))  || 0;
-  it.markup_pct     = parseFloat(gv('mp-'+k))  || 0;
   it.description    = gv('dsc-'+k);
   it.product_url    = gv('pu-'+k);
-  it.image_url      = gv('iu-'+k);
   it.internal_notes = gv('in-'+k);
 }
 
 function onRowChange(k) {
   readRow(k);
   const it = P.items.find(i => i._k === k);
-  if (it) {
-    const el = document.getElementById('ct-'+k);
-    if (el) el.textContent = fmtMoney(clientLineTotal(it));
-  }
+  if (it) { const el = gid('ct-'+k); if (el) el.textContent = fmtMoney(it.unit_cost * it.qty); }
   renderTotals();
-}
-
-function onImgUrlChange(k) {
-  const it = P.items.find(i => i._k === k); if (!it) return;
-  it.image_url = gv('iu-'+k);
-  const th = document.getElementById('ith-'+k);
-  if (!th) return;
-  if (it.image_url) {
-    if (th.tagName === 'DIV') {
-      const img = document.createElement('img');
-      img.id = 'ith-'+k; img.className = 'img-thumb';
-      img.src = it.image_url; img.onerror = () => { img.style.display='none'; };
-      th.replaceWith(img);
-    } else { th.src = it.image_url; th.style.display = ''; }
-  }
-}
-
-async function fetchImg(k) {
-  const url = gv('pu-'+k); if (!url) return;
-  const btn = document.getElementById('fb-'+k);
-  btn.textContent = '…'; btn.disabled = true;
-  try {
-    const r = await fetch(`/.netlify/functions/fetch-og?url=${encodeURIComponent(url)}`);
-    const j = await r.json();
-    if (j.imageUrl) {
-      const it = P.items.find(i => i._k === k);
-      if (it) it.image_url = j.imageUrl;
-      const iuEl = document.getElementById('iu-'+k);
-      if (iuEl) { iuEl.value = j.imageUrl; onImgUrlChange(k); }
-    }
-  } catch(e) {}
-  btn.textContent = 'Fetch Image'; btn.disabled = false;
-}
-
-function clientLineTotal(it) {
-  return it.unit_cost * (1 + it.markup_pct/100) * it.qty
-       + it.unit_cost * it.qty * (it.tax_rate/100);
-}
-function costLineTotal(it) {
-  return it.unit_cost * it.qty * (1 + it.tax_rate/100);
 }
 
 function renderItems() {
   const n = P.items.length;
-  document.getElementById('itemCount').textContent = n + ' item' + (n!==1?'s':'');
-  document.getElementById('itemTbody').innerHTML = P.items.map((it,i) => rowHTML(it,i)).join('');
+  gid('itemCount').textContent = n + ' item' + (n!==1?'s':'');
+  gid('itemTbody').innerHTML = P.items.map((it,i) => rowHTML(it,i)).join('');
 }
 
 function rowHTML(it, idx) {
   const catOpts = CATS.map(c => `<option value="${c}"${it.category===c?' selected':''}>${c||'—'}</option>`).join('');
-  const ct = clientLineTotal(it);
+  const total = it.unit_cost * it.qty;
   const imgBlock = it.image_url
-    ? `<img class="img-thumb" id="ith-${it._k}" src="${esc(it.image_url)}" onerror="this.style.display='none'">`
-    : `<div class="img-ph" id="ith-${it._k}"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="3" width="14" height="12" rx="1.5" stroke="rgba(37,14,15,0.25)" stroke-width="1.2"/><circle cx="6.5" cy="7.5" r="1.5" stroke="rgba(37,14,15,0.25)" stroke-width="1.2"/><path d="M2 13l4-4 3 3 2-2 5 5" stroke="rgba(37,14,15,0.25)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>`;
+    ? `<img class="img-preview" id="ith-${it._k}" src="${esc(it.image_url)}" onerror="this.style.display='none'">
+       <button class="remove-img" onclick="removeImg(${it._k})">✕ Remove</button>`
+    : `<div class="img-ph" id="ith-${it._k}"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="2" y="4" width="18" height="14" rx="2" stroke="rgba(37,14,15,0.22)" stroke-width="1.3"/><circle cx="8" cy="9" r="2" stroke="rgba(37,14,15,0.22)" stroke-width="1.3"/><path d="M2 16l5-5 4 4 3-3 6 6" stroke="rgba(37,14,15,0.22)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>`;
   return `
 <tr>
   <td class="c-num">${idx+1}</td>
@@ -904,107 +780,160 @@ function rowHTML(it, idx) {
   <td class="c-name"><input class="ti ti-name" id="nm-${it._k}" type="text" value="${esc(it.item_name)}" placeholder="Item name…" oninput="onRowChange(${it._k})"></td>
   <td class="c-src"><input class="ti" id="src-${it._k}" type="text" value="${esc(it.source)}" placeholder="Source…" oninput="onRowChange(${it._k})"></td>
   <td class="c-qty"><input class="ti r" id="qty-${it._k}" type="number" value="${it.qty}" min="0.01" step="0.01" oninput="onRowChange(${it._k})"></td>
-  <td class="c-cost"><input class="ti r" id="uc-${it._k}" type="number" value="${it.unit_cost}" min="0" step="0.01" oninput="onRowChange(${it._k})"></td>
-  <td class="c-tax"><input class="ti r" id="tr-${it._k}" type="number" value="${it.tax_rate}" min="0" max="100" step="0.1" oninput="onRowChange(${it._k})"></td>
-  <td class="c-mkup"><input class="ti r" id="mp-${it._k}" type="number" value="${it.markup_pct}" min="0" step="0.5" oninput="onRowChange(${it._k})"></td>
-  <td class="c-total" id="ct-${it._k}">${fmtMoney(ct)}</td>
+  <td class="c-prc"><input class="ti r" id="uc-${it._k}" type="number" value="${it.unit_cost}" min="0" step="0.01" oninput="onRowChange(${it._k})"></td>
+  <td class="c-tot" id="ct-${it._k}">${fmtMoney(total)}</td>
   <td class="c-act">
-    <button class="xbtn" id="xbtn-${it._k}" onclick="toggleDet(${it._k})" title="Details">${it._open?'▲':'▼'}</button>
-    <button class="dbtn" onclick="deleteRow(${it._k})" title="Remove">×</button>
+    <button class="xbtn" id="xbtn-${it._k}" onclick="toggleDet(${it._k})">${it._open?'▲':'▼'}</button>
+    <button class="dbtn" onclick="deleteRow(${it._k})">×</button>
   </td>
 </tr>
 <tr id="det-${it._k}" class="det-row${it._open?' open':''}">
-  <td colspan="10">
+  <td colspan="8">
     <div class="det-grid">
       <div class="fg">
         <label class="fl">Description</label>
         <textarea class="fi" id="dsc-${it._k}" rows="2" placeholder="Describe the item…" oninput="onRowChange(${it._k})">${esc(it.description)}</textarea>
+        <label class="fl" style="margin-top:10px">Internal Notes</label>
+        <textarea class="fi" id="in-${it._k}" rows="2" placeholder="Lead time, delivery notes, reference #…" oninput="onRowChange(${it._k})">${esc(it.internal_notes)}</textarea>
       </div>
       <div class="fg">
         <label class="fl">Product URL</label>
-        <div style="display:flex;gap:8px;align-items:flex-end">
-          <input class="fi" style="flex:1;margin-bottom:0" id="pu-${it._k}" type="url" value="${esc(it.product_url)}" placeholder="https://…" oninput="onRowChange(${it._k})">
-          <button class="fetch-btn" id="fb-${it._k}" onclick="fetchImg(${it._k})">Fetch Image</button>
-        </div>
-        <label class="fl" style="margin-top:10px">Image URL</label>
-        <div class="img-row">
-          <input class="fi" id="iu-${it._k}" type="url" value="${esc(it.image_url)}" placeholder="Direct image URL…" oninput="onImgUrlChange(${it._k})">
+        <input class="fi" id="pu-${it._k}" type="url" value="${esc(it.product_url)}" placeholder="https://…" oninput="onRowChange(${it._k})" style="margin-bottom:10px">
+        <label class="fl">Photo</label>
+        <div class="img-upload-box">
           ${imgBlock}
+          <label class="upload-btn">
+            Upload Photo
+            <input class="file-input" type="file" accept="image/*" onchange="handleImgUpload(${it._k}, this)">
+          </label>
         </div>
       </div>
-      <div class="fg">
-        <label class="fl">Internal Notes</label>
-        <textarea class="fi" id="in-${it._k}" rows="3" placeholder="Lead time, delivery notes, reference #…" oninput="onRowChange(${it._k})">${esc(it.internal_notes)}</textarea>
-      </div>
+      <div></div>
     </div>
   </td>
 </tr>`;
 }
 
-/* ── TOTALS ───────────────────────────────────── */
-function renderTotals() {
-  const agg = P.items.reduce((a,it) => {
-    a.goodsCost   += it.unit_cost * it.qty;
-    a.tax         += it.unit_cost * it.qty * (it.tax_rate/100);
-    a.goodsClient += it.unit_cost * (1 + it.markup_pct/100) * it.qty;
-    return a;
-  }, { goodsCost:0, tax:0, goodsClient:0 });
-
-  sv('t-gc', fmtMoney(agg.goodsCost));
-  sv('t-tx', fmtMoney(agg.tax));
-  sv('t-tc', fmtMoney(agg.goodsCost + agg.tax));
-  sv('c-gc', fmtMoney(agg.goodsClient));
-  sv('c-tx', fmtMoney(agg.tax));
-  sv('c-tc', fmtMoney(agg.goodsClient + agg.tax));
+/* ── IMAGE UPLOAD ────────────────────────── */
+async function handleImgUpload(k, input) {
+  const file = input.files[0]; if (!file) return;
+  const dataUrl = await compressImg(file);
+  const it = P.items.find(i => i._k === k); if (!it) return;
+  it.image_url = dataUrl;
+  const th = gid('ith-'+k);
+  if (th) {
+    if (th.tagName === 'DIV') {
+      const img = document.createElement('img'); img.className = 'img-preview'; img.id = 'ith-'+k; img.src = dataUrl;
+      const removeBtn = document.createElement('button'); removeBtn.className = 'remove-img'; removeBtn.textContent = '✕ Remove'; removeBtn.onclick = () => removeImg(k);
+      th.replaceWith(img);
+      img.after(removeBtn);
+    } else { th.src = dataUrl; th.style.display = ''; }
+  }
 }
 
-/* ── SAVE PO ──────────────────────────────────── */
+function removeImg(k) {
+  const it = P.items.find(i => i._k === k); if (!it) return;
+  it.image_url = '';
+  // Re-render just this item's image box
+  const th = gid('ith-'+k);
+  if (th) {
+    const ph = document.createElement('div'); ph.className = 'img-ph'; ph.id = 'ith-'+k;
+    ph.innerHTML = `<svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="2" y="4" width="18" height="14" rx="2" stroke="rgba(37,14,15,0.22)" stroke-width="1.3"/><circle cx="8" cy="9" r="2" stroke="rgba(37,14,15,0.22)" stroke-width="1.3"/><path d="M2 16l5-5 4 4 3-3 6 6" stroke="rgba(37,14,15,0.22)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+    th.nextElementSibling?.remove(); // remove the "Remove" button
+    th.replaceWith(ph);
+  }
+}
+
+function compressImg(file) {
+  return new Promise(resolve => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        const MAX = 480; let w = img.width, h = img.height;
+        if (w > MAX || h > MAX) { if (w > h) { h = h*MAX/w; w = MAX; } else { w = w*MAX/h; h = MAX; } }
+        const c = document.createElement('canvas'); c.width = w; c.height = h;
+        c.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(c.toDataURL('image/jpeg', 0.70));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+/* ── TOTALS ──────────────────────────────── */
+function renderTotals() {
+  P.items.forEach(it => readRow(it._k));
+  const sub  = P.items.reduce((a,it) => a + it.unit_cost*it.qty, 0);
+  const ship = parseFloat(gv('poShipping')) || 0;
+  const taxR = parseFloat(gv('poTaxRate'))  || 0;
+  const mkup = parseFloat(gv('poMarkup'))   || 0;
+  const tax  = sub * taxR / 100;
+  const fee  = sub * mkup / 100;
+
+  sv('t-sub',   fmtMoney(sub));
+  sv('t-ship',  fmtMoney(ship));
+  sv('t-tax',   fmtMoney(tax));
+  sv('t-total', fmtMoney(sub + ship + tax));
+
+  sv('c-sub',   fmtMoney(sub));
+  sv('c-ship',  fmtMoney(ship));
+  sv('c-tax',   fmtMoney(tax));
+  sv('c-fee',   fmtMoney(fee));
+  sv('c-fee-label', mkup + '% Procurement Fee');
+  sv('c-total', fmtMoney(sub + ship + tax + fee));
+}
+
+/* ── SAVE PO ─────────────────────────────── */
 async function savePO() {
-  P.client_id  = document.getElementById('clientSel').value  || P.client_id;
-  P.project_id = document.getElementById('projectSel').value || P.project_id;
-  P.date       = document.getElementById('poDate').value;
-  P.status     = document.getElementById('poStatus').value;
-  P.notes      = document.getElementById('poNotes').value;
+  P.client_id  = gv('clientSel')  || P.client_id;
+  P.project_id = gv('projectSel') || P.project_id;
+  P.date          = gv('poDate');
+  P.due_date      = gv('poDueDate');
+  P.status        = gv('poStatus');
+  P.tax_rate      = parseFloat(gv('poTaxRate'))  || 0;
+  P.shipping      = parseFloat(gv('poShipping')) || 0;
+  P.markup_pct    = parseFloat(gv('poMarkup'))   || 0;
+  P.payment_method  = gv('poPayMethod');
+  P.payment_account = gv('poPayAccount');
+  P.notes         = gv('poNotes');
+  P.please_note   = gv('poNote');
   if (!P.project_id) { alert('Please select a client and project first.'); return; }
   P.items.forEach(it => readRow(it._k));
 
-  const btn = document.getElementById('btnSave');
-  btn.textContent = 'Saving…'; btn.disabled = true;
+  const btn = gid('btnSave'); btn.textContent = 'Saving…'; btn.disabled = true;
   try {
     if (!P.po_number) {
-      const { count } = await DB().from('purchase_orders')
-        .select('*', { count:'exact', head:true }).eq('project_id', P.project_id);
+      const { count } = await DB().from('purchase_orders').select('*',{count:'exact',head:true}).eq('project_id',P.project_id);
       P.po_number = 'PO-' + String((count||0)+1).padStart(3,'0');
     }
     const payload = {
       project_id: P.project_id, po_number: P.po_number,
-      date: P.date || null, status: P.status, notes: P.notes,
+      date: P.date||null, due_date: P.due_date||null,
+      status: P.status, notes: P.notes, please_note: P.please_note,
+      tax_rate: P.tax_rate, shipping: P.shipping, markup_pct: P.markup_pct,
+      payment_method: P.payment_method, payment_account: P.payment_account,
       updated_at: new Date().toISOString()
     };
     let pid = P.id;
-    if (pid) {
-      await DB().from('purchase_orders').update(payload).eq('id', pid);
-    } else {
-      const { data } = await DB().from('purchase_orders').insert(payload).select().single();
-      pid = data?.id; P.id = pid;
+    if (pid) { await DB().from('purchase_orders').update(payload).eq('id', pid); }
+    else {
+      const { data, error } = await DB().from('purchase_orders').insert(payload).select().single();
+      if (error) throw error;
+      pid = data.id; P.id = pid;
     }
-    if (!pid) throw new Error('Failed to save PO header');
-
     await DB().from('po_line_items').delete().eq('po_id', pid);
-    const linePayloads = P.items.map((it, idx) => ({
-      po_id: pid, sort_order: idx,
-      category: it.category, item_name: it.item_name,
-      description: it.description, source: it.source,
-      product_url: it.product_url, image_url: it.image_url,
-      qty: it.qty, unit_cost: it.unit_cost,
-      tax_rate: it.tax_rate, markup_pct: it.markup_pct,
+    const lines = P.items.map((it,i) => ({
+      po_id: pid, sort_order: i, category: it.category, item_name: it.item_name,
+      description: it.description, source: it.source, product_url: it.product_url,
+      image_url: it.image_url, qty: it.qty, unit_cost: it.unit_cost,
       internal_notes: it.internal_notes
     }));
-    if (linePayloads.length) await DB().from('po_line_items').insert(linePayloads);
-
+    if (lines.length) await DB().from('po_line_items').insert(lines);
     btn.textContent = 'Saved ✓';
     setTimeout(() => { btn.textContent = 'Save PO'; btn.disabled = false; }, 1800);
-    document.getElementById('btnViewDoc').disabled = false;
+    gid('btnViewDoc').disabled = false;
     await loadAll();
   } catch(e) {
     alert('Save failed: ' + e.message);
@@ -1012,41 +941,68 @@ async function savePO() {
   }
 }
 
-/* ── DOCUMENT ─────────────────────────────────── */
+/* ── DOCUMENT ────────────────────────────── */
 function showDoc() { renderDoc(); go('doc'); }
 
 function renderDoc() {
   P.items.forEach(it => readRow(it._k));
   const client  = allClients.find(c => c.id === P.client_id);
   const project = allProjects.find(p => p.id === P.project_id);
-  const agg = P.items.reduce((a,it) => {
-    a.goods += it.unit_cost * (1 + it.markup_pct/100) * it.qty;
-    a.tax   += it.unit_cost * it.qty * (it.tax_rate/100);
-    return a;
-  }, { goods:0, tax:0 });
+  const sub  = P.items.reduce((a,it) => a + it.unit_cost*it.qty, 0);
+  const ship = parseFloat(gv('poShipping')) || P.shipping;
+  const taxR = parseFloat(gv('poTaxRate'))  || P.tax_rate;
+  const mkup = parseFloat(gv('poMarkup'))   || P.markup_pct;
+  const tax  = sub * taxR / 100;
+  const fee  = sub * mkup / 100;
+  const grandTotal = sub + ship + tax + fee;
 
-  const rows = P.items.map(it => {
-    const cup = it.unit_cost * (1 + it.markup_pct/100);
-    const ct  = cup * it.qty + it.unit_cost * it.qty * (it.tax_rate/100);
-    const img = it.image_url
-      ? `<img class="doc-item-img" src="${esc(it.image_url)}" onerror="this.className='doc-item-img-ph'">`
-      : `<div class="doc-item-img-ph"></div>`;
+  const hasImages = P.items.some(it => it.image_url);
+  const imgCol = hasImages ? `<th style="width:66px"></th>` : '';
+
+  const rows = P.items.map((it, idx) => {
+    const total = it.unit_cost * it.qty;
+    const imgCell = hasImages
+      ? `<td style="padding:10px 12px;width:66px">${it.image_url ? `<img class="doc-item-img" src="${esc(it.image_url)}">` : ''}</td>`
+      : '';
     return `<tr>
-      <td style="width:70px;padding:10px 12px">${img}</td>
+      ${imgCell}
+      <td style="width:32px;color:var(--muted);font-size:11px">${idx+1}.</td>
       <td>
         ${it.category?`<div class="doc-item-cat">${esc(it.category)}</div>`:''}
         <div class="doc-item-name">${esc(it.item_name||'—')}</div>
         ${it.description?`<div class="doc-item-desc">${esc(it.description)}</div>`:''}
         ${it.source?`<div class="doc-item-desc">Source: ${esc(it.source)}</div>`:''}
-        ${it.product_url?`<div class="doc-item-desc" style="margin-top:2px"><a href="${esc(it.product_url)}" target="_blank" style="color:var(--slate);font-size:11px">View product →</a></div>`:''}
       </td>
-      <td style="text-align:center;width:48px">${it.qty%1===0?it.qty:it.qty.toFixed(2)}</td>
-      <td class="r" style="width:105px">${fmtMoney(cup)}</td>
-      <td class="r" style="width:105px">${fmtMoney(ct)}</td>
+      <td style="text-align:center;width:50px">${it.qty%1===0?it.qty:it.qty.toFixed(2)}</td>
+      <td class="r" style="width:100px">${fmtMoney(it.unit_cost)}</td>
+      <td class="r" style="width:100px">${fmtMoney(total)}</td>
     </tr>`;
   }).join('');
 
-  document.getElementById('docWrap').innerHTML = `
+  // Client address block
+  const clientAddr = client ? [
+    `<div class="doc-info-name">${esc(client.name)}</div>`,
+    client.address ? `<div class="doc-info-line">${esc(client.address)}</div>` : '',
+    (client.city||client.state||client.zip) ? `<div class="doc-info-line">${[client.city,client.state,client.zip].filter(Boolean).join(', ')}</div>` : '',
+    (client.email||client.email2) ? `<div class="doc-info-muted">${esc(client.email||client.email2)}</div>` : ''
+  ].join('') : '<div class="doc-info-name">—</div>';
+
+  // Please Note lines
+  const noteLines = (P.please_note||'').split('\n').filter(l => l.trim());
+  const notesHTML = noteLines.map(l => `<div class="doc-note-item">${esc(l.trim())}</div>`).join('');
+
+  // Payment block
+  const payMethod  = P.payment_method  || gv('poPayMethod');
+  const payAccount = P.payment_account || gv('poPayAccount');
+  const payHTML = (payMethod || payAccount) ? `
+    <div class="doc-payment">
+      <div class="doc-payment-row">
+        ${payMethod  ? `<div class="doc-payment-block"><label>Payment Method</label><span>${esc(payMethod)}</span></div>` : ''}
+        ${payAccount ? `<div class="doc-payment-block"><label>Account</label><span>${esc(payAccount)}</span></div>` : ''}
+      </div>
+    </div>` : '';
+
+  gid('docWrap').innerHTML = `
     <div class="doc-ph">
       <div class="doc-ph-brand">
         <img src="/logos/rek-full-wordmark-white.svg" alt="Rek Design Studio">
@@ -1058,55 +1014,57 @@ function renderDoc() {
         <div class="doc-ph-date">${P.date ? fmtDate(P.date) : fmtDate(today())}</div>
       </div>
     </div>
-    <div class="doc-meta">
-      <div class="doc-meta-block"><label>Client</label><span>${esc(client?.name||'—')}</span></div>
-      <div class="doc-meta-block"><label>Project</label><span>${esc(project?.name||'—')}</span></div>
-      <div class="doc-meta-block">
-        <label>Status</label>
-        <span class="status-badge s-${P.status}">${P.status}</span>
+    <div class="doc-status">
+      <span>Status: ${P.status.toUpperCase()}${P.due_date ? ' · Due: ' + fmtDate(P.due_date) : ''}</span>
+    </div>
+    <div class="doc-info">
+      <div class="doc-info-block">
+        <label>Bill To</label>
+        ${clientAddr}
       </div>
-      ${P.notes?`<div class="doc-meta-block"><label>Notes</label><span style="font-size:12px;font-weight:400">${esc(P.notes)}</span></div>`:''}
+      <div class="doc-info-block">
+        <label>Payable To</label>
+        <div class="doc-info-name">${esc(STUDIO.name)}</div>
+        <div class="doc-info-line">${esc(STUDIO.address)}</div>
+      </div>
+    </div>
+    <div class="doc-meta-row">
+      ${P.date     ? `<div class="doc-meta-item"><label>Invoice Date</label><span>${fmtDate(P.date)}</span></div>` : ''}
+      ${P.due_date ? `<div class="doc-meta-item"><label>Due Date</label><span>${fmtDate(P.due_date)}</span></div>` : ''}
+      <div class="doc-meta-item"><label>Purchase Order</label><span>${esc(P.po_number||'Draft')}</span></div>
+      ${project ? `<div class="doc-meta-item"><label>Project</label><span>${esc(project.name)}</span></div>` : ''}
     </div>
     <div class="doc-items-wrap">
       <table class="doc-tbl">
-        <thead><tr>
-          <th style="width:70px"></th>
-          <th>Item</th>
-          <th style="text-align:center;width:48px">Qty</th>
-          <th class="r" style="width:105px">Unit Price</th>
-          <th class="r" style="width:105px">Total</th>
-        </tr></thead>
+        <thead><tr>${imgCol}<th style="width:32px">No.</th><th>Description</th><th style="text-align:center;width:50px">Qty</th><th class="r" style="width:100px">Price</th><th class="r" style="width:100px">Total</th></tr></thead>
         <tbody>${rows}</tbody>
       </table>
     </div>
     <div class="doc-totals">
       <div class="doc-tot-table">
-        <div class="doc-tot-row"><span>Subtotal</span><span>${fmtMoney(agg.goods)}</span></div>
-        <div class="doc-tot-row"><span>Tax</span><span>${fmtMoney(agg.tax)}</span></div>
-        <div class="doc-tot-row grand"><span>Total</span><span>${fmtMoney(agg.goods+agg.tax)}</span></div>
+        <div class="doc-tot-row"><span>Subtotal</span><span>${fmtMoney(sub)}</span></div>
+        ${ship ? `<div class="doc-tot-row"><span>Shipping</span><span>${fmtMoney(ship)}</span></div>` : ''}
+        ${tax  ? `<div class="doc-tot-row"><span>Taxes</span><span>${fmtMoney(tax)}</span></div>` : ''}
+        <div class="doc-tot-row"><span>${mkup}% Procurement Fee</span><span>${fmtMoney(fee)}</span></div>
+        <div class="doc-tot-row grand"><span>Total Amount</span><span>${fmtMoney(grandTotal)}</span></div>
       </div>
     </div>
+    ${payHTML}
+    ${notesHTML ? `<div class="doc-note"><div class="doc-note-title">Please Note</div>${notesHTML}</div>` : ''}
     <div class="doc-footer">
-      <span>Rek Design Studio</span>
-      <span>${esc(P.po_number||'')}</span>
+      <span class="doc-footer-main">Thank you for your purchase</span>
+      <span class="doc-footer-sub">${esc(P.po_number||'')}</span>
     </div>`;
 }
 
-/* ── HELPERS ──────────────────────────────────── */
-function gv(id) { const e = document.getElementById(id); return e ? e.value : ''; }
-function sv(id, t) { const e = document.getElementById(id); if (e) e.textContent = t; }
-function esc(s) {
-  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-function fmtMoney(n) {
-  return '$' + Number(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
-}
-function fmtDate(d) {
-  if (!d) return '';
-  const [y,m,dy] = d.split('-');
-  return new Date(+y,+m-1,+dy).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-}
-function today() { return new Date().toISOString().slice(0,10); }
+/* ── HELPERS ──────────────────────────────── */
+function gid(id) { return document.getElementById(id); }
+function gv(id)  { const e = gid(id); return e ? e.value : ''; }
+function sv(id,t){ const e = gid(id); if (e) e.textContent = t; }
+function esc(s)  { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmtMoney(n) { return '$' + Number(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function fmtDate(d)  { if (!d) return ''; const [y,m,dy] = d.split('-'); return new Date(+y,+m-1,+dy).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); }
+function today()     { return new Date().toISOString().slice(0,10); }
 
 init();
 </script>
