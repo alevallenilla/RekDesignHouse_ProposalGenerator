@@ -249,13 +249,18 @@ textarea.fi { resize:vertical; }
 .doc-footer-sub  { font-size:10px; color:rgba(245,245,245,0.28); }
 
 /* ── PRINT ───────────────────────────────── */
+@page { margin: 0; }
 @media print {
   .topbar, #ws-nav, .doc-toolbar, .back-btn, .totals-bar { display:none !important; }
   body { padding-left:0 !important; padding-top:0 !important; }
   .doc-screen { background:white; padding:0; }
   .doc-wrap   { box-shadow:none; }
-  #screen-list, #screen-po { display:none !important; }
+  #screen-list, #screen-po, #screen-clients { display:none !important; }
   #screen-doc { display:block !important; }
+  .doc-ph, .doc-status, .doc-footer {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
 }
 </style>
 </head>
