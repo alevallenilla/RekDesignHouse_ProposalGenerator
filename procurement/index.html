@@ -124,6 +124,22 @@ textarea.fi { resize:vertical; }
 .mgr-add-proj   { display:flex; gap:8px; align-items:center; margin-top:4px; }
 .mgr-add-proj .fi { flex:1; font-size:12.5px; padding:7px 10px; }
 
+/* Mode toggle (flat vs per-item) */
+.mode-toggle { display:inline-flex; background:rgba(37,14,15,0.06); border-radius:5px; padding:2px; gap:2px; margin-bottom:6px; }
+.mode-btn { font-family:'Inter',sans-serif; font-size:10px; font-weight:500; background:none; border:none; border-radius:4px; padding:4px 9px; cursor:pointer; color:var(--muted); transition:background 0.12s, color 0.12s; white-space:nowrap; }
+.mode-btn.active { background:white; color:var(--ink); box-shadow:0 1px 3px rgba(37,14,15,0.12); }
+
+/* White-glove toggle in detail row */
+.wg-toggle { display:flex; align-items:center; gap:8px; margin-top:6px; }
+.wg-toggle input[type=checkbox] { width:15px; height:15px; accent-color:var(--slate); cursor:pointer; }
+.wg-toggle label { font-size:12px; color:var(--ink); cursor:pointer; }
+/* White-glove badge in document */
+.wg-badge { display:inline-flex; align-items:center; gap:3px; font-size:9px; font-weight:600; letter-spacing:0.10em; text-transform:uppercase; background:rgba(76,98,112,0.10); color:var(--slate); border-radius:3px; padding:2px 6px; margin-top:3px; }
+
+/* Paste zone */
+.paste-zone { border:1px dashed rgba(37,14,15,0.18); border-radius:6px; padding:7px 10px; font-size:11px; color:var(--muted); text-align:center; cursor:pointer; transition:border-color 0.15s, background 0.15s; margin-top:6px; }
+.paste-zone:hover, .paste-zone.drag-over { border-color:var(--slate); background:rgba(76,98,112,0.04); color:var(--slate); }
+
 /* ── PO EDITOR ──────────────────────────── */
 .po-editor  { max-width:1160px; margin:0 auto; padding:36px 32px 160px; }
 .hd-row     { display:grid; gap:16px; margin-bottom:16px; }
@@ -316,8 +332,8 @@ textarea.fi { resize:vertical; }
   <div class="po-editor">
     <button class="back-btn" onclick="go('list')">← All Purchase Orders</button>
 
-    <!-- Row 1: Client / Project / Date / Due Date -->
-    <div class="hd-row hd-row-4">
+    <!-- Row 1: Client / Project / PO Name / Date / Due Date -->
+    <div class="hd-row" style="grid-template-columns:1fr 1fr 160px 150px 150px;gap:16px;margin-bottom:16px">
       <div class="fg">
         <label class="fl">Client <span style="color:var(--burgundy)">*</span></label>
         <select class="fsel" id="clientSel" onchange="onClientChange(this.value)">
@@ -340,6 +356,10 @@ textarea.fi { resize:vertical; }
           <button class="btn-sm" onclick="createProject()">Add</button>
           <button class="btn-sm-g" onclick="hideNewProject()">✕</button>
         </div>
+      </div>
+      <div class="fg">
+        <label class="fl">PO Name</label>
+        <input class="fi" type="text" id="poName" placeholder="e.g. CB2">
       </div>
       <div class="fg">
         <label class="fl">Date</label>
@@ -367,8 +387,8 @@ textarea.fi { resize:vertical; }
       <button class="btn-sm-g" onclick="toggleClientEdit()" style="margin-left:8px">Close</button>
     </div>
 
-    <!-- Row 2: Status / Tax / Shipping / Procurement Fee -->
-    <div class="hd-row hd-row-5" style="margin-bottom:16px">
+    <!-- Row 2: Status / Tax / Shipping / Procurement Fee / Payment -->
+    <div class="hd-row" style="grid-template-columns:160px 1fr 1fr 90px 1fr;gap:16px;margin-bottom:16px">
       <div class="fg">
         <label class="fl">Status</label>
         <select class="fsel" id="poStatus">
@@ -379,15 +399,23 @@ textarea.fi { resize:vertical; }
         </select>
       </div>
       <div class="fg">
-        <label class="fl">Tax Rate %</label>
-        <input class="fi" type="number" id="poTaxRate" value="7" min="0" max="100" step="0.1" oninput="renderTotals()">
+        <label class="fl">Tax</label>
+        <div class="mode-toggle">
+          <button id="taxModeFlat" class="mode-btn active" onclick="setTaxMode('flat')">Flat %</button>
+          <button id="taxModeItem" class="mode-btn" onclick="setTaxMode('per_item')">Per Item $</button>
+        </div>
+        <input class="fi" type="number" id="poTaxRate" value="7" min="0" max="100" step="0.1" oninput="renderTotals()" placeholder="Tax %">
       </div>
       <div class="fg">
-        <label class="fl">Shipping $</label>
-        <input class="fi" type="number" id="poShipping" value="0" min="0" step="0.01" oninput="renderTotals()">
+        <label class="fl">Shipping</label>
+        <div class="mode-toggle">
+          <button id="shipModeFlat" class="mode-btn active" onclick="setShipMode('flat')">Flat $</button>
+          <button id="shipModeItem" class="mode-btn" onclick="setShipMode('per_item')">Per Item</button>
+        </div>
+        <input class="fi" type="number" id="poShipping" value="0" min="0" step="0.01" oninput="renderTotals()" placeholder="Shipping $">
       </div>
       <div class="fg">
-        <label class="fl">Procurement Fee %</label>
+        <label class="fl">Fee %</label>
         <input class="fi" type="number" id="poMarkup" value="15" min="0" step="0.5" oninput="renderTotals()">
       </div>
       <div class="fg">
@@ -537,16 +565,18 @@ let allPOs      = [];
 
 const P = {
   id: null, client_id: null, project_id: null,
-  po_number: '', date: today(), due_date: '',
+  po_number: '', po_name: '', date: today(), due_date: '',
   status: 'draft', notes: '', please_note: DEFAULT_NOTE,
-  tax_rate: 7, shipping: 0, markup_pct: 15,
+  tax_rate: 7, tax_mode: 'flat',
+  shipping: 0, shipping_mode: 'flat',
+  markup_pct: 15,
   payment_method: '', payment_account: '',
   items: []
 };
 
 let _seq = 0;
 function blankItem() {
-  return { _k: ++_seq, id: null, category: '', item_name: '', description: '', source: '', product_url: '', image_url: '', qty: 1, unit_cost: 0, internal_notes: '', _open: false };
+  return { _k: ++_seq, id: null, category: '', item_name: '', description: '', source: '', product_url: '', image_url: '', qty: 1, unit_cost: 0, tax_amt: 0, shipping_amt: 0, white_glove: false, internal_notes: '', _open: false };
 }
 
 
@@ -654,10 +684,13 @@ async function openPO(id) {
     DB().from('po_line_items').select('*').eq('po_id', id).order('sort_order')
   ]);
   if (!po) return;
-  P.id = po.id; P.po_number = po.po_number; P.date = po.date||'';
-  P.due_date = po.due_date||''; P.status = po.status; P.notes = po.notes||'';
+  P.id = po.id; P.po_number = po.po_number; P.po_name = po.po_name||'';
+  P.date = po.date||''; P.due_date = po.due_date||'';
+  P.status = po.status; P.notes = po.notes||'';
   P.please_note = po.please_note || DEFAULT_NOTE;
-  P.tax_rate = po.tax_rate ?? 7; P.shipping = po.shipping ?? 0; P.markup_pct = po.markup_pct ?? 15;
+  P.tax_rate = po.tax_rate ?? 7; P.tax_mode = po.tax_mode || 'flat';
+  P.shipping = po.shipping ?? 0; P.shipping_mode = po.shipping_mode || 'flat';
+  P.markup_pct = po.markup_pct ?? 15;
   P.payment_method = po.payment_method||''; P.payment_account = po.payment_account||'';
   const proj = allProjects.find(p => p.id === po.project_id);
   P.project_id = po.project_id; P.client_id = proj?.client_id || null;
@@ -666,6 +699,8 @@ async function openPO(id) {
     description: it.description||'', source: it.source||'',
     product_url: it.product_url||'', image_url: it.image_url||'',
     qty: +it.qty||1, unit_cost: +it.unit_cost||0,
+    tax_amt: +it.tax_amt||0, shipping_amt: +it.shipping_amt||0,
+    white_glove: !!it.white_glove,
     internal_notes: it.internal_notes||'', _open: false
   }));
   if (!P.items.length) P.items = [blankItem()];
@@ -676,6 +711,7 @@ async function openPO(id) {
 function renderEditor() {
   gid('poDate').value       = P.date;
   gid('poDueDate').value    = P.due_date;
+  gid('poName').value       = P.po_name;
   gid('poStatus').value     = P.status;
   gid('poTaxRate').value    = P.tax_rate;
   gid('poShipping').value   = P.shipping;
@@ -684,6 +720,8 @@ function renderEditor() {
   gid('poPayAccount').value = P.payment_account;
   gid('poNotes').value      = P.notes;
   gid('poNote').value       = P.please_note;
+  setTaxMode(P.tax_mode, true);
+  setShipMode(P.shipping_mode, true);
   const csel = gid('clientSel');
   csel.innerHTML = '<option value="">Select client…</option>'
     + allClients.map(c => `<option value="${c.id}"${c.id===P.client_id?' selected':''}>${esc(c.name)}</option>`).join('')
@@ -799,6 +837,9 @@ function readRow(k) {
   it.description    = gv('dsc-'+k);
   it.product_url    = gv('pu-'+k);
   it.internal_notes = gv('in-'+k);
+  it.tax_amt        = parseFloat(gv('ta-'+k))  || 0;
+  it.shipping_amt   = parseFloat(gv('sa-'+k))  || 0;
+  const wgEl = gid('wg-'+k); if (wgEl) it.white_glove = wgEl.checked;
 }
 
 function onRowChange(k) {
@@ -821,11 +862,25 @@ function rowHTML(it, idx) {
     ? `<img class="img-preview" id="ith-${it._k}" src="${esc(it.image_url)}" onerror="this.style.display='none'">
        <button class="remove-img" onclick="removeImg(${it._k})">✕ Remove</button>`
     : `<div class="img-ph" id="ith-${it._k}"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="2" y="4" width="18" height="14" rx="2" stroke="rgba(37,14,15,0.22)" stroke-width="1.3"/><circle cx="8" cy="9" r="2" stroke="rgba(37,14,15,0.22)" stroke-width="1.3"/><path d="M2 16l5-5 4 4 3-3 6 6" stroke="rgba(37,14,15,0.22)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>`;
+  const wgChecked = it.white_glove ? 'checked' : '';
+  const perItemTax = P.tax_mode === 'per_item'
+    ? `<div class="fg" style="margin-top:10px">
+        <label class="fl">Tax $</label>
+        <input class="fi" id="ta-${it._k}" type="number" value="${it.tax_amt||0}" min="0" step="0.01" oninput="onRowChange(${it._k})">
+       </div>` : '';
+  const perItemShip = P.shipping_mode === 'per_item'
+    ? `<div class="fg" style="margin-top:10px">
+        <label class="fl">Shipping $</label>
+        <input class="fi" id="sa-${it._k}" type="number" value="${it.shipping_amt||0}" min="0" step="0.01" oninput="onRowChange(${it._k})">
+       </div>` : '';
   return `
 <tr>
   <td class="c-num">${idx+1}</td>
   <td class="c-cat"><select class="ti" id="cat-${it._k}" onchange="onRowChange(${it._k})">${catOpts}</select></td>
-  <td class="c-name"><input class="ti ti-name" id="nm-${it._k}" type="text" value="${esc(it.item_name)}" placeholder="Item name…" oninput="onRowChange(${it._k})"></td>
+  <td class="c-name">
+    <input class="ti ti-name" id="nm-${it._k}" type="text" value="${esc(it.item_name)}" placeholder="Item name…" oninput="onRowChange(${it._k})">
+    ${it.white_glove ? '<div style="margin-top:3px"><span class="wg-badge">White Glove</span></div>' : ''}
+  </td>
   <td class="c-src"><input class="ti" id="src-${it._k}" type="text" value="${esc(it.source)}" placeholder="Source…" oninput="onRowChange(${it._k})"></td>
   <td class="c-qty"><input class="ti r" id="qty-${it._k}" type="number" value="${it.qty}" min="0.01" step="0.01" oninput="onRowChange(${it._k})"></td>
   <td class="c-prc"><input class="ti r" id="uc-${it._k}" type="number" value="${it.unit_cost}" min="0" step="0.01" oninput="onRowChange(${it._k})"></td>
@@ -854,9 +909,17 @@ function rowHTML(it, idx) {
             Upload Photo
             <input class="file-input" type="file" accept="image/*" onchange="handleImgUpload(${it._k}, this)">
           </label>
+          <div class="paste-zone" id="pz-${it._k}" onclick="focusPaste(${it._k})">Ctrl+V to paste image</div>
         </div>
       </div>
-      <div></div>
+      <div>
+        <div class="wg-toggle">
+          <input type="checkbox" id="wg-${it._k}" ${wgChecked} onchange="onRowChange(${it._k})">
+          <label for="wg-${it._k}">White-Glove Delivery</label>
+        </div>
+        ${perItemTax}
+        ${perItemShip}
+      </div>
     </div>
   </td>
 </tr>`;
@@ -914,11 +977,16 @@ function compressImg(file) {
 function renderTotals() {
   P.items.forEach(it => readRow(it._k));
   const sub  = P.items.reduce((a,it) => a + it.unit_cost*it.qty, 0);
-  const ship = parseFloat(gv('poShipping')) || 0;
-  const taxR = parseFloat(gv('poTaxRate'))  || 0;
-  const mkup = parseFloat(gv('poMarkup'))   || 0;
-  const tax  = sub * taxR / 100;
+  const mkup = parseFloat(gv('poMarkup')) || 0;
   const fee  = sub * mkup / 100;
+
+  const ship = P.shipping_mode === 'flat'
+    ? (parseFloat(gv('poShipping')) || 0)
+    : P.items.reduce((a,it) => a + (it.shipping_amt||0), 0);
+
+  const tax = P.tax_mode === 'flat'
+    ? sub * ((parseFloat(gv('poTaxRate')) || 0) / 100)
+    : P.items.reduce((a,it) => a + (it.tax_amt||0), 0);
 
   sv('t-sub',   fmtMoney(sub));
   sv('t-ship',  fmtMoney(ship));
@@ -937,16 +1005,17 @@ function renderTotals() {
 async function savePO() {
   P.client_id  = gv('clientSel')  || P.client_id;
   P.project_id = gv('projectSel') || P.project_id;
-  P.date          = gv('poDate');
-  P.due_date      = gv('poDueDate');
-  P.status        = gv('poStatus');
-  P.tax_rate      = parseFloat(gv('poTaxRate'))  || 0;
-  P.shipping      = parseFloat(gv('poShipping')) || 0;
-  P.markup_pct    = parseFloat(gv('poMarkup'))   || 0;
+  P.date            = gv('poDate');
+  P.due_date        = gv('poDueDate');
+  P.po_name         = gv('poName');
+  P.status          = gv('poStatus');
+  P.tax_rate        = parseFloat(gv('poTaxRate'))  || 0;
+  P.shipping        = parseFloat(gv('poShipping')) || 0;
+  P.markup_pct      = parseFloat(gv('poMarkup'))   || 0;
   P.payment_method  = gv('poPayMethod');
   P.payment_account = gv('poPayAccount');
-  P.notes         = gv('poNotes');
-  P.please_note   = gv('poNote');
+  P.notes           = gv('poNotes');
+  P.please_note     = gv('poNote');
   if (!P.project_id) { alert('Please select a client and project first.'); return; }
   P.items.forEach(it => readRow(it._k));
 
@@ -957,10 +1026,12 @@ async function savePO() {
       P.po_number = 'PO-' + String((count||0)+1).padStart(3,'0');
     }
     const payload = {
-      project_id: P.project_id, po_number: P.po_number,
+      project_id: P.project_id, po_number: P.po_number, po_name: P.po_name||null,
       date: P.date||null, due_date: P.due_date||null,
       status: P.status, notes: P.notes, please_note: P.please_note,
-      tax_rate: P.tax_rate, shipping: P.shipping, markup_pct: P.markup_pct,
+      tax_rate: P.tax_rate, tax_mode: P.tax_mode,
+      shipping: P.shipping, shipping_mode: P.shipping_mode,
+      markup_pct: P.markup_pct,
       payment_method: P.payment_method, payment_account: P.payment_account,
       updated_at: new Date().toISOString()
     };
@@ -976,7 +1047,8 @@ async function savePO() {
       po_id: pid, sort_order: i, category: it.category, item_name: it.item_name,
       description: it.description, source: it.source, product_url: it.product_url,
       image_url: it.image_url, qty: it.qty, unit_cost: it.unit_cost,
-      internal_notes: it.internal_notes
+      tax_amt: it.tax_amt||0, shipping_amt: it.shipping_amt||0,
+      white_glove: !!it.white_glove, internal_notes: it.internal_notes
     }));
     if (lines.length) await DB().from('po_line_items').insert(lines);
     btn.textContent = 'Saved ✓';
@@ -1004,14 +1076,18 @@ function renderDoc() {
   const fee  = sub * mkup / 100;
   const grandTotal = sub + ship + tax + fee;
 
-  const hasImages = P.items.some(it => it.image_url);
-  const imgCol = hasImages ? `<th style="width:66px"></th>` : '';
+  const hasImages   = P.items.some(it => it.image_url);
+  const showTaxCol  = P.tax_mode === 'per_item';
+  const showShipCol = P.shipping_mode === 'per_item';
+  const imgCol  = hasImages   ? `<th style="width:66px"></th>` : '';
+  const taxColH = showTaxCol  ? `<th class="r" style="width:80px">Tax</th>` : '';
+  const shipColH= showShipCol ? `<th class="r" style="width:80px">Shipping</th>` : '';
 
   const rows = P.items.map((it, idx) => {
     const total = it.unit_cost * it.qty;
-    const imgCell = hasImages
-      ? `<td style="padding:10px 12px;width:66px">${it.image_url ? `<img class="doc-item-img" src="${esc(it.image_url)}">` : ''}</td>`
-      : '';
+    const imgCell  = hasImages   ? `<td style="padding:10px 12px;width:66px">${it.image_url ? `<img class="doc-item-img" src="${esc(it.image_url)}">` : ''}</td>` : '';
+    const taxCell  = showTaxCol  ? `<td class="r" style="width:80px">${fmtMoney(it.tax_amt||0)}</td>` : '';
+    const shipCell = showShipCol ? `<td class="r" style="width:80px">${fmtMoney(it.shipping_amt||0)}</td>` : '';
     return `<tr>
       ${imgCell}
       <td style="width:32px;color:var(--muted);font-size:11px">${idx+1}.</td>
@@ -1020,9 +1096,11 @@ function renderDoc() {
         <div class="doc-item-name">${esc(it.item_name||'—')}</div>
         ${it.description?`<div class="doc-item-desc">${esc(it.description)}</div>`:''}
         ${it.source?`<div class="doc-item-desc">Source: ${esc(it.source)}</div>`:''}
+        ${it.white_glove?`<div><span class="wg-badge">White-Glove Delivery</span></div>`:''}
       </td>
       <td style="text-align:center;width:50px">${it.qty%1===0?it.qty:it.qty.toFixed(2)}</td>
       <td class="r" style="width:100px">${fmtMoney(it.unit_cost)}</td>
+      ${taxCell}${shipCell}
       <td class="r" style="width:100px">${fmtMoney(total)}</td>
     </tr>`;
   }).join('');
@@ -1058,7 +1136,7 @@ function renderDoc() {
       </div>
       <div class="doc-ph-right">
         <div class="doc-ph-label">Purchase Order</div>
-        <div class="doc-ph-num">${esc(P.po_number||'Draft')}</div>
+        <div class="doc-ph-num">${esc(P.po_number||'Draft')}${P.po_name ? ' · '+esc(P.po_name) : ''}</div>
         <div class="doc-ph-date">${P.date ? fmtDate(P.date) : fmtDate(today())}</div>
       </div>
     </div>
@@ -1084,7 +1162,7 @@ function renderDoc() {
     </div>
     <div class="doc-items-wrap">
       <table class="doc-tbl">
-        <thead><tr>${imgCol}<th style="width:32px">No.</th><th>Description</th><th style="text-align:center;width:50px">Qty</th><th class="r" style="width:100px">Price</th><th class="r" style="width:100px">Total</th></tr></thead>
+        <thead><tr>${imgCol}<th style="width:32px">No.</th><th>Description</th><th style="text-align:center;width:50px">Qty</th><th class="r" style="width:100px">Price</th>${taxColH}${shipColH}<th class="r" style="width:100px">Total</th></tr></thead>
         <tbody>${rows}</tbody>
       </table>
     </div>
@@ -1219,6 +1297,60 @@ async function addProjectFromMgr(clientId) {
   gid('mgrb-'+clientId)?.classList.add('open');
   gid('chev-'+clientId)?.classList.add('open');
 }
+
+/* ── MODE TOGGLES ───────────────────────────── */
+function setTaxMode(m, silent) {
+  P.tax_mode = m;
+  gid('taxModeFlat')?.classList.toggle('active', m==='flat');
+  gid('taxModeItem')?.classList.toggle('active', m==='per_item');
+  const el = gid('poTaxRate'); if (el) el.style.display = m==='flat' ? '' : 'none';
+  if (!silent) { renderItems(); renderTotals(); }
+}
+function setShipMode(m, silent) {
+  P.shipping_mode = m;
+  gid('shipModeFlat')?.classList.toggle('active', m==='flat');
+  gid('shipModeItem')?.classList.toggle('active', m==='per_item');
+  const el = gid('poShipping'); if (el) el.style.display = m==='flat' ? '' : 'none';
+  if (!silent) { renderItems(); renderTotals(); }
+}
+
+/* ── PASTE IMAGE ─────────────────────────────── */
+function focusPaste(k) {
+  _pasteTarget = k;
+  const pz = gid('pz-'+k);
+  if (pz) { pz.textContent = 'Ready — paste now (Ctrl+V)'; pz.classList.add('drag-over'); }
+  setTimeout(() => {
+    if (_pasteTarget === k) {
+      _pasteTarget = null;
+      const pz2 = gid('pz-'+k); if (pz2) { pz2.textContent = 'Ctrl+V to paste image'; pz2.classList.remove('drag-over'); }
+    }
+  }, 8000);
+}
+let _pasteTarget = null;
+document.addEventListener('paste', e => {
+  const items = Array.from(e.clipboardData?.items || []);
+  const imgItem = items.find(i => i.type.startsWith('image/'));
+  if (!imgItem) return;
+  let targetKey = _pasteTarget;
+  if (!targetKey) {
+    const openItems = P.items.filter(i => i._open);
+    if (!openItems.length) return;
+    targetKey = openItems[openItems.length - 1]._k;
+  }
+  _pasteTarget = null;
+  e.preventDefault();
+  compressImg(imgItem.getAsFile()).then(dataUrl => {
+    const it = P.items.find(i => i._k === targetKey); if (!it) return;
+    it.image_url = dataUrl;
+    const openStates = P.items.map(i => i._open);
+    renderItems();
+    P.items.forEach((i, idx) => {
+      i._open = openStates[idx];
+      if (i._open) { gid('det-'+i._k)?.classList.add('open'); const b = gid('xbtn-'+i._k); if(b) b.textContent='▲'; }
+    });
+    renderTotals();
+  });
+});
 
 /* ── HELPERS ──────────────────────────────── */
 function gid(id) { return document.getElementById(id); }
