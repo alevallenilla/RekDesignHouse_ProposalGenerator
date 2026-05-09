@@ -765,9 +765,11 @@ function onProjectChange(v) {
 }
 
 async function createClient() {
-  const name = document.getElementById('newClientName').value.trim();
-  if (!name) return;
-  const { data } = await DB().from('procurement_clients').insert({ name }).select().single();
+  const nameEl = document.getElementById('newClientName');
+  const name = nameEl.value.trim();
+  if (!name) { nameEl.focus(); return; }
+  const { data, error } = await DB().from('procurement_clients').insert({ name }).select().single();
+  if (error) { alert('Could not create client: ' + error.message); return; }
   if (data) { allClients.push(data); P.client_id = data.id; hideNewClient(); renderEditor(); }
 }
 function hideNewClient() {
@@ -776,9 +778,12 @@ function hideNewClient() {
 }
 
 async function createProject() {
-  const name = document.getElementById('newProjectName').value.trim();
-  if (!name || !P.client_id) return;
-  const { data } = await DB().from('procurement_projects').insert({ name, client_id: P.client_id }).select().single();
+  const nameEl = document.getElementById('newProjectName');
+  const name = nameEl.value.trim();
+  if (!name) { nameEl.focus(); return; }
+  if (!P.client_id) { alert('Select a client first.'); return; }
+  const { data, error } = await DB().from('procurement_projects').insert({ name, client_id: P.client_id }).select().single();
+  if (error) { alert('Could not create project: ' + error.message); return; }
   if (data) {
     allProjects.push(data); P.project_id = data.id;
     hideNewProject(); populateProjects();
