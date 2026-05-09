@@ -33,7 +33,7 @@
     {
       name: 'Procurement Tool',
       path: '/procurement',
-      soon: true,
+      soon: false,
       icon: `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1.5L14 5v6l-6 3.5L2 11V5l6-3.5z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M2 5l6 3.5M8 8.5V15M14 5l-6 3.5" stroke="currentColor" stroke-width="1.2"/></svg>`,
     },
     {

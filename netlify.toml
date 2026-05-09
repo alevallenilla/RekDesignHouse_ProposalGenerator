@@ -9,3 +9,9 @@
   from = "/"
   to   = "/proposal"
   status = 302
+
+# Procurement tool
+[[redirects]]
+  from = "/procurement"
+  to   = "/procurement/index.html"
+  status = 200

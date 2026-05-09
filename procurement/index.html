@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Procurement Tool — Rek Design Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Adamina&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --ink:      #250E0F;
+  --parchment:#F5F5F5;
+  --ivory:    #FAF9F5;
+  --linen:    #EAE6E1;
+  --burgundy: #7C3135;
+  --slate:    #4C6270;
+  --moss:     #3D5C3A;
+  --muted:    rgba(37,14,15,0.45);
+  --border:   rgba(37,14,15,0.10);
+}
+
+body { font-family:'Inter',sans-serif; background:var(--ivory); color:var(--ink); min-height:100vh; }
+
+/* ── TOPBAR ─────────────────────────────────────── */
+.topbar {
+  position:fixed; top:0; left:0; right:0; height:52px;
+  background:var(--ink); z-index:100;
+  display:flex; align-items:center; padding:0 24px;
+  border-bottom:1px solid rgba(255,255,255,0.06);
+}
+.tb-logo { height:22px; width:auto; display:block; }
+.tb-div  { width:1px; height:18px; background:rgba(255,255,255,0.15); margin:0 14px; }
+.tb-title{ font-size:12px; font-weight:500; color:rgba(245,245,245,0.65); letter-spacing:0.04em; }
+.tb-right{ margin-left:auto; }
+.tb-date { font-size:11px; color:rgba(245,245,245,0.35); }
+
+/* ── LAYOUT ─────────────────────────────────────── */
+.page-wrap{ padding-top:52px; min-height:100vh; }
+.screen   { display:none; }
+.screen.active{ display:block; }
+
+/* ── SHARED ELEMENTS ────────────────────────────── */
+.page-hd {
+  padding:36px 32px 28px; border-bottom:1px solid var(--border);
+  display:flex; align-items:flex-end; justify-content:space-between;
+}
+.eyebrow {
+  font-size:10px; font-weight:600; letter-spacing:0.24em;
+  text-transform:uppercase; color:var(--muted); margin-bottom:8px;
+}
+.page-hd h1 { font-family:'Adamina',serif; font-size:32px; font-weight:400; line-height:1.1; }
+
+.btn-primary {
+  font-family:'Inter',sans-serif; font-size:12px; font-weight:500;
+  background:var(--ink); color:var(--parchment);
+  border:none; border-radius:6px; padding:10px 18px; cursor:pointer;
+  transition:opacity 0.15s; display:inline-flex; align-items:center; gap:6px;
+}
+.btn-primary:hover{ opacity:0.85; }
+.btn-primary:disabled{ opacity:0.45; cursor:default; }
+.btn-ghost {
+  font-family:'Inter',sans-serif; font-size:12px; font-weight:500;
+  background:none; color:var(--muted); border:1px solid var(--border);
+  border-radius:6px; padding:10px 18px; cursor:pointer; transition:background 0.15s;
+}
+.btn-ghost:hover{ background:rgba(37,14,15,0.05); }
+
+.back-btn {
+  font-size:11px; color:var(--muted); background:none; border:none; cursor:pointer;
+  padding:0; margin-bottom:28px; display:inline-flex; align-items:center; gap:6px;
+  transition:color 0.15s;
+}
+.back-btn:hover{ color:var(--ink); }
+
+.fg { display:flex; flex-direction:column; gap:5px; }
+.fl {
+  font-size:10px; font-weight:600; letter-spacing:0.14em;
+  text-transform:uppercase; color:var(--muted);
+}
+.fi, .fsel {
+  font-family:'Inter',sans-serif; font-size:13px; color:var(--ink);
+  background:white; border:1px solid var(--border);
+  border-radius:6px; padding:9px 12px; outline:none;
+  transition:border-color 0.15s; width:100%;
+}
+.fi:focus, .fsel:focus{ border-color:rgba(37,14,15,0.35); }
+.fsel{ cursor:pointer; }
+textarea.fi{ resize:vertical; }
+
+/* ── LIST SCREEN ────────────────────────────────── */
+.list-body { padding:32px; }
+.client-group { margin-bottom:40px; }
+.client-group-hd {
+  font-size:11px; font-weight:600; letter-spacing:0.18em;
+  text-transform:uppercase; color:var(--muted); margin-bottom:16px;
+}
+.project-group { margin-bottom:24px; }
+.project-group-hd {
+  font-size:13px; font-weight:500; color:var(--ink);
+  margin-bottom:10px; padding-bottom:8px; border-bottom:1px solid var(--border);
+}
+.po-cards { display:flex; flex-direction:column; gap:8px; }
+.po-card {
+  display:flex; align-items:center; gap:16px;
+  background:white; border:1px solid var(--border); border-radius:8px;
+  padding:14px 18px; cursor:pointer;
+  transition:border-color 0.15s, box-shadow 0.15s;
+}
+.po-card:hover{ border-color:rgba(37,14,15,0.20); box-shadow:0 2px 8px rgba(37,14,15,0.06); }
+.po-card-num { font-size:12px; font-weight:600; color:var(--ink); min-width:60px; }
+.po-card-info{ flex:1; }
+.po-card-notes{ font-size:13px; font-weight:500; color:var(--ink); }
+.po-card-date { font-size:11px; color:var(--muted); margin-top:3px; }
+.po-card-total{ text-align:right; min-width:90px; }
+.po-card-total-amt { font-size:14px; font-weight:500; color:var(--ink); }
+.po-card-total-lbl { font-size:10px; color:var(--muted); display:block; margin-bottom:2px; }
+
+.status-badge {
+  font-size:9px; font-weight:600; letter-spacing:0.12em;
+  text-transform:uppercase; padding:3px 8px; border-radius:3px; white-space:nowrap;
+}
+.s-draft   { background:rgba(37,14,15,0.07);   color:rgba(37,14,15,0.50); }
+.s-ordered { background:rgba(76,98,112,0.12);  color:var(--slate); }
+.s-received{ background:rgba(61,92,58,0.12);   color:var(--moss); }
+.s-invoiced{ background:rgba(124,49,53,0.10);  color:var(--burgundy); }
+
+.empty-state{ text-align:center; padding:80px 24px; }
+.empty-state h2{ font-family:'Adamina',serif; font-size:24px; margin-bottom:12px; }
+.empty-state p { font-size:14px; color:var(--muted); }
+
+/* ── PO EDITOR ──────────────────────────────────── */
+.po-editor { max-width:1160px; margin:0 auto; padding:36px 32px 140px; }
+
+.po-hd-grid {
+  display:grid; grid-template-columns:1fr 1fr 150px 160px;
+  gap:16px; margin-bottom:16px;
+}
+.po-hd-full { margin-bottom:32px; }
+
+.new-inline { display:none; margin-top:8px; gap:8px; align-items:flex-end; }
+.new-inline.show{ display:flex; }
+.btn-sm {
+  font-family:'Inter',sans-serif; font-size:11px; font-weight:500;
+  background:var(--ink); color:var(--parchment);
+  border:none; border-radius:5px; padding:8px 12px; cursor:pointer; white-space:nowrap;
+}
+.btn-sm-ghost {
+  font-family:'Inter',sans-serif; font-size:11px; color:var(--muted);
+  background:none; border:1px solid var(--border);
+  border-radius:5px; padding:8px 12px; cursor:pointer;
+}
+
+.section-hd {
+  display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;
+}
+.section-hd h2{ font-size:13px; font-weight:600; }
+.item-count  { font-size:11px; color:var(--muted); }
+
+/* Item table */
+.item-table-wrap{ overflow-x:auto; }
+.item-table{ width:100%; border-collapse:collapse; font-size:12.5px; }
+.item-table th {
+  font-size:9.5px; font-weight:600; letter-spacing:0.14em; text-transform:uppercase;
+  color:var(--muted); text-align:left; padding:8px 8px 10px;
+  border-bottom:1px solid var(--border); white-space:nowrap;
+}
+.item-table th.r{ text-align:right; }
+.item-table td{ padding:5px 6px; vertical-align:top; border-bottom:1px solid rgba(37,14,15,0.04); }
+
+/* table cell widths */
+.c-num   { width:28px; text-align:center; color:var(--muted); font-size:11px; padding-top:10px !important; }
+.c-cat   { width:130px; }
+.c-name  { min-width:165px; }
+.c-src   { min-width:120px; }
+.c-qty   { width:60px; }
+.c-cost  { width:96px; }
+.c-tax   { width:62px; }
+.c-mkup  { width:68px; }
+.c-total { width:100px; text-align:right; padding-top:10px !important; font-weight:500; color:var(--ink); }
+.c-act   { width:60px; white-space:nowrap; padding-top:7px !important; }
+
+/* table inputs */
+.ti {
+  font-family:'Inter',sans-serif; font-size:12.5px; color:var(--ink);
+  background:transparent; border:1px solid transparent;
+  border-radius:4px; padding:5px 7px; width:100%; outline:none;
+  transition:border-color 0.15s, background 0.15s;
+}
+.ti:hover { border-color:var(--border); background:white; }
+.ti:focus { border-color:rgba(37,14,15,0.30); background:white; }
+.ti.r{ text-align:right; }
+
+.xbtn, .dbtn {
+  background:none; border:none; cursor:pointer; color:var(--muted);
+  padding:4px 5px; border-radius:4px; font-size:13px;
+  transition:color 0.15s, background 0.15s;
+}
+.xbtn:hover{ color:var(--ink); background:rgba(37,14,15,0.05); }
+.dbtn:hover{ color:#b03030; background:rgba(176,48,48,0.07); }
+
+/* Details sub-row */
+.det-row{ display:none; }
+.det-row.open{ display:table-row; }
+.det-row td {
+  background:rgba(37,14,15,0.018) !important;
+  border-bottom:1px solid var(--border) !important;
+  padding:14px 16px 18px 36px !important;
+}
+.det-grid {
+  display:grid; grid-template-columns:2fr 2fr 1fr; gap:14px;
+}
+.img-row { display:flex; gap:8px; align-items:flex-end; margin-top:10px; }
+.img-row .fi{ flex:1; margin-bottom:0; }
+.img-thumb {
+  width:52px; height:52px; object-fit:cover;
+  border-radius:4px; border:1px solid var(--border); flex-shrink:0;
+}
+.img-ph {
+  width:52px; height:52px; background:var(--linen);
+  border:1px solid var(--border); border-radius:4px;
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.fetch-btn {
+  font-size:10px; font-weight:500; color:var(--slate);
+  background:rgba(76,98,112,0.08); border:1px solid rgba(76,98,112,0.18);
+  border-radius:4px; padding:5px 10px; cursor:pointer; white-space:nowrap;
+  align-self:flex-end; transition:background 0.15s;
+}
+.fetch-btn:hover{ background:rgba(76,98,112,0.15); }
+.fetch-btn:disabled{ opacity:0.45; cursor:default; }
+
+.add-row-btn {
+  display:flex; align-items:center; gap:8px; font-size:12px; color:var(--muted);
+  background:none; border:1px dashed rgba(37,14,15,0.18); border-radius:6px;
+  padding:10px 16px; cursor:pointer; margin-top:8px; width:100%;
+  transition:color 0.15s, border-color 0.15s;
+}
+.add-row-btn:hover{ color:var(--ink); border-color:rgba(37,14,15,0.35); }
+
+/* Totals bar */
+.totals-bar {
+  position:fixed; bottom:0; left:220px; right:0;
+  background:white; border-top:1px solid var(--border);
+  padding:14px 32px; display:flex; align-items:center;
+  justify-content:space-between; z-index:50;
+  box-shadow:0 -4px 20px rgba(37,14,15,0.06);
+}
+.totals-cols { display:flex; gap:48px; }
+.totals-col h3 {
+  font-size:9.5px; font-weight:600; letter-spacing:0.16em;
+  text-transform:uppercase; color:var(--muted); margin-bottom:8px;
+}
+.tot-rows{ display:flex; flex-direction:column; gap:3px; }
+.tot-row {
+  display:flex; justify-content:space-between; gap:36px;
+  font-size:12px; color:var(--muted);
+}
+.tot-row.grand {
+  font-size:13px; font-weight:600; color:var(--ink);
+  border-top:1px solid var(--border); padding-top:5px; margin-top:3px;
+}
+.tot-row span:last-child{ min-width:88px; text-align:right; }
+.totals-actions{ display:flex; gap:10px; align-items:center; }
+
+/* ── DOCUMENT SCREEN ────────────────────────────── */
+.doc-screen{ background:var(--linen); min-height:calc(100vh - 52px); padding:40px 24px; }
+.doc-toolbar{
+  max-width:860px; margin:0 auto 24px;
+  display:flex; justify-content:space-between; align-items:center;
+}
+.doc-wrap{
+  max-width:860px; margin:0 auto; background:white;
+  box-shadow:0 4px 32px rgba(37,14,15,0.10);
+}
+
+/* Document header */
+.doc-ph {
+  background:var(--ink); padding:36px 48px 32px;
+  display:flex; justify-content:space-between; align-items:flex-start;
+}
+.doc-ph-brand img{ height:28px; display:block; }
+.doc-ph-sub{
+  font-size:9.5px; letter-spacing:0.22em; text-transform:uppercase;
+  color:rgba(245,245,245,0.38); margin-top:7px;
+}
+.doc-ph-right{ text-align:right; }
+.doc-ph-label{
+  font-size:9px; letter-spacing:0.20em; text-transform:uppercase;
+  color:rgba(245,245,245,0.35); margin-bottom:4px;
+}
+.doc-ph-num{ font-family:'Adamina',serif; font-size:22px; color:var(--parchment); line-height:1; }
+.doc-ph-date{ font-size:11px; color:rgba(245,245,245,0.45); margin-top:7px; }
+
+.doc-meta{
+  padding:22px 48px; display:flex; gap:48px;
+  border-bottom:1px solid var(--linen); background:#FDFCF9;
+}
+.doc-meta-block label{
+  font-size:9px; font-weight:600; letter-spacing:0.18em;
+  text-transform:uppercase; color:var(--muted); display:block; margin-bottom:4px;
+}
+.doc-meta-block span{ font-size:14px; font-weight:500; color:var(--ink); }
+
+.doc-items-wrap{ padding:32px 48px; }
+.doc-tbl{ width:100%; border-collapse:collapse; }
+.doc-tbl th{
+  font-size:9px; font-weight:600; letter-spacing:0.16em; text-transform:uppercase;
+  color:var(--muted); text-align:left; padding:0 12px 10px;
+  border-bottom:1px solid var(--linen);
+}
+.doc-tbl th.r{ text-align:right; }
+.doc-tbl td{
+  padding:14px 12px; vertical-align:top;
+  border-bottom:1px solid rgba(37,14,15,0.05);
+  font-size:12.5px; color:var(--ink);
+}
+.doc-tbl td.r{ text-align:right; }
+.doc-item-img{ width:54px; height:54px; object-fit:cover; border-radius:3px; border:1px solid var(--linen); display:block; }
+.doc-item-img-ph{ width:54px; height:54px; background:var(--linen); border-radius:3px; display:block; }
+.doc-item-cat{
+  font-size:9.5px; font-weight:600; letter-spacing:0.12em;
+  text-transform:uppercase; color:var(--muted); margin-bottom:3px;
+}
+.doc-item-name{ font-weight:500; margin-bottom:3px; }
+.doc-item-desc{ font-size:11px; color:var(--muted); }
+
+.doc-totals{ padding:20px 48px 36px; display:flex; justify-content:flex-end; }
+.doc-tot-table{ min-width:270px; }
+.doc-tot-row{
+  display:flex; justify-content:space-between; gap:48px;
+  font-size:13px; color:var(--muted); padding:4px 0;
+}
+.doc-tot-row.grand{
+  font-size:15px; font-weight:600; color:var(--ink);
+  border-top:1px solid var(--linen); padding-top:10px; margin-top:4px;
+}
+.doc-tot-row span:last-child{ min-width:100px; text-align:right; }
+
+.doc-footer{
+  background:var(--ink); padding:18px 48px;
+  display:flex; justify-content:space-between; align-items:center;
+}
+.doc-footer span{ font-size:10px; color:rgba(245,245,245,0.28); letter-spacing:0.08em; }
+
+/* ── PRINT ──────────────────────────────────────── */
+@media print {
+  .topbar, #ws-nav, .doc-toolbar, .back-btn, .totals-bar { display:none !important; }
+  body    { padding-left:0 !important; padding-top:0 !important; }
+  .page-wrap{ padding-top:0; }
+  .doc-screen{ background:white; padding:0; }
+  .doc-wrap  { box-shadow:none; }
+  #screen-list, #screen-po{ display:none !important; }
+  #screen-doc{ display:block !important; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── TOPBAR ────────────────────────────────────── -->
+<header class="topbar">
+  <img src="/logos/rek-wordmark-white.svg" alt="R" class="tb-logo">
+  <span class="tb-div"></span>
+  <span class="tb-title">Procurement Tool</span>
+  <div class="tb-right"><span class="tb-date" id="tbDate"></span></div>
+</header>
+
+<div class="page-wrap">
+
+<!-- ════════════════════════════════════════════════
+     SCREEN: PO LIST
+════════════════════════════════════════════════ -->
+<div class="screen active" id="screen-list">
+  <div class="page-hd">
+    <div>
+      <p class="eyebrow">Work Suite · Procurement</p>
+      <h1>Purchase Orders</h1>
+    </div>
+    <button class="btn-primary" onclick="newPO()">+ New PO</button>
+  </div>
+  <div class="list-body" id="listBody">
+    <div class="empty-state">
+      <h2>No purchase orders yet.</h2>
+      <p>Create your first PO to start tracking procurement for a project.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     SCREEN: PO EDITOR
+════════════════════════════════════════════════ -->
+<div class="screen" id="screen-po">
+  <div class="po-editor">
+    <button class="back-btn" onclick="go('list')">← All Purchase Orders</button>
+
+    <!-- PO Header -->
+    <div class="po-hd-grid">
+      <!-- Client -->
+      <div class="fg">
+        <label class="fl">Client <span style="color:var(--burgundy)">*</span></label>
+        <select class="fsel" id="clientSel" onchange="onClientChange(this.value)">
+          <option value="">Select client…</option>
+        </select>
+        <div class="new-inline" id="newClientForm">
+          <input class="fi" type="text" id="newClientName" placeholder="Client name">
+          <button class="btn-sm" onclick="createClient()">Add</button>
+          <button class="btn-sm-ghost" onclick="hideNewClient()">✕</button>
+        </div>
+      </div>
+      <!-- Project -->
+      <div class="fg">
+        <label class="fl">Project <span style="color:var(--burgundy)">*</span></label>
+        <select class="fsel" id="projectSel" onchange="onProjectChange(this.value)" disabled>
+          <option value="">Select project…</option>
+        </select>
+        <div class="new-inline" id="newProjectForm">
+          <input class="fi" type="text" id="newProjectName" placeholder="Project name">
+          <button class="btn-sm" onclick="createProject()">Add</button>
+          <button class="btn-sm-ghost" onclick="hideNewProject()">✕</button>
+        </div>
+      </div>
+      <!-- Date -->
+      <div class="fg">
+        <label class="fl">Date</label>
+        <input class="fi" type="date" id="poDate">
+      </div>
+      <!-- Status -->
+      <div class="fg">
+        <label class="fl">Status</label>
+        <select class="fsel" id="poStatus">
+          <option value="draft">Draft</option>
+          <option value="ordered">Ordered</option>
+          <option value="received">Received</option>
+          <option value="invoiced">Invoiced</option>
+        </select>
+      </div>
+    </div>
+    <div class="po-hd-full">
+      <div class="fg">
+        <label class="fl">Notes (internal)</label>
+        <textarea class="fi" id="poNotes" rows="2" placeholder="Phase notes, delivery instructions, context…"></textarea>
+      </div>
+    </div>
+
+    <!-- Line Items -->
+    <div class="section-hd">
+      <h2>Line Items</h2>
+      <span class="item-count" id="itemCount"></span>
+    </div>
+    <div class="item-table-wrap">
+      <table class="item-table">
+        <thead>
+          <tr>
+            <th class="c-num"></th>
+            <th class="c-cat">Category</th>
+            <th class="c-name">Item Name</th>
+            <th class="c-src">Source / Vendor</th>
+            <th class="c-qty r">Qty</th>
+            <th class="c-cost r">Unit Cost</th>
+            <th class="c-tax r">Tax %</th>
+            <th class="c-mkup r">Markup %</th>
+            <th class="c-total r">Client Total</th>
+            <th style="width:60px"></th>
+          </tr>
+        </thead>
+        <tbody id="itemTbody"></tbody>
+      </table>
+    </div>
+    <button class="add-row-btn" onclick="addRow()">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+      Add item
+    </button>
+  </div>
+
+  <!-- Sticky Totals Bar -->
+  <div class="totals-bar">
+    <div class="totals-cols">
+      <div class="totals-col">
+        <h3>Internal — Her Cost</h3>
+        <div class="tot-rows">
+          <div class="tot-row"><span>Goods</span><span id="t-gc">—</span></div>
+          <div class="tot-row"><span>Tax</span><span id="t-tx">—</span></div>
+          <div class="tot-row grand"><span>Total She Pays</span><span id="t-tc">—</span></div>
+        </div>
+      </div>
+      <div class="totals-col">
+        <h3>Client Invoice</h3>
+        <div class="tot-rows">
+          <div class="tot-row"><span>Goods</span><span id="c-gc">—</span></div>
+          <div class="tot-row"><span>Tax</span><span id="c-tx">—</span></div>
+          <div class="tot-row grand"><span>Client Total</span><span id="c-tc">—</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="totals-actions">
+      <button class="btn-ghost" onclick="go('list')">Cancel</button>
+      <button class="btn-ghost" id="btnViewDoc" onclick="showDoc()" disabled>View Document</button>
+      <button class="btn-primary" id="btnSave" onclick="savePO()">Save PO</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     SCREEN: DOCUMENT
+════════════════════════════════════════════════ -->
+<div class="screen" id="screen-doc">
+  <div class="doc-screen">
+    <div class="doc-toolbar">
+      <button class="btn-ghost" onclick="go('po')">← Edit PO</button>
+      <button class="btn-primary" onclick="window.print()">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="2" y="5" width="9" height="6" rx="1" stroke="currentColor" stroke-width="1.2"/><path d="M4 5V2h5v3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 9h5M4 11h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        Print / Save PDF
+      </button>
+    </div>
+    <div class="doc-wrap" id="docWrap"></div>
+  </div>
+</div>
+
+</div><!-- /page-wrap -->
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/shared/nav.js"></script>
+<script>
+/* ═══════════════════════════════════════════════════
+   SUPABASE — run this SQL once before first use:
+
+   create table procurement_clients (
+     id uuid primary key default gen_random_uuid(),
+     name text not null, email text, address text,
+     created_at timestamptz default now()
+   );
+   create table procurement_projects (
+     id uuid primary key default gen_random_uuid(),
+     client_id uuid references procurement_clients(id) on delete cascade,
+     name text not null,
+     created_at timestamptz default now()
+   );
+   create table purchase_orders (
+     id uuid primary key default gen_random_uuid(),
+     project_id uuid references procurement_projects(id) on delete cascade,
+     po_number text not null,
+     date date, status text default 'draft', notes text,
+     created_at timestamptz default now(),
+     updated_at timestamptz default now()
+   );
+   create table po_line_items (
+     id uuid primary key default gen_random_uuid(),
+     po_id uuid references purchase_orders(id) on delete cascade,
+     sort_order int default 0,
+     category text, item_name text, description text,
+     source text, product_url text, image_url text,
+     qty numeric default 1, unit_cost numeric default 0,
+     tax_rate numeric default 0, markup_pct numeric default 15,
+     internal_notes text,
+     created_at timestamptz default now()
+   );
+═══════════════════════════════════════════════════ */
+
+const SUPA_URL = 'https://danfcudpvzjcjxhwwqhp.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRhbmZjdWRwdnpqY2p4aHd3cWhwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwMTg3NjMsImV4cCI6MjA5MzU5NDc2M30.KdDpMNteoNFnnPX-47ZLlDJQnwlsH4ohHMjo20goDFE';
+let _db = null;
+const DB = () => { if (!_db) _db = supabase.createClient(SUPA_URL, SUPA_KEY); return _db; };
+
+const CATS = ['','Furniture','Lighting','Textiles','Accessories','Art','Materials','Plumbing','Hardware','Other'];
+
+/* ── STATE ────────────────────────────────────── */
+let allClients  = [];
+let allProjects = [];
+let allPOs      = [];
+
+const P = {
+  id: null, client_id: null, project_id: null,
+  po_number: '', date: today(), status: 'draft', notes: '',
+  items: []
+};
+
+let _seq = 0;
+function blankItem() {
+  return {
+    _k: ++_seq, id: null,
+    category: '', item_name: '', description: '',
+    source: '', product_url: '', image_url: '',
+    qty: 1, unit_cost: 0, tax_rate: 7, markup_pct: 15,
+    internal_notes: '', _open: false
+  };
+}
+
+/* ── NAVIGATION ───────────────────────────────── */
+function go(name) {
+  ['list','po','doc'].forEach(s => {
+    const el = document.getElementById('screen-' + s);
+    if (el) el.classList.remove('active');
+  });
+  const t = document.getElementById('screen-' + name);
+  if (t) t.classList.add('active');
+  window.scrollTo(0,0);
+}
+
+/* ── BOOT ─────────────────────────────────────── */
+async function init() {
+  document.getElementById('tbDate').textContent =
+    new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'});
+  document.getElementById('poDate').value = P.date;
+  await loadAll();
+}
+
+async function loadAll() {
+  const [cr, pr, por] = await Promise.all([
+    DB().from('procurement_clients').select('*').order('name'),
+    DB().from('procurement_projects').select('*').order('name'),
+    DB().from('purchase_orders')
+      .select('*, procurement_projects(name, client_id, procurement_clients(name))')
+      .order('created_at', { ascending: false })
+  ]);
+  allClients  = cr.data  || [];
+  allProjects = pr.data  || [];
+  allPOs      = por.data || [];
+  renderPoList();
+}
+
+/* ── PO LIST ──────────────────────────────────── */
+function renderPoList() {
+  const body = document.getElementById('listBody');
+  if (!allPOs.length) {
+    body.innerHTML = `<div class="empty-state">
+      <h2>No purchase orders yet.</h2>
+      <p>Create your first PO to start tracking procurement for a project.</p>
+    </div>`;
+    return;
+  }
+  const grouped = {};
+  allPOs.forEach(po => {
+    const proj        = po.procurement_projects || {};
+    const clientName  = proj.procurement_clients?.name || 'Unknown Client';
+    const projName    = proj.name || 'Unknown Project';
+    if (!grouped[clientName]) grouped[clientName] = {};
+    if (!grouped[clientName][projName]) grouped[clientName][projName] = [];
+    grouped[clientName][projName].push(po);
+  });
+  let html = '';
+  for (const [client, projects] of Object.entries(grouped)) {
+    html += `<div class="client-group"><div class="client-group-hd">${esc(client)}</div>`;
+    for (const [proj, pos] of Object.entries(projects)) {
+      html += `<div class="project-group"><div class="project-group-hd">${esc(proj)}</div><div class="po-cards">`;
+      pos.forEach(po => {
+        const badge = `<span class="status-badge s-${po.status}">${po.status}</span>`;
+        html += `<div class="po-card" onclick="openPO('${po.id}')">
+          <div class="po-card-num">${esc(po.po_number)}</div>
+          <div class="po-card-info">
+            <div class="po-card-notes">${esc(po.notes || '—')}</div>
+            <div class="po-card-date">${po.date ? fmtDate(po.date) : 'No date'}</div>
+          </div>
+          ${badge}
+          <div class="po-card-total">
+            <span class="po-card-total-lbl">Client Total</span>
+            <div class="po-card-total-amt" id="pct-${po.id}">—</div>
+          </div>
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="color:var(--muted);flex-shrink:0"><path d="M4 7h6M7 4l3 3-3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>`;
+      });
+      html += `</div></div>`;
+    }
+    html += `</div>`;
+  }
+  body.innerHTML = html;
+  // Load totals for each PO asynchronously
+  allPOs.forEach(po => loadPoTotal(po.id));
+}
+
+async function loadPoTotal(poId) {
+  const { data } = await DB().from('po_line_items').select('qty,unit_cost,tax_rate,markup_pct').eq('po_id', poId);
+  if (!data) return;
+  let total = 0;
+  data.forEach(it => {
+    total += it.unit_cost * (1 + it.markup_pct/100) * it.qty
+           + it.unit_cost * it.qty * (it.tax_rate/100);
+  });
+  const el = document.getElementById('pct-' + poId);
+  if (el) el.textContent = total > 0 ? fmtMoney(total) : '—';
+}
+
+/* ── NEW / OPEN PO ────────────────────────────── */
+function newPO() {
+  P.id = null; P.client_id = null; P.project_id = null;
+  P.po_number = ''; P.date = today(); P.status = 'draft'; P.notes = '';
+  P.items = [blankItem()];
+  renderEditor();
+  go('po');
+}
+
+async function openPO(id) {
+  const [{ data: po }, { data: items }] = await Promise.all([
+    DB().from('purchase_orders').select('*').eq('id', id).single(),
+    DB().from('po_line_items').select('*').eq('po_id', id).order('sort_order')
+  ]);
+  if (!po) return;
+  P.id = po.id; P.po_number = po.po_number; P.date = po.date || '';
+  P.status = po.status; P.notes = po.notes || '';
+  const proj = allProjects.find(p => p.id === po.project_id);
+  P.project_id = po.project_id;
+  P.client_id  = proj?.client_id || null;
+  P.items = (items || []).map(it => ({
+    _k: ++_seq, id: it.id,
+    category: it.category || '', item_name: it.item_name || '',
+    description: it.description || '', source: it.source || '',
+    product_url: it.product_url || '', image_url: it.image_url || '',
+    qty: +it.qty || 1, unit_cost: +it.unit_cost || 0,
+    tax_rate: it.tax_rate ?? 7, markup_pct: it.markup_pct ?? 15,
+    internal_notes: it.internal_notes || '', _open: false
+  }));
+  if (!P.items.length) P.items = [blankItem()];
+  renderEditor();
+  go('po');
+}
+
+/* ── EDITOR ───────────────────────────────────── */
+function renderEditor() {
+  document.getElementById('poDate').value   = P.date;
+  document.getElementById('poStatus').value = P.status;
+  document.getElementById('poNotes').value  = P.notes;
+  const csel = document.getElementById('clientSel');
+  csel.innerHTML = '<option value="">Select client…</option>'
+    + allClients.map(c => `<option value="${c.id}"${c.id===P.client_id?' selected':''}>${esc(c.name)}</option>`).join('')
+    + '<option value="__new__">+ Add new client…</option>';
+  populateProjects();
+  renderItems();
+  renderTotals();
+  document.getElementById('btnViewDoc').disabled = !P.id;
+}
+
+function populateProjects() {
+  const psel = document.getElementById('projectSel');
+  const list = allProjects.filter(p => p.client_id === P.client_id);
+  psel.disabled = !P.client_id;
+  psel.innerHTML = '<option value="">Select project…</option>'
+    + list.map(p => `<option value="${p.id}"${p.id===P.project_id?' selected':''}>${esc(p.name)}</option>`).join('')
+    + (P.client_id ? '<option value="__new__">+ Add new project…</option>' : '');
+}
+
+function onClientChange(v) {
+  if (v === '__new__') {
+    document.getElementById('clientSel').value = P.client_id || '';
+    document.getElementById('newClientForm').classList.add('show');
+    document.getElementById('newClientName').focus();
+    return;
+  }
+  P.client_id = v || null; P.project_id = null;
+  populateProjects();
+}
+
+function onProjectChange(v) {
+  if (v === '__new__') {
+    document.getElementById('projectSel').value = P.project_id || '';
+    document.getElementById('newProjectForm').classList.add('show');
+    document.getElementById('newProjectName').focus();
+    return;
+  }
+  P.project_id = v || null;
+}
+
+async function createClient() {
+  const name = document.getElementById('newClientName').value.trim();
+  if (!name) return;
+  const { data } = await DB().from('procurement_clients').insert({ name }).select().single();
+  if (data) { allClients.push(data); P.client_id = data.id; hideNewClient(); renderEditor(); }
+}
+function hideNewClient() {
+  document.getElementById('newClientForm').classList.remove('show');
+  document.getElementById('newClientName').value = '';
+}
+
+async function createProject() {
+  const name = document.getElementById('newProjectName').value.trim();
+  if (!name || !P.client_id) return;
+  const { data } = await DB().from('procurement_projects').insert({ name, client_id: P.client_id }).select().single();
+  if (data) {
+    allProjects.push(data); P.project_id = data.id;
+    hideNewProject(); populateProjects();
+    document.getElementById('projectSel').value = data.id;
+  }
+}
+function hideNewProject() {
+  document.getElementById('newProjectForm').classList.remove('show');
+  document.getElementById('newProjectName').value = '';
+}
+
+/* ── LINE ITEMS ───────────────────────────────── */
+function addRow() {
+  P.items.push(blankItem());
+  renderItems(); renderTotals();
+  setTimeout(() => {
+    const nn = document.querySelectorAll('.ti-name');
+    if (nn.length) nn[nn.length-1].focus();
+  }, 50);
+}
+
+function deleteRow(k) {
+  P.items = P.items.filter(i => i._k !== k);
+  if (!P.items.length) P.items = [blankItem()];
+  renderItems(); renderTotals();
+}
+
+function toggleDet(k) {
+  const it = P.items.find(i => i._k === k);
+  if (!it) return;
+  it._open = !it._open;
+  document.getElementById('det-' + k)?.classList.toggle('open', it._open);
+  const btn = document.getElementById('xbtn-' + k);
+  if (btn) btn.textContent = it._open ? '▲' : '▼';
+}
+
+function readRow(k) {
+  const it = P.items.find(i => i._k === k); if (!it) return;
+  it.category       = gv('cat-'+k);
+  it.item_name      = gv('nm-'+k);
+  it.source         = gv('src-'+k);
+  it.qty            = parseFloat(gv('qty-'+k)) || 0;
+  it.unit_cost      = parseFloat(gv('uc-'+k))  || 0;
+  it.tax_rate       = parseFloat(gv('tr-'+k))  || 0;
+  it.markup_pct     = parseFloat(gv('mp-'+k))  || 0;
+  it.description    = gv('dsc-'+k);
+  it.product_url    = gv('pu-'+k);
+  it.image_url      = gv('iu-'+k);
+  it.internal_notes = gv('in-'+k);
+}
+
+function onRowChange(k) {
+  readRow(k);
+  const it = P.items.find(i => i._k === k);
+  if (it) {
+    const el = document.getElementById('ct-'+k);
+    if (el) el.textContent = fmtMoney(clientLineTotal(it));
+  }
+  renderTotals();
+}
+
+function onImgUrlChange(k) {
+  const it = P.items.find(i => i._k === k); if (!it) return;
+  it.image_url = gv('iu-'+k);
+  const th = document.getElementById('ith-'+k);
+  if (!th) return;
+  if (it.image_url) {
+    if (th.tagName === 'DIV') {
+      const img = document.createElement('img');
+      img.id = 'ith-'+k; img.className = 'img-thumb';
+      img.src = it.image_url; img.onerror = () => { img.style.display='none'; };
+      th.replaceWith(img);
+    } else { th.src = it.image_url; th.style.display = ''; }
+  }
+}
+
+async function fetchImg(k) {
+  const url = gv('pu-'+k); if (!url) return;
+  const btn = document.getElementById('fb-'+k);
+  btn.textContent = '…'; btn.disabled = true;
+  try {
+    const r = await fetch(`/.netlify/functions/fetch-og?url=${encodeURIComponent(url)}`);
+    const j = await r.json();
+    if (j.imageUrl) {
+      const it = P.items.find(i => i._k === k);
+      if (it) it.image_url = j.imageUrl;
+      const iuEl = document.getElementById('iu-'+k);
+      if (iuEl) { iuEl.value = j.imageUrl; onImgUrlChange(k); }
+    }
+  } catch(e) {}
+  btn.textContent = 'Fetch Image'; btn.disabled = false;
+}
+
+function clientLineTotal(it) {
+  return it.unit_cost * (1 + it.markup_pct/100) * it.qty
+       + it.unit_cost * it.qty * (it.tax_rate/100);
+}
+function costLineTotal(it) {
+  return it.unit_cost * it.qty * (1 + it.tax_rate/100);
+}
+
+function renderItems() {
+  const n = P.items.length;
+  document.getElementById('itemCount').textContent = n + ' item' + (n!==1?'s':'');
+  document.getElementById('itemTbody').innerHTML = P.items.map((it,i) => rowHTML(it,i)).join('');
+}
+
+function rowHTML(it, idx) {
+  const catOpts = CATS.map(c => `<option value="${c}"${it.category===c?' selected':''}>${c||'—'}</option>`).join('');
+  const ct = clientLineTotal(it);
+  const imgBlock = it.image_url
+    ? `<img class="img-thumb" id="ith-${it._k}" src="${esc(it.image_url)}" onerror="this.style.display='none'">`
+    : `<div class="img-ph" id="ith-${it._k}"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="3" width="14" height="12" rx="1.5" stroke="rgba(37,14,15,0.25)" stroke-width="1.2"/><circle cx="6.5" cy="7.5" r="1.5" stroke="rgba(37,14,15,0.25)" stroke-width="1.2"/><path d="M2 13l4-4 3 3 2-2 5 5" stroke="rgba(37,14,15,0.25)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>`;
+  return `
+<tr>
+  <td class="c-num">${idx+1}</td>
+  <td class="c-cat"><select class="ti" id="cat-${it._k}" onchange="onRowChange(${it._k})">${catOpts}</select></td>
+  <td class="c-name"><input class="ti ti-name" id="nm-${it._k}" type="text" value="${esc(it.item_name)}" placeholder="Item name…" oninput="onRowChange(${it._k})"></td>
+  <td class="c-src"><input class="ti" id="src-${it._k}" type="text" value="${esc(it.source)}" placeholder="Source…" oninput="onRowChange(${it._k})"></td>
+  <td class="c-qty"><input class="ti r" id="qty-${it._k}" type="number" value="${it.qty}" min="0.01" step="0.01" oninput="onRowChange(${it._k})"></td>
+  <td class="c-cost"><input class="ti r" id="uc-${it._k}" type="number" value="${it.unit_cost}" min="0" step="0.01" oninput="onRowChange(${it._k})"></td>
+  <td class="c-tax"><input class="ti r" id="tr-${it._k}" type="number" value="${it.tax_rate}" min="0" max="100" step="0.1" oninput="onRowChange(${it._k})"></td>
+  <td class="c-mkup"><input class="ti r" id="mp-${it._k}" type="number" value="${it.markup_pct}" min="0" step="0.5" oninput="onRowChange(${it._k})"></td>
+  <td class="c-total" id="ct-${it._k}">${fmtMoney(ct)}</td>
+  <td class="c-act">
+    <button class="xbtn" id="xbtn-${it._k}" onclick="toggleDet(${it._k})" title="Details">${it._open?'▲':'▼'}</button>
+    <button class="dbtn" onclick="deleteRow(${it._k})" title="Remove">×</button>
+  </td>
+</tr>
+<tr id="det-${it._k}" class="det-row${it._open?' open':''}">
+  <td colspan="10">
+    <div class="det-grid">
+      <div class="fg">
+        <label class="fl">Description</label>
+        <textarea class="fi" id="dsc-${it._k}" rows="2" placeholder="Describe the item…" oninput="onRowChange(${it._k})">${esc(it.description)}</textarea>
+      </div>
+      <div class="fg">
+        <label class="fl">Product URL</label>
+        <div style="display:flex;gap:8px;align-items:flex-end">
+          <input class="fi" style="flex:1;margin-bottom:0" id="pu-${it._k}" type="url" value="${esc(it.product_url)}" placeholder="https://…" oninput="onRowChange(${it._k})">
+          <button class="fetch-btn" id="fb-${it._k}" onclick="fetchImg(${it._k})">Fetch Image</button>
+        </div>
+        <label class="fl" style="margin-top:10px">Image URL</label>
+        <div class="img-row">
+          <input class="fi" id="iu-${it._k}" type="url" value="${esc(it.image_url)}" placeholder="Direct image URL…" oninput="onImgUrlChange(${it._k})">
+          ${imgBlock}
+        </div>
+      </div>
+      <div class="fg">
+        <label class="fl">Internal Notes</label>
+        <textarea class="fi" id="in-${it._k}" rows="3" placeholder="Lead time, delivery notes, reference #…" oninput="onRowChange(${it._k})">${esc(it.internal_notes)}</textarea>
+      </div>
+    </div>
+  </td>
+</tr>`;
+}
+
+/* ── TOTALS ───────────────────────────────────── */
+function renderTotals() {
+  const agg = P.items.reduce((a,it) => {
+    a.goodsCost   += it.unit_cost * it.qty;
+    a.tax         += it.unit_cost * it.qty * (it.tax_rate/100);
+    a.goodsClient += it.unit_cost * (1 + it.markup_pct/100) * it.qty;
+    return a;
+  }, { goodsCost:0, tax:0, goodsClient:0 });
+
+  sv('t-gc', fmtMoney(agg.goodsCost));
+  sv('t-tx', fmtMoney(agg.tax));
+  sv('t-tc', fmtMoney(agg.goodsCost + agg.tax));
+  sv('c-gc', fmtMoney(agg.goodsClient));
+  sv('c-tx', fmtMoney(agg.tax));
+  sv('c-tc', fmtMoney(agg.goodsClient + agg.tax));
+}
+
+/* ── SAVE PO ──────────────────────────────────── */
+async function savePO() {
+  P.client_id  = document.getElementById('clientSel').value  || P.client_id;
+  P.project_id = document.getElementById('projectSel').value || P.project_id;
+  P.date       = document.getElementById('poDate').value;
+  P.status     = document.getElementById('poStatus').value;
+  P.notes      = document.getElementById('poNotes').value;
+  if (!P.project_id) { alert('Please select a client and project first.'); return; }
+  P.items.forEach(it => readRow(it._k));
+
+  const btn = document.getElementById('btnSave');
+  btn.textContent = 'Saving…'; btn.disabled = true;
+  try {
+    if (!P.po_number) {
+      const { count } = await DB().from('purchase_orders')
+        .select('*', { count:'exact', head:true }).eq('project_id', P.project_id);
+      P.po_number = 'PO-' + String((count||0)+1).padStart(3,'0');
+    }
+    const payload = {
+      project_id: P.project_id, po_number: P.po_number,
+      date: P.date || null, status: P.status, notes: P.notes,
+      updated_at: new Date().toISOString()
+    };
+    let pid = P.id;
+    if (pid) {
+      await DB().from('purchase_orders').update(payload).eq('id', pid);
+    } else {
+      const { data } = await DB().from('purchase_orders').insert(payload).select().single();
+      pid = data?.id; P.id = pid;
+    }
+    if (!pid) throw new Error('Failed to save PO header');
+
+    await DB().from('po_line_items').delete().eq('po_id', pid);
+    const linePayloads = P.items.map((it, idx) => ({
+      po_id: pid, sort_order: idx,
+      category: it.category, item_name: it.item_name,
+      description: it.description, source: it.source,
+      product_url: it.product_url, image_url: it.image_url,
+      qty: it.qty, unit_cost: it.unit_cost,
+      tax_rate: it.tax_rate, markup_pct: it.markup_pct,
+      internal_notes: it.internal_notes
+    }));
+    if (linePayloads.length) await DB().from('po_line_items').insert(linePayloads);
+
+    btn.textContent = 'Saved ✓';
+    setTimeout(() => { btn.textContent = 'Save PO'; btn.disabled = false; }, 1800);
+    document.getElementById('btnViewDoc').disabled = false;
+    await loadAll();
+  } catch(e) {
+    alert('Save failed: ' + e.message);
+    btn.textContent = 'Save PO'; btn.disabled = false;
+  }
+}
+
+/* ── DOCUMENT ─────────────────────────────────── */
+function showDoc() { renderDoc(); go('doc'); }
+
+function renderDoc() {
+  P.items.forEach(it => readRow(it._k));
+  const client  = allClients.find(c => c.id === P.client_id);
+  const project = allProjects.find(p => p.id === P.project_id);
+  const agg = P.items.reduce((a,it) => {
+    a.goods += it.unit_cost * (1 + it.markup_pct/100) * it.qty;
+    a.tax   += it.unit_cost * it.qty * (it.tax_rate/100);
+    return a;
+  }, { goods:0, tax:0 });
+
+  const rows = P.items.map(it => {
+    const cup = it.unit_cost * (1 + it.markup_pct/100);
+    const ct  = cup * it.qty + it.unit_cost * it.qty * (it.tax_rate/100);
+    const img = it.image_url
+      ? `<img class="doc-item-img" src="${esc(it.image_url)}" onerror="this.className='doc-item-img-ph'">`
+      : `<div class="doc-item-img-ph"></div>`;
+    return `<tr>
+      <td style="width:70px;padding:10px 12px">${img}</td>
+      <td>
+        ${it.category?`<div class="doc-item-cat">${esc(it.category)}</div>`:''}
+        <div class="doc-item-name">${esc(it.item_name||'—')}</div>
+        ${it.description?`<div class="doc-item-desc">${esc(it.description)}</div>`:''}
+        ${it.source?`<div class="doc-item-desc">Source: ${esc(it.source)}</div>`:''}
+        ${it.product_url?`<div class="doc-item-desc" style="margin-top:2px"><a href="${esc(it.product_url)}" target="_blank" style="color:var(--slate);font-size:11px">View product →</a></div>`:''}
+      </td>
+      <td style="text-align:center;width:48px">${it.qty%1===0?it.qty:it.qty.toFixed(2)}</td>
+      <td class="r" style="width:105px">${fmtMoney(cup)}</td>
+      <td class="r" style="width:105px">${fmtMoney(ct)}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('docWrap').innerHTML = `
+    <div class="doc-ph">
+      <div class="doc-ph-brand">
+        <img src="/logos/rek-full-wordmark-white.svg" alt="Rek Design Studio">
+        <div class="doc-ph-sub">Design Studio</div>
+      </div>
+      <div class="doc-ph-right">
+        <div class="doc-ph-label">Purchase Order</div>
+        <div class="doc-ph-num">${esc(P.po_number||'Draft')}</div>
+        <div class="doc-ph-date">${P.date ? fmtDate(P.date) : fmtDate(today())}</div>
+      </div>
+    </div>
+    <div class="doc-meta">
+      <div class="doc-meta-block"><label>Client</label><span>${esc(client?.name||'—')}</span></div>
+      <div class="doc-meta-block"><label>Project</label><span>${esc(project?.name||'—')}</span></div>
+      <div class="doc-meta-block">
+        <label>Status</label>
+        <span class="status-badge s-${P.status}">${P.status}</span>
+      </div>
+      ${P.notes?`<div class="doc-meta-block"><label>Notes</label><span style="font-size:12px;font-weight:400">${esc(P.notes)}</span></div>`:''}
+    </div>
+    <div class="doc-items-wrap">
+      <table class="doc-tbl">
+        <thead><tr>
+          <th style="width:70px"></th>
+          <th>Item</th>
+          <th style="text-align:center;width:48px">Qty</th>
+          <th class="r" style="width:105px">Unit Price</th>
+          <th class="r" style="width:105px">Total</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+    <div class="doc-totals">
+      <div class="doc-tot-table">
+        <div class="doc-tot-row"><span>Subtotal</span><span>${fmtMoney(agg.goods)}</span></div>
+        <div class="doc-tot-row"><span>Tax</span><span>${fmtMoney(agg.tax)}</span></div>
+        <div class="doc-tot-row grand"><span>Total</span><span>${fmtMoney(agg.goods+agg.tax)}</span></div>
+      </div>
+    </div>
+    <div class="doc-footer">
+      <span>Rek Design Studio</span>
+      <span>${esc(P.po_number||'')}</span>
+    </div>`;
+}
+
+/* ── HELPERS ──────────────────────────────────── */
+function gv(id) { const e = document.getElementById(id); return e ? e.value : ''; }
+function sv(id, t) { const e = document.getElementById(id); if (e) e.textContent = t; }
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function fmtMoney(n) {
+  return '$' + Number(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+function fmtDate(d) {
+  if (!d) return '';
+  const [y,m,dy] = d.split('-');
+  return new Date(+y,+m-1,+dy).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+}
+function today() { return new Date().toISOString().slice(0,10); }
+
+init();
+</script>
+</body>
+</html>
