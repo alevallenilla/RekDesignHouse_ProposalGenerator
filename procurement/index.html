@@ -25,19 +25,23 @@ body { font-family:'Inter',sans-serif; background:var(--ivory); color:var(--ink)
 
 /* ── TOPBAR ─────────────────────────────────────── */
 .topbar {
-  position:fixed; top:0; left:0; right:0; height:52px;
+  position:fixed; top:0; left:0; right:0; height:56px;
   background:var(--ink); z-index:100;
-  display:flex; align-items:center; padding:0 24px;
-  border-bottom:1px solid rgba(255,255,255,0.06);
+  display:flex; align-items:center; padding:0 28px;
+  justify-content:space-between;
 }
-.tb-logo { height:22px; width:auto; display:block; }
-.tb-div  { width:1px; height:18px; background:rgba(255,255,255,0.15); margin:0 14px; }
-.tb-title{ font-size:12px; font-weight:500; color:rgba(245,245,245,0.65); letter-spacing:0.04em; }
-.tb-right{ margin-left:auto; }
-.tb-date { font-size:11px; color:rgba(245,245,245,0.35); }
+.tb-brand{ display:flex; align-items:center; gap:12px; }
+.tb-logo { height:28px; width:auto; display:block; }
+.tb-sub  {
+  font-family:'Inter',sans-serif; font-size:9px; font-weight:500;
+  letter-spacing:0.22em; text-transform:uppercase;
+  color:rgba(245,245,245,0.48); margin-left:2px;
+}
+.tb-right{ display:flex; align-items:center; }
+.tb-date { font-family:'Inter',sans-serif; font-size:11px; color:rgba(245,245,245,0.45); }
 
 /* ── LAYOUT ─────────────────────────────────────── */
-.page-wrap{ padding-top:52px; min-height:100vh; }
+.page-wrap{ padding-top:56px; min-height:100vh; }
 .screen   { display:none; }
 .screen.active{ display:block; }
 
@@ -360,9 +364,10 @@ textarea.fi{ resize:vertical; }
 
 <!-- ── TOPBAR ────────────────────────────────────── -->
 <header class="topbar">
-  <img src="/logos/rek-wordmark-white.svg" alt="R" class="tb-logo">
-  <span class="tb-div"></span>
-  <span class="tb-title">Procurement Tool</span>
+  <div class="tb-brand">
+    <img class="tb-logo" src="/logos/rek-wordmark-white.svg" alt="Rek Design Studio">
+    <span class="tb-sub">Design Studio</span>
+  </div>
   <div class="tb-right"><span class="tb-date" id="tbDate"></span></div>
 </header>
 
