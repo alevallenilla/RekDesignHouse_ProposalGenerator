@@ -603,6 +603,7 @@
     /* ══════════════════════════════════════════
        PRINT
     ══════════════════════════════════════════ */
+    @page { margin: 0; }
     @media print {
       * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 
@@ -717,8 +718,8 @@
           <div class="cs">Client submits questionnaire + inspiration; Hanna delivers design plan + shoppable selections.</div>
         </button>
         <button class="choice" onclick="pickSvc('styling',this)">
-          <div class="ct">The Styling Edit <span class="tag"> — $499/space · Virtual</span></div>
-          <div class="cs">One-time virtual consultation. 90-min Zoom + curated presentation per furnished space.</div>
+          <div class="ct">The Styling Edit <span class="tag"> — $499 · Virtual</span></div>
+          <div class="cs">Flat-fee virtual styling session. 90-min Zoom + personalized PDF recap with curated links and recommendations.</div>
         </button>
         <button class="choice" onclick="pickSvc('call',this)">
           <div class="ct">Discovery Call <span class="tag"> — $99 · Qualifying</span></div>
@@ -829,6 +830,7 @@
         </button>
       </div>
       <div class="btn-col">
+        <button class="btn-g" onclick="goResultBack()">← Back</button>
         <button class="btn-g" onclick="restart()">← New Quote</button>
       </div>
     </div>
@@ -953,7 +955,7 @@ const SVC = {
   fse:       { name:'Full Studio Experience', badge:'Hourly · In-person',    desc:'Full-service residential design from concept to completion. Includes concept development, sourcing, procurement, and installation oversight.' },
   atelier:   { name:'E-Design Atelier',       badge:'Hourly · Virtual',      desc:'A guided virtual design process with live Zoom sessions and revision rounds. All deliverables are digital — faster turnaround, no site visits required.' },
   signature: { name:'The Signature Room',     badge:'Flat fee · Async',      desc:'Client submits a questionnaire and inspiration images; Hanna delivers a custom design plan and shoppable selections. No meetings required.' },
-  styling:   { name:'The Styling Edit',       badge:'$499 per space · Virtual', desc:'A one-time virtual consultation per furnished space. Includes styling questionnaire, up to 90-minute Zoom session, curated presentation, and follow-up call.' },
+  styling:   { name:'The Styling Edit',       badge:'$499 · Virtual', desc:'A virtual styling service designed for clients who already have the foundational pieces in their home but need help refining, elevating, and pulling the space together cohesively. Ideal for those looking for a fresh perspective, styling guidance, layout feedback, or support creating a more intentional and polished space. During our up to 90-minute virtual session, we\'ll walk through your space together and discuss styling and decor, layout improvements, furniture placement, lighting, artwork, layering, color balance, and recommendations for pieces that could elevate the overall feel of the room.' },
   call:      { name:'Discovery Call',         badge:'Qualifying · $99',      desc:'A scoping session to assess fit, understand the space and goals, and recommend the right service tier. The $99 fee is credited toward any service booked.' },
 };
 
@@ -963,9 +965,11 @@ const S = {
   name:'', project:'', addr:'', date:'', notes:'',
   svc:     null,
   rooms:   new Set(),
+  customRooms: [],
   cx:      null,
   proc:    0,
   quote:   null,
+  generatedDate: '',
 };
 
 /* ─── PROGRESS ───────────────────────────────── */
@@ -1034,7 +1038,8 @@ function pickSvc(val, btn) {
   document.getElementById('btnSvc').disabled = false;
 }
 function handleSvc() {
-  if (S.svc === 'call') { buildCallQ(); go('result'); return; }
+  if (S.svc === 'call')    { buildCallQ();    go('result'); return; }
+  if (S.svc === 'styling') { buildStylingQ(); go('result'); return; }
   setupRooms();
   go('rooms');
 }
@@ -1065,13 +1070,13 @@ function setupRooms() {
   document.getElementById('roomsDesc').textContent    = DESCS[svc] || '';
   document.getElementById('roomsFn').textContent      = FNS[svc]   || '';
 
+  S.customRooms = [];
   const grid = document.getElementById('roomGrid');
   grid.innerHTML = '';
   ROOMS.forEach(r => {
     let sub = '';
-    if (ht)             sub = (ht[r.id] ? `${ht[r.id].mn}–${ht[r.id].mx} hrs` : '');
+    if (ht)                  sub = (ht[r.id] ? `${ht[r.id].mn}–${ht[r.id].mx} hrs` : '');
     else if (svc==='signature') sub = fmt(r.sig);
-    else if (svc==='styling')   sub = '$499';
 
     const tile = document.createElement('div');
     tile.className   = 'rtile';
@@ -1089,6 +1094,14 @@ function setupRooms() {
     tile.addEventListener('click', () => toggleRoom(r.id, tile));
     grid.appendChild(tile);
   });
+
+  // Custom space button (below grid, full width)
+  const addCustomBtn = document.createElement('button');
+  addCustomBtn.className = 'btn-g';
+  addCustomBtn.style.cssText = 'margin-top:6px;margin-bottom:18px;font-size:11px;';
+  addCustomBtn.textContent = '+ Add custom space';
+  addCustomBtn.onclick = () => addCustomRoom(svc, ht);
+  grid.after(addCustomBtn);
 
   updateRunTotal();
   document.getElementById('btnRooms').disabled = true;
@@ -1134,6 +1147,54 @@ function handleRooms() {
   }
 }
 
+/* ─── CUSTOM ROOMS ───────────────────────────── */
+let _crid = 0;
+function addCustomRoom(svc, ht) {
+  const id = '__custom_' + (++_crid) + '__';
+  S.customRooms.push({ id, name:'', mn:6, mx:12, sig:400 });
+  S.rooms.add(id);
+
+  const wrap = document.createElement('div');
+  wrap.id = 'cr-' + id;
+  wrap.style.cssText = 'grid-column:1/-1;background:rgba(76,98,112,0.06);border:1px solid rgba(76,98,112,0.2);border-radius:8px;padding:12px 14px;margin-bottom:4px;display:flex;flex-direction:column;gap:8px;';
+
+  const isHourly = ht !== null;
+  wrap.innerHTML = `
+    <div style="display:flex;gap:8px;align-items:center">
+      <input type="text" placeholder="Space description…" value=""
+        style="flex:1;font-family:'Inter',sans-serif;font-size:12.5px;border:1px solid var(--border);border-radius:6px;padding:7px 10px;outline:none;color:var(--char);"
+        oninput="updateCustomRoom('${id}','name',this.value)">
+      ${isHourly ? `
+        <input type="number" value="6" min="1" placeholder="Min hrs" title="Min hours"
+          style="width:72px;font-family:'Inter',sans-serif;font-size:12.5px;border:1px solid var(--border);border-radius:6px;padding:7px 10px;outline:none;text-align:center;"
+          oninput="updateCustomRoom('${id}','mn',+this.value)">
+        <span style="font-size:11px;color:var(--muted)">–</span>
+        <input type="number" value="12" min="1" placeholder="Max hrs" title="Max hours"
+          style="width:72px;font-family:'Inter',sans-serif;font-size:12.5px;border:1px solid var(--border);border-radius:6px;padding:7px 10px;outline:none;text-align:center;"
+          oninput="updateCustomRoom('${id}','mx',+this.value)">
+        <span style="font-size:11px;color:var(--muted)">hrs</span>` : `
+        <input type="number" value="400" min="0" placeholder="Price" title="Flat price"
+          style="width:88px;font-family:'Inter',sans-serif;font-size:12.5px;border:1px solid var(--border);border-radius:6px;padding:7px 10px;outline:none;text-align:right;"
+          oninput="updateCustomRoom('${id}','sig',+this.value)">
+      `}
+      <button onclick="removeCustomRoom('${id}')" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:16px;padding:2px 6px;border-radius:4px;" title="Remove">×</button>
+    </div>`;
+  document.getElementById('roomGrid').after(wrap);
+  document.getElementById('btnRooms').disabled = false;
+  updateRunTotal();
+}
+function updateCustomRoom(id, field, val) {
+  const cr = S.customRooms.find(r => r.id === id);
+  if (cr) { cr[field] = val; updateRunTotal(); }
+}
+function removeCustomRoom(id) {
+  S.customRooms = S.customRooms.filter(r => r.id !== id);
+  S.rooms.delete(id);
+  document.getElementById('cr-' + id)?.remove();
+  document.getElementById('btnRooms').disabled = (S.rooms.size === 0);
+  updateRunTotal();
+}
+
 /* ─── COMPLEXITY ─────────────────────────────── */
 function pickCx(val, btn) {
   document.querySelectorAll('#ch-cx .choice').forEach(b=>b.classList.remove('sel'));
@@ -1156,11 +1217,23 @@ function updateRates() {
 }
 
 /* ─── QUOTE BUILDERS ─────────────────────────── */
+function buildStylingQ() {
+  S.quote = { type:'flat', svc:'styling', floor:499, rec:499, proposal:499, ceiling:499 };
+  renderResult();
+}
+
 function buildHourlyQ() {
   const ht  = S.svc === 'fse' ? FSE : ATL;
   const mul = CMULT[S.cx] || 1.0;
   let mn=0, mx=0;
-  S.rooms.forEach(id => { const h=ht[id]||{mn:0,mx:0}; mn+=h.mn; mx+=h.mx; });
+  S.rooms.forEach(id => {
+    if (id.startsWith('__custom_')) {
+      const cr = S.customRooms.find(r => r.id === id);
+      if (cr) { mn += (+cr.mn||0); mx += (+cr.mx||0); }
+    } else {
+      const h=ht[id]||{mn:0,mx:0}; mn+=h.mn; mx+=h.mx;
+    }
+  });
 
   const floor    = r100(mn * HR);                              // min hrs, no multiplier
   const mid      = r100(((mn+mx)/2) * HR * mul);              // midpoint × complexity
@@ -1184,8 +1257,13 @@ function buildHourlyQ() {
 function buildFlatQ() {
   let total = 0;
   S.rooms.forEach(id => {
-    const r = ROOMS.find(x=>x.id===id);
-    total += S.svc==='styling' ? 499 : (r?r.sig:0);
+    if (id.startsWith('__custom_')) {
+      const cr = S.customRooms.find(r => r.id === id);
+      total += cr ? (+cr.sig||0) : 0;
+    } else {
+      const r = ROOMS.find(x=>x.id===id);
+      total += r ? r.sig : 0;
+    }
   });
   S.quote = { type:'flat', svc:S.svc, floor:total, rec:total, proposal:total, ceiling:total };
   renderResult();
@@ -1247,14 +1325,51 @@ function renderResult() {
   }
 }
 
+function goResultBack() {
+  if (S.svc === 'fse' || S.svc === 'atelier') { go('complexity'); }
+  else if (S.svc === 'call' || S.svc === 'styling') { go('service'); }
+  else { go('rooms'); }
+}
+
 /* ─── PROPOSAL ───────────────────────────────── */
 function goProposal() {
-  document.getElementById('editExpiry').value = addDays(S.date || today(), 14);
+  S.generatedDate = today();
+  document.getElementById('editExpiry').value = addDays(S.generatedDate, 14);
   document.getElementById('editPrice').value  = '';
   document.getElementById('editNotes').value  = '';
   document.getElementById('editSqft').value   = '';
   renderProposal();
   go('proposal');
+}
+
+function restoreUIState() {
+  // Re-select service button
+  document.querySelectorAll('#ch-service .choice').forEach(b => {
+    const m = b.getAttribute('onclick')?.match(/pickSvc\('(\w+)'/);
+    if (m) { b.classList.toggle('sel', m[1] === S.svc); }
+  });
+  document.getElementById('btnSvc').disabled = !S.svc;
+  // Re-render and re-select rooms
+  if (S.svc && S.svc !== 'call' && S.svc !== 'styling') {
+    const savedRooms = new Set(S.rooms);
+    setupRooms();
+    document.querySelectorAll('.rtile').forEach(tile => {
+      if (savedRooms.has(tile.dataset.rid)) {
+        tile.classList.add('sel');
+        S.rooms.add(tile.dataset.rid);
+      }
+    });
+    document.getElementById('btnRooms').disabled = S.rooms.size === 0;
+    updateRunTotal();
+  }
+  // Re-select complexity
+  if (S.cx) {
+    document.querySelectorAll('#ch-cx .choice').forEach(b => {
+      const m = b.getAttribute('onclick')?.match(/pickCx\('(\w+)'/);
+      if (m) { b.classList.toggle('sel', m[1] === S.cx); }
+    });
+    document.getElementById('btnCx').disabled = false;
+  }
 }
 
 function renderProposal() {
@@ -1267,10 +1382,11 @@ function renderProposal() {
   const extraNotes = document.getElementById('editNotes').value.trim();
   const sqft       = document.getElementById('editSqft').value.trim();
 
-  const dep = r100(finalPrice * 0.5);
-  const bal = finalPrice - dep;
+  const fullUpfront = (q.svc === 'styling' || q.svc === 'call');
+  const dep = fullUpfront ? finalPrice : r100(finalPrice * 0.5);
+  const bal = fullUpfront ? 0 : (finalPrice - dep);
 
-  const effectiveDate = fmtD(S.date || today());
+  const effectiveDate = fmtD(S.generatedDate || S.date || today());
   const expiryDate    = expiry ? fmtD(expiry) : '';
 
   // ── Page 1: Services table rows ──────────────────────────────────────
@@ -1308,10 +1424,19 @@ function renderProposal() {
           <td class="p-td-total">${fmt(q.procFee)}</td>
         </tr>`;
     }
+  } else if (q.type === 'flat' && q.svc === 'styling') {
+    tableRows = `
+      <tr>
+        <td class="p-td-area">Virtual Session</td>
+        <td class="p-td-qty">1</td>
+        <td class="p-td-desc">The Styling Edit — Up to 90-min virtual Zoom session + personalized PDF recap</td>
+        <td class="p-td-amt">$499</td>
+        <td class="p-td-total">$499</td>
+      </tr>`;
   } else if (q.type === 'flat' && q.svc !== 'call') {
     roomList.forEach(id => {
       const r     = ROOMS.find(x => x.id === id);
-      const price = q.svc === 'styling' ? 499 : (r ? r.sig : 0);
+      const price = r ? r.sig : 0;
       tableRows += `
         <tr>
           <td class="p-td-area">${esc(r?.name||id)}</td>
@@ -1337,7 +1462,7 @@ function renderProposal() {
     fse:       ['Initial space assessment and client brief','Concept development and mood board presentation','Space planning and furniture layout','Material, finish, and color specifications','Custom and trade furniture sourcing','Procurement coordination and vendor management','Installation oversight and on-site direction','Final styling and accessory placement','Project management throughout all phases'],
     atelier:   ['Virtual discovery session (Zoom)','Concept development and mood board','Digital floor plan and space planning','Material, finish, and color specifications','Furniture and decor sourcing with shopping list','Up to 2 rounds of revisions','Final digital presentation deck'],
     signature: ['Style questionnaire and inspiration review','Custom design plan for each room','Shoppable furniture and decor selections','Color and material recommendations','Async digital delivery — no meetings required'],
-    styling:   ['Styling questionnaire prior to session','Up to 90-minute Zoom session per space','Curated styling and accessory presentation','Follow-up recommendations summary'],
+    styling:   ['Up to 90-minute live Zoom session','Personalized styling guidance tailored to your existing space','Styling, decor, and layout recommendations','Honest feedback on existing pieces','Keep / remove / replace guidance for each area','Curated shopping links for recommended pieces','Personalized PDF recap delivered after the session'],
     call:      ['Space and goal discovery conversation','Style and vision assessment','Service tier recommendation','$99 fee credited toward booked service'],
   };
   const checklistHTML = (INCLUDES[q.svc] || []).map(item =>
@@ -1459,6 +1584,11 @@ function renderProposal() {
         <div class="p-section" style="margin-top:28px">
           <div class="p-section-title">Payment Terms</div>
           <div class="p-pay">
+            ${fullUpfront ? `
+            <div class="p-pay-row">
+              <div><div class="p-pay-lname">Full Payment</div><div class="p-pay-lsub">Due upon booking to confirm your session</div></div>
+              <div class="p-pay-val">${fmt(finalPrice)}</div>
+            </div>` : `
             <div class="p-pay-row">
               <div><div class="p-pay-lname">Deposit — 50%</div><div class="p-pay-lsub">Due upon signing to confirm project &amp; secure start date</div></div>
               <div class="p-pay-val">${fmt(dep)}</div>
@@ -1470,7 +1600,7 @@ function renderProposal() {
             <div class="p-pay-row" style="border-top:1.5px solid #d9cfc2;margin-top:4px;padding-top:12px">
               <div><div class="p-pay-lname" style="font-weight:600">Total</div></div>
               <div class="p-pay-val" style="font-size:1.4rem">${fmt(finalPrice)}</div>
-            </div>
+            </div>`}
           </div>
           ${validityHTML}
         </div>
@@ -1508,10 +1638,11 @@ function renderProposal() {
               <div class="p-sig-date-line">Date: ___________________</div>
             </div>
             <div class="p-sig-block">
-              <div class="p-sig-line"></div>
+              <img src="/logos/hanna-signature.png" style="height:44px;width:auto;margin-bottom:6px;display:block;" alt="" onerror="this.style.display='none';document.getElementById('hannaSigLine').style.display='block'">
+              <div class="p-sig-line" id="hannaSigLine" style="display:none"></div>
               <div class="p-sig-name">Hanna Rek</div>
               <div class="p-sig-role">Creative Director, Rek Design Studio</div>
-              <div class="p-sig-date-line">Date: ___________________</div>
+              <div class="p-sig-date-line">Date: ${effectiveDate}</div>
             </div>
           </div>
         </div>
@@ -1542,7 +1673,7 @@ function toggleSettings() {
 
 /* ─── MISC ───────────────────────────────────── */
 function restart() {
-  Object.assign(S, {screen:'client',name:'',addr:'',date:'',notes:'',svc:null,rooms:new Set(),cx:null,proc:0,quote:null});
+  Object.assign(S, {screen:'client',name:'',project:'',addr:'',date:'',notes:'',svc:null,rooms:new Set(),customRooms:[],cx:null,proc:0,quote:null,generatedDate:''});
   // Clear client fields
   document.getElementById('cname').value    = '';
   document.getElementById('cproject').value = '';
@@ -1593,7 +1724,9 @@ async function saveProposal() {
       client: { name:S.name, addr:S.addr, date:S.date, notes:S.notes },
       quote:  S.quote,
       rooms:  Array.from(S.rooms),
+      customRooms: S.customRooms,
       cx:     S.cx,
+      generatedDate: S.generatedDate,
       edit: {
         price:  document.getElementById('editPrice').value,
         expiry: document.getElementById('editExpiry').value,
@@ -1654,7 +1787,10 @@ function renderProposalsList(list) {
         <div class="plist-meta">${SS[p.service]||p.service} · ${fmt(p.total_amount)} · ${d}</div>
         <div class="plist-item-footer">
           <div class="plist-actions">${btns}</div>
-          <button class="ctrl-btn" onclick="openEditModal('${p.id}')">Edit</button>
+          <div style="display:flex;gap:6px">
+            <button class="ctrl-btn" onclick="openEditModal('${p.id}')">Edit</button>
+            <button class="ctrl-btn" style="color:rgba(124,49,53,0.75)" onclick="deleteProposalDirect('${p.id}')">Delete</button>
+          </div>
         </div>
       </div>`;
   }).join('');
@@ -1675,10 +1811,11 @@ function openEditModal(id) {
   S.addr    = client.addr || '';
   S.date    = client.date || today();
   S.notes   = client.notes || '';
-  S.svc     = p.service || pd.svc || '';
-  S.rooms   = new Set(Array.isArray(pd.rooms) ? pd.rooms : []);
-  S.cx      = pd.cx || null;
-  S.quote   = pd.quote || null;
+  S.svc         = p.service || pd.svc || '';
+  S.rooms       = new Set(Array.isArray(pd.rooms) ? pd.rooms : []);
+  S.customRooms = Array.isArray(pd.customRooms) ? pd.customRooms : [];
+  S.cx          = pd.cx || null;
+  S.quote       = pd.quote || null;
 
   if (!S.quote) {
     alert('Full proposal data not available for this draft. Please regenerate.');
@@ -1691,8 +1828,9 @@ function openEditModal(id) {
   document.getElementById('editExpiry').value = edit.expiry || addDays(S.date, 14);
   document.getElementById('editSqft').value   = edit.sqft   || '';
   document.getElementById('editNotes').value  = edit.notes  || '';
+  S.generatedDate = pd.generatedDate || S.date || today();
 
-  // Render full proposal and go to proposal screen
+  restoreUIState();
   renderProposal();
   go('proposal');
 }
@@ -1752,6 +1890,19 @@ async function deleteProposal() {
     document.getElementById('editModal').style.display = 'none';
     delete _proposalCache[_editId];
     _editId = null;
+  }
+}
+
+async function deleteProposalDirect(id) {
+  const p = _proposalCache[id];
+  const label = p?.project_name || p?.client_name || 'this proposal';
+  if (!confirm(`Delete "${label}"?\nThis cannot be undone.`)) return;
+  const db = getDb(); if (!db) return;
+  const { error } = await db.from('proposals').delete().eq('id', id);
+  if (!error) {
+    const item = document.getElementById('pi-' + id);
+    if (item) { item.style.transition = 'opacity 0.2s'; item.style.opacity = '0'; setTimeout(() => item.remove(), 220); }
+    delete _proposalCache[id];
   }
 }
 
