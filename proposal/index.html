@@ -7,7 +7,7 @@
   <link rel="icon" href="/logos/rek-wordmark-ink.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Adamina&family=Glegoo&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Adamina&family=Glegoo&family=Great+Vibes&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -1014,7 +1014,13 @@ function fmtProcInput(el) {
   const raw = el.value.replace(/[^0-9]/g, '');
   el.value = raw ? parseInt(raw, 10).toLocaleString() : '';
 }
-function roomName(id) { return ROOMS.find(r=>r.id===id)?.name || id; }
+function roomName(id) {
+  if (id.startsWith('__custom_')) {
+    const cr = S.customRooms.find(r => r.id === id);
+    return cr?.name || 'Custom Space';
+  }
+  return ROOMS.find(r=>r.id===id)?.name || id;
+}
 
 /* ─── CLIENT ─────────────────────────────────── */
 function checkClient() {
@@ -1149,36 +1155,42 @@ function handleRooms() {
 
 /* ─── CUSTOM ROOMS ───────────────────────────── */
 let _crid = 0;
-function addCustomRoom(svc, ht) {
-  const id = '__custom_' + (++_crid) + '__';
-  S.customRooms.push({ id, name:'', mn:6, mx:12, sig:400 });
-  S.rooms.add(id);
 
+function buildCustomRoomEl(cr, ht) {
+  const id = cr.id;
+  const isHourly = ht !== null;
   const wrap = document.createElement('div');
   wrap.id = 'cr-' + id;
   wrap.style.cssText = 'grid-column:1/-1;background:rgba(76,98,112,0.06);border:1px solid rgba(76,98,112,0.2);border-radius:8px;padding:12px 14px;margin-bottom:4px;display:flex;flex-direction:column;gap:8px;';
-
-  const isHourly = ht !== null;
   wrap.innerHTML = `
     <div style="display:flex;gap:8px;align-items:center">
-      <input type="text" placeholder="Space description…" value=""
+      <input type="text" placeholder="Space description…" value="${(cr.name||'').replace(/"/g,'&quot;')}"
         style="flex:1;font-family:'Inter',sans-serif;font-size:12.5px;border:1px solid var(--border);border-radius:6px;padding:7px 10px;outline:none;color:var(--char);"
         oninput="updateCustomRoom('${id}','name',this.value)">
       ${isHourly ? `
-        <input type="number" value="6" min="1" placeholder="Min hrs" title="Min hours"
+        <input type="number" value="${cr.mn||6}" min="1" placeholder="Min hrs" title="Min hours"
           style="width:72px;font-family:'Inter',sans-serif;font-size:12.5px;border:1px solid var(--border);border-radius:6px;padding:7px 10px;outline:none;text-align:center;"
           oninput="updateCustomRoom('${id}','mn',+this.value)">
         <span style="font-size:11px;color:var(--muted)">–</span>
-        <input type="number" value="12" min="1" placeholder="Max hrs" title="Max hours"
+        <input type="number" value="${cr.mx||12}" min="1" placeholder="Max hrs" title="Max hours"
           style="width:72px;font-family:'Inter',sans-serif;font-size:12.5px;border:1px solid var(--border);border-radius:6px;padding:7px 10px;outline:none;text-align:center;"
           oninput="updateCustomRoom('${id}','mx',+this.value)">
         <span style="font-size:11px;color:var(--muted)">hrs</span>` : `
-        <input type="number" value="400" min="0" placeholder="Price" title="Flat price"
+        <input type="number" value="${cr.sig||400}" min="0" placeholder="Price" title="Flat price"
           style="width:88px;font-family:'Inter',sans-serif;font-size:12.5px;border:1px solid var(--border);border-radius:6px;padding:7px 10px;outline:none;text-align:right;"
           oninput="updateCustomRoom('${id}','sig',+this.value)">
       `}
       <button onclick="removeCustomRoom('${id}')" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:16px;padding:2px 6px;border-radius:4px;" title="Remove">×</button>
     </div>`;
+  return wrap;
+}
+
+function addCustomRoom(svc, ht) {
+  const id = '__custom_' + (++_crid) + '__';
+  const cr = { id, name:'', mn:6, mx:12, sig:400 };
+  S.customRooms.push(cr);
+  S.rooms.add(id);
+  const wrap = buildCustomRoomEl(cr, ht);
   document.getElementById('roomGrid').after(wrap);
   document.getElementById('btnRooms').disabled = false;
   updateRunTotal();
@@ -1349,19 +1361,35 @@ function restoreUIState() {
     if (m) { b.classList.toggle('sel', m[1] === S.svc); }
   });
   document.getElementById('btnSvc').disabled = !S.svc;
-  // Re-render and re-select rooms
+
+  // Re-render rooms grid, preserving custom rooms
   if (S.svc && S.svc !== 'call' && S.svc !== 'styling') {
-    const savedRooms = new Set(S.rooms);
-    setupRooms();
+    const savedRooms  = new Set(S.rooms);
+    const savedCustom = S.customRooms.slice(); // copy before setupRooms clears it
+    setupRooms(); // resets S.customRooms = [] and redraws standard grid
+
+    // Re-select standard room tiles
     document.querySelectorAll('.rtile').forEach(tile => {
       if (savedRooms.has(tile.dataset.rid)) {
         tile.classList.add('sel');
         S.rooms.add(tile.dataset.rid);
       }
     });
+
+    // Re-inject custom room elements and restore state
+    const ht = S.svc === 'fse' ? FSE : (S.svc === 'atelier' ? ATL : null);
+    const addBtn = document.querySelector('#roomGrid ~ button.btn-g');
+    savedCustom.forEach(cr => {
+      S.customRooms.push(cr);
+      S.rooms.add(cr.id);
+      const wrap = buildCustomRoomEl(cr, ht);
+      if (addBtn) addBtn.before(wrap); else document.getElementById('roomGrid').after(wrap);
+    });
+
     document.getElementById('btnRooms').disabled = S.rooms.size === 0;
     updateRunTotal();
   }
+
   // Re-select complexity
   if (S.cx) {
     document.querySelectorAll('#ch-cx .choice').forEach(b => {
@@ -1435,11 +1463,12 @@ function renderProposal() {
       </tr>`;
   } else if (q.type === 'flat' && q.svc !== 'call') {
     roomList.forEach(id => {
-      const r     = ROOMS.find(x => x.id === id);
-      const price = r ? r.sig : 0;
+      const cr    = id.startsWith('__custom_') ? S.customRooms.find(c => c.id === id) : null;
+      const r     = cr ? null : ROOMS.find(x => x.id === id);
+      const price = cr ? (cr.sig || 0) : (r ? r.sig : 0);
       tableRows += `
         <tr>
-          <td class="p-td-area">${esc(r?.name||id)}</td>
+          <td class="p-td-area">${esc(roomName(id))}</td>
           <td class="p-td-qty">1</td>
           <td class="p-td-desc">${esc(svc.name)}</td>
           <td class="p-td-amt">${fmt(price)}</td>
@@ -1638,8 +1667,7 @@ function renderProposal() {
               <div class="p-sig-date-line">Date: ___________________</div>
             </div>
             <div class="p-sig-block">
-              <img src="/logos/hanna-signature.png" style="height:44px;width:auto;margin-bottom:6px;display:block;" alt="" onerror="this.style.display='none';document.getElementById('hannaSigLine').style.display='block'">
-              <div class="p-sig-line" id="hannaSigLine" style="display:none"></div>
+              <div style="font-family:'Great Vibes',cursive;font-size:36px;color:#1C1C1A;line-height:1;margin-bottom:8px;">Hanna Rek</div>
               <div class="p-sig-name">Hanna Rek</div>
               <div class="p-sig-role">Creative Director, Rek Design Studio</div>
               <div class="p-sig-date-line">Date: ${effectiveDate}</div>
