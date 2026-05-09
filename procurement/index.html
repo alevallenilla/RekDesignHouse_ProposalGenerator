@@ -94,6 +94,36 @@ textarea.fi { resize:vertical; }
 .empty-state h2 { font-family:'Adamina',serif; font-size:24px; margin-bottom:12px; }
 .empty-state p  { font-size:14px; color:var(--muted); }
 
+/* ── CLIENT MANAGER ──────────────────────── */
+.mgr-body   { padding:32px; max-width:800px; }
+.mgr-client { background:white; border:1px solid var(--border); border-radius:10px; margin-bottom:16px; overflow:hidden; }
+.mgr-client-hd {
+  display:flex; align-items:center; gap:12px;
+  padding:14px 18px; cursor:pointer;
+  transition:background 0.12s;
+}
+.mgr-client-hd:hover { background:rgba(37,14,15,0.02); }
+.mgr-client-name { font-size:13px; font-weight:600; flex:1; }
+.mgr-client-meta { font-size:11px; color:var(--muted); }
+.mgr-chevron { color:var(--muted); transition:transform 0.18s; flex-shrink:0; }
+.mgr-chevron.open { transform:rotate(90deg); }
+.mgr-client-body { display:none; border-top:1px solid var(--border); padding:16px 18px 18px; }
+.mgr-client-body.open { display:block; }
+
+.mgr-edit-row { display:flex; gap:8px; align-items:center; margin-bottom:16px; }
+.mgr-edit-row .fi { flex:1; font-size:13px; padding:8px 10px; }
+.mgr-save-btn { font-family:'Inter',sans-serif; font-size:11px; font-weight:500; background:var(--ink); color:var(--parchment); border:none; border-radius:5px; padding:8px 14px; cursor:pointer; white-space:nowrap; }
+.mgr-save-btn:hover { opacity:0.85; }
+.mgr-del-btn  { font-family:'Inter',sans-serif; font-size:11px; color:#b03030; background:none; border:1px solid rgba(176,48,48,0.25); border-radius:5px; padding:8px 12px; cursor:pointer; white-space:nowrap; }
+.mgr-del-btn:hover { background:rgba(176,48,48,0.06); }
+
+.mgr-proj-label { font-size:9.5px; font-weight:600; letter-spacing:0.16em; text-transform:uppercase; color:var(--muted); margin-bottom:10px; }
+.mgr-proj-list  { display:flex; flex-direction:column; gap:6px; margin-bottom:14px; }
+.mgr-proj-row   { display:flex; align-items:center; gap:8px; }
+.mgr-proj-row .fi { flex:1; font-size:12.5px; padding:7px 10px; }
+.mgr-add-proj   { display:flex; gap:8px; align-items:center; margin-top:4px; }
+.mgr-add-proj .fi { flex:1; font-size:12.5px; padding:7px 10px; }
+
 /* ── PO EDITOR ──────────────────────────── */
 .po-editor  { max-width:1160px; margin:0 auto; padding:36px 32px 160px; }
 .hd-row     { display:grid; gap:16px; margin-bottom:16px; }
@@ -250,9 +280,28 @@ textarea.fi { resize:vertical; }
       <p class="eyebrow">Work Suite · Procurement</p>
       <h1>Purchase Orders</h1>
     </div>
-    <button class="btn-primary" onclick="newPO()">+ New PO</button>
+    <div style="display:flex;gap:10px">
+      <button class="btn-ghost" onclick="go('clients')">Manage Clients &amp; Projects</button>
+      <button class="btn-primary" onclick="newPO()">+ New PO</button>
+    </div>
   </div>
   <div class="list-body" id="listBody"></div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SCREEN: CLIENT MANAGER
+══════════════════════════════════════ -->
+<div class="screen" id="screen-clients">
+  <div class="page-hd">
+    <div>
+      <p class="eyebrow">Work Suite · Procurement</p>
+      <h1>Clients &amp; Projects</h1>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center">
+      <button class="btn-ghost" onclick="go('list')">← Back to POs</button>
+    </div>
+  </div>
+  <div class="mgr-body" id="mgrBody"></div>
 </div>
 
 <!-- ══════════════════════════════════════
@@ -495,12 +544,6 @@ function blankItem() {
   return { _k: ++_seq, id: null, category: '', item_name: '', description: '', source: '', product_url: '', image_url: '', qty: 1, unit_cost: 0, internal_notes: '', _open: false };
 }
 
-/* ── NAV ────────────────────────────────── */
-function go(name) {
-  ['list','po','doc'].forEach(s => { const el = document.getElementById('screen-'+s); if (el) el.classList.remove('active'); });
-  const t = document.getElementById('screen-'+name); if (t) t.classList.add('active');
-  window.scrollTo(0,0);
-}
 
 /* ── INIT ───────────────────────────────── */
 async function init() {
@@ -1055,6 +1098,121 @@ function renderDoc() {
       <span class="doc-footer-main">Thank you for your purchase</span>
       <span class="doc-footer-sub">${esc(P.po_number||'')}</span>
     </div>`;
+}
+
+/* ── CLIENT MANAGER ─────────────────────────── */
+function go(name) {
+  ['list','po','doc','clients'].forEach(s => { const el = document.getElementById('screen-'+s); if (el) el.classList.remove('active'); });
+  const t = document.getElementById('screen-'+name); if (t) t.classList.add('active');
+  if (name === 'clients') renderMgr();
+  window.scrollTo(0,0);
+}
+
+function renderMgr() {
+  const body = gid('mgrBody');
+  if (!allClients.length) {
+    body.innerHTML = `<div class="empty-state"><h2>No clients yet.</h2><p>Clients are created when you add a new PO.</p></div>`;
+    return;
+  }
+  body.innerHTML = allClients.map(c => {
+    const projects = allProjects.filter(p => p.client_id === c.id);
+    const poCount  = allPOs.filter(po => projects.some(p => p.id === po.project_id)).length;
+    const projRows = projects.map(p => {
+      const ppCount = allPOs.filter(po => po.project_id === p.id).length;
+      return `<div class="mgr-proj-row">
+        <input class="fi" type="text" id="pname-${p.id}" value="${esc(p.name)}" placeholder="Project name">
+        <button class="mgr-save-btn" onclick="saveProject('${p.id}')">Save</button>
+        <button class="mgr-del-btn" onclick="deleteProject('${p.id}',${ppCount})">${ppCount ? `${ppCount} PO${ppCount>1?'s':''}` : 'Delete'}</button>
+      </div>`;
+    }).join('');
+    return `<div class="mgr-client" id="mgrc-${c.id}">
+      <div class="mgr-client-hd" onclick="toggleMgrClient('${c.id}')">
+        <span class="mgr-chevron" id="chev-${c.id}">›</span>
+        <span class="mgr-client-name">${esc(c.name)}</span>
+        <span class="mgr-client-meta">${projects.length} project${projects.length!==1?'s':''} · ${poCount} PO${poCount!==1?'s':''}</span>
+      </div>
+      <div class="mgr-client-body" id="mgrb-${c.id}">
+        <div class="mgr-edit-row">
+          <input class="fi" type="text" id="cname-${c.id}" value="${esc(c.name)}" placeholder="Client name">
+          <button class="mgr-save-btn" onclick="saveClient('${c.id}')">Save</button>
+          <button class="mgr-del-btn" onclick="deleteClient('${c.id}',${poCount})">${poCount ? `${poCount} PO${poCount>1?'s':''}` : 'Delete'}</button>
+        </div>
+        <div class="mgr-proj-label">Projects</div>
+        <div class="mgr-proj-list" id="projlist-${c.id}">${projRows}</div>
+        <div class="mgr-add-proj">
+          <input class="fi" type="text" id="newproj-${c.id}" placeholder="New project name…">
+          <button class="mgr-save-btn" onclick="addProjectFromMgr('${c.id}')">+ Add Project</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleMgrClient(id) {
+  gid('mgrb-'+id)?.classList.toggle('open');
+  gid('chev-'+id)?.classList.toggle('open');
+}
+
+async function saveClient(id) {
+  const name = gid('cname-'+id)?.value.trim();
+  if (!name) return;
+  const { error } = await DB().from('procurement_clients').update({ name }).eq('id', id);
+  if (error) { alert('Save failed: ' + error.message); return; }
+  const c = allClients.find(x => x.id === id); if (c) c.name = name;
+  renderMgr();
+  // reopen the panel
+  gid('mgrb-'+id)?.classList.add('open');
+  gid('chev-'+id)?.classList.add('open');
+}
+
+async function deleteClient(id, poCount) {
+  if (poCount > 0) { alert(`This client has ${poCount} purchase order${poCount>1?'s':''} and cannot be deleted. Delete the POs first.`); return; }
+  const projects = allProjects.filter(p => p.client_id === id);
+  if (projects.length > 0) {
+    if (!confirm(`Delete "${allClients.find(c=>c.id===id)?.name}" and its ${projects.length} project${projects.length>1?'s':''}? This cannot be undone.`)) return;
+    for (const p of projects) await DB().from('procurement_projects').delete().eq('id', p.id);
+    allProjects = allProjects.filter(p => p.client_id !== id);
+  } else {
+    if (!confirm(`Delete this client? This cannot be undone.`)) return;
+  }
+  const { error } = await DB().from('procurement_clients').delete().eq('id', id);
+  if (error) { alert('Delete failed: ' + error.message); return; }
+  allClients = allClients.filter(c => c.id !== id);
+  renderMgr();
+}
+
+async function saveProject(id) {
+  const name = gid('pname-'+id)?.value.trim();
+  if (!name) return;
+  const { error } = await DB().from('procurement_projects').update({ name }).eq('id', id);
+  if (error) { alert('Save failed: ' + error.message); return; }
+  const p = allProjects.find(x => x.id === id); if (p) p.name = name;
+  const clientId = allProjects.find(x=>x.id===id)?.client_id;
+  renderMgr();
+  if (clientId) { gid('mgrb-'+clientId)?.classList.add('open'); gid('chev-'+clientId)?.classList.add('open'); }
+}
+
+async function deleteProject(id, poCount) {
+  if (poCount > 0) { alert(`This project has ${poCount} purchase order${poCount>1?'s':''} and cannot be deleted. Delete the POs first.`); return; }
+  if (!confirm('Delete this project? This cannot be undone.')) return;
+  const clientId = allProjects.find(p=>p.id===id)?.client_id;
+  const { error } = await DB().from('procurement_projects').delete().eq('id', id);
+  if (error) { alert('Delete failed: ' + error.message); return; }
+  allProjects = allProjects.filter(p => p.id !== id);
+  renderMgr();
+  if (clientId) { gid('mgrb-'+clientId)?.classList.add('open'); gid('chev-'+clientId)?.classList.add('open'); }
+}
+
+async function addProjectFromMgr(clientId) {
+  const input = gid('newproj-'+clientId);
+  const name = input?.value.trim();
+  if (!name) { input?.focus(); return; }
+  const { data, error } = await DB().from('procurement_projects').insert({ name, client_id: clientId }).select().single();
+  if (error) { alert('Could not add project: ' + error.message); return; }
+  allProjects.push(data);
+  renderMgr();
+  gid('mgrb-'+clientId)?.classList.add('open');
+  gid('chev-'+clientId)?.classList.add('open');
 }
 
 /* ── HELPERS ──────────────────────────────── */
