@@ -416,9 +416,10 @@ textarea.fi { resize:vertical; }
         <label class="fl">Tax</label>
         <div class="mode-toggle">
           <button id="taxModeFlat" class="mode-btn active" onclick="setTaxMode('flat')">Flat %</button>
+          <button id="taxModeFlatDollar" class="mode-btn" onclick="setTaxMode('flat_dollar')">Flat $</button>
           <button id="taxModeItem" class="mode-btn" onclick="setTaxMode('per_item')">Per Item $</button>
         </div>
-        <input class="fi" type="number" id="poTaxRate" value="7" min="0" max="100" step="0.1" oninput="renderTotals()" placeholder="Tax %">
+        <input class="fi" type="number" id="poTaxRate" value="7" min="0" step="0.01" oninput="renderTotals()" placeholder="Tax %">
       </div>
       <div class="fg">
         <label class="fl">Shipping</label>
@@ -614,7 +615,13 @@ textarea.fi { resize:vertical; }
   alter table procurement_clients add column if not exists zip text;
   alter table purchase_orders add column if not exists discount_pct numeric default 0;
   alter table purchase_orders add column if not exists discount_mode text default 'flat_pct';
+  alter table purchase_orders add column if not exists po_name text;
+  alter table purchase_orders add column if not exists tax_mode text default 'flat';
+  alter table purchase_orders add column if not exists shipping_mode text default 'flat';
+  alter table po_line_items add column if not exists tax_amt numeric default 0;
+  alter table po_line_items add column if not exists shipping_amt numeric default 0;
   alter table po_line_items add column if not exists discount_amt numeric default 0;
+  alter table po_line_items add column if not exists white_glove boolean default false;
 */
 
 const SUPA_URL = 'https://danfcudpvzjcjxhwwqhp.supabase.co';
@@ -732,7 +739,8 @@ async function loadPoTotal(id) {
     : data.reduce((a,it) => a + (+it.discount_amt||0), 0);
   const effectiveSub = sub - disc;
   const ship = +po.shipping || 0;
-  const tax  = effectiveSub * ((+po.tax_rate||0)/100);
+  const tax  = (po.tax_mode||'flat') === 'flat_dollar' ? (+po.tax_rate||0)
+             : effectiveSub * ((+po.tax_rate||0)/100);
   const fee  = effectiveSub * ((+po.markup_pct||15)/100);
   const total = effectiveSub + ship + tax + fee;
   const el = document.getElementById('pct-'+id);
@@ -1084,9 +1092,10 @@ function renderTotals() {
     ? (parseFloat(gv('poShipping')) || 0)
     : P.items.reduce((a,it) => a + (it.shipping_amt||0), 0);
 
-  const tax = P.tax_mode === 'flat'
-    ? effectiveSub * ((parseFloat(gv('poTaxRate')) || 0) / 100)
-    : P.items.reduce((a,it) => a + (it.tax_amt||0), 0);
+  const taxVal = parseFloat(gv('poTaxRate')) || 0;
+  const tax = P.tax_mode === 'flat'        ? effectiveSub * (taxVal / 100)
+            : P.tax_mode === 'flat_dollar' ? taxVal
+            : P.items.reduce((a,it) => a + (it.tax_amt||0), 0);
 
   sv('t-sub',   fmtMoney(sub));
   sv('t-disc',  '−' + fmtMoney(disc));
@@ -1156,7 +1165,10 @@ async function savePO() {
       tax_amt: it.tax_amt||0, shipping_amt: it.shipping_amt||0, discount_amt: it.discount_amt||0,
       white_glove: !!it.white_glove, internal_notes: it.internal_notes
     }));
-    if (lines.length) await DB().from('po_line_items').insert(lines);
+    if (lines.length) {
+      const { error: lineErr } = await DB().from('po_line_items').insert(lines);
+      if (lineErr) throw lineErr;
+    }
     btn.textContent = 'Saved ✓';
     setTimeout(() => { btn.textContent = 'Save PO'; btn.disabled = false; }, 1800);
     gid('btnViewDoc').disabled = false;
@@ -1184,7 +1196,10 @@ function renderDoc() {
     ? sub * discPct / 100
     : P.items.reduce((a,it) => a + (it.discount_amt||0), 0);
   const effectiveSub = sub - disc;
-  const tax  = effectiveSub * taxR / 100;
+  const taxMode = P.tax_mode || 'flat';
+  const tax  = taxMode === 'flat_dollar' ? taxR
+             : taxMode === 'per_item'    ? P.items.reduce((a,it) => a + (it.tax_amt||0), 0)
+             : effectiveSub * taxR / 100;
   const fee  = effectiveSub * mkup / 100;
   const grandTotal = effectiveSub + ship + tax + fee;
 
@@ -1416,8 +1431,13 @@ async function addProjectFromMgr(clientId) {
 function setTaxMode(m, silent) {
   P.tax_mode = m;
   gid('taxModeFlat')?.classList.toggle('active', m==='flat');
+  gid('taxModeFlatDollar')?.classList.toggle('active', m==='flat_dollar');
   gid('taxModeItem')?.classList.toggle('active', m==='per_item');
-  const el = gid('poTaxRate'); if (el) el.style.display = m==='flat' ? '' : 'none';
+  const el = gid('poTaxRate');
+  if (el) {
+    el.style.display = m==='per_item' ? 'none' : '';
+    el.placeholder   = m==='flat_dollar' ? 'Tax $' : 'Tax %';
+  }
   if (!silent) { renderItems(); renderTotals(); }
 }
 function setShipMode(m, silent) {
