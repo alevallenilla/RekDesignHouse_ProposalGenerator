@@ -570,8 +570,8 @@ textarea.fi { resize:vertical; }
       <p class="eyebrow" style="margin-bottom:16px">Master PO Settings</p>
       <div style="display:grid;grid-template-columns:1fr 1fr 160px;gap:16px;margin-bottom:20px;max-width:640px">
         <div class="fg">
-          <label class="fl">Master PO Name</label>
-          <input class="fi" type="text" id="consPoName" placeholder="e.g. Full Project">
+          <label class="fl">PO Label / Identifier <span style="color:var(--burgundy)">*</span></label>
+          <input class="fi" type="text" id="consPoName" placeholder="e.g. Full Project — Living Room">
         </div>
         <div class="fg">
           <label class="fl">Date</label>
@@ -1505,6 +1505,7 @@ function renderConsolidate() {
   gid('consPoDate').value = today();
   gid('consPoList').innerHTML = '';
   gid('consSettings').style.display = 'none';
+  const cb = gid('consCreateBtn'); if (cb) { cb.textContent = 'Create Master PO'; cb.disabled = false; }
 }
 
 function renderConsSelections() {
@@ -1544,6 +1545,8 @@ function checkConsSettings() {
 async function createMasterPO() {
   const checked = Array.from(document.querySelectorAll('.cons-po-cb:checked')).map(el => el.value);
   if (checked.length < 2) { alert('Select at least 2 POs to consolidate.'); return; }
+  const masterLabel = gv('consPoName').trim();
+  if (!masterLabel) { gid('consPoName').focus(); alert('Please enter a PO Label / Identifier.'); return; }
   const projectId = gv('consProjectSel');
   const btn = gid('consCreateBtn'); btn.textContent = 'Creating…'; btn.disabled = true;
   try {
@@ -1553,19 +1556,31 @@ async function createMasterPO() {
     const firstPO = allPOs.find(po => po.id === checked[0]);
     const proj    = allProjects.find(p => p.id === projectId);
 
+    // Build combined item list
+    let combined = [];
+    itemResults.forEach(({ data, error }) => {
+      if (error) throw error;
+      if (data) combined = combined.concat(data);
+    });
+
+    if (!combined.length) {
+      if (!confirm('None of the selected POs have line items saved yet. Create an empty master PO anyway?')) {
+        btn.textContent = 'Create Master PO'; btn.disabled = false; return;
+      }
+    }
+
     P.id = null; P.client_id = proj?.client_id || null; P.project_id = projectId;
-    P.po_number = ''; P.po_name = gv('consPoName');
+    // Use the user's label as the PO number so it is never replaced by auto-numbering
+    P.po_number = masterLabel; P.po_name = masterLabel;
     P.date = gv('consPoDate') || today(); P.due_date = '';
-    P.status = gv('consPoStatus'); P.notes = 'Consolidated PO'; P.please_note = DEFAULT_NOTE;
+    P.status = gv('consPoStatus'); P.notes = ''; P.please_note = DEFAULT_NOTE;
     P.tax_rate = firstPO?.tax_rate ?? 7; P.tax_mode = firstPO?.tax_mode || 'flat';
     P.shipping = firstPO?.shipping ?? 0; P.shipping_mode = firstPO?.shipping_mode || 'flat';
     P.markup_pct = firstPO?.markup_pct ?? 15;
     P.discount_pct = firstPO?.discount_pct ?? 0; P.discount_mode = firstPO?.discount_mode || 'flat_pct';
     P.payment_method = firstPO?.payment_method || ''; P.payment_account = firstPO?.payment_account || '';
 
-    let combined = [];
-    itemResults.forEach(({ data }) => { if (data) combined = combined.concat(data); });
-    P.items = combined.map(it => ({
+    P.items = combined.length ? combined.map(it => ({
       _k: ++_seq, id: null,
       category: it.category||'', item_name: it.item_name||'',
       description: it.description||'', source: it.source||'',
@@ -1573,8 +1588,8 @@ async function createMasterPO() {
       qty: +it.qty||1, unit_cost: +it.unit_cost||0,
       tax_amt: +it.tax_amt||0, shipping_amt: +it.shipping_amt||0, discount_amt: +it.discount_amt||0,
       white_glove: !!it.white_glove, internal_notes: it.internal_notes||'', _open: false
-    }));
-    if (!P.items.length) P.items = [blankItem()];
+    })) : [blankItem()];
+
     renderEditor(); go('po');
   } catch(e) {
     alert('Consolidation failed: ' + e.message);
