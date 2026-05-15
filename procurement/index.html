@@ -1508,7 +1508,7 @@ function renderConsolidate() {
   const cb = gid('consCreateBtn'); if (cb) { cb.textContent = 'Create Master PO'; cb.disabled = false; }
 }
 
-function renderConsSelections() {
+async function renderConsSelections() {
   const projectId = gv('consProjectSel');
   const list = gid('consPoList');
   if (!projectId) { list.innerHTML = ''; gid('consSettings').style.display = 'none'; return; }
@@ -1517,18 +1517,30 @@ function renderConsSelections() {
     list.innerHTML = `<p style="font-size:13px;color:var(--muted);margin-bottom:16px">No POs found for this project.</p>`;
     gid('consSettings').style.display = 'none'; return;
   }
+  // Fetch item counts for all POs in this project
+  const { data: lineRows } = await DB().from('po_line_items').select('po_id').in('po_id', pos.map(p => p.id));
+  const countMap = {};
+  (lineRows||[]).forEach(r => { countMap[r.po_id] = (countMap[r.po_id]||0) + 1; });
+
   list.innerHTML = `<p class="cons-section-label">Select POs to consolidate</p>`
-    + pos.map(po => `
+    + pos.map(po => {
+        const n = countMap[po.id] || 0;
+        const itemBadge = n > 0
+          ? `<span style="font-size:10px;font-weight:600;color:var(--moss);background:rgba(61,92,58,0.10);border-radius:3px;padding:2px 7px;white-space:nowrap">${n} item${n!==1?'s':''}</span>`
+          : `<span style="font-size:10px;font-weight:600;color:var(--muted);background:rgba(37,14,15,0.06);border-radius:3px;padding:2px 7px;white-space:nowrap">no items</span>`;
+        return `
       <label class="cons-po-row">
         <input type="checkbox" class="cons-po-cb" value="${po.id}" onchange="checkConsSettings()">
         <div class="cons-po-num">${esc(po.po_number)}</div>
         <div class="cons-po-info">
-          <div class="cons-po-name">${esc(po.notes||po.po_name||'—')}</div>
+          <div class="cons-po-name">${esc(po.po_name||po.notes||'—')}</div>
           <div class="cons-po-date">${po.date ? fmtDate(po.date) : 'No date'}</div>
         </div>
         <span class="status-badge s-${po.status}">${po.status}</span>
+        ${itemBadge}
         <div class="cons-po-total" id="ctot-${po.id}">—</div>
-      </label>`).join('');
+      </label>`;
+      }).join('');
   pos.forEach(po => {
     const src = document.getElementById('pct-'+po.id);
     const dst = document.getElementById('ctot-'+po.id);
@@ -1563,8 +1575,14 @@ async function createMasterPO() {
       if (data) combined = combined.concat(data);
     });
 
-    if (!combined.length) {
-      if (!confirm('None of the selected POs have line items saved yet. Create an empty master PO anyway?')) {
+    const emptyPOs = checked.filter((id, i) => !itemResults[i].data?.length);
+    if (emptyPOs.length === checked.length) {
+      if (!confirm('None of the selected POs have saved line items — the master PO will be empty. Continue anyway?')) {
+        btn.textContent = 'Create Master PO'; btn.disabled = false; return;
+      }
+    } else if (emptyPOs.length > 0) {
+      const names = emptyPOs.map(id => { const po = allPOs.find(p => p.id === id); return po ? (po.po_number + (po.po_name ? ' · '+po.po_name : '')) : id; });
+      if (!confirm(`Heads up: the following POs have no saved items and will contribute nothing to this consolidation:\n\n${names.join('\n')}\n\nContinue with the rest?`)) {
         btn.textContent = 'Create Master PO'; btn.disabled = false; return;
       }
     }
