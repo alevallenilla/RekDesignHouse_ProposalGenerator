@@ -137,6 +137,18 @@ textarea.fi { resize:vertical; }
 /* White-glove badge in document */
 .wg-badge { display:inline-flex; align-items:center; gap:3px; font-size:9px; font-weight:600; letter-spacing:0.10em; text-transform:uppercase; background:rgba(76,98,112,0.10); color:var(--slate); border-radius:3px; padding:2px 6px; margin-top:3px; }
 
+/* ── CONSOLIDATE ─────────────────────────── */
+.cons-po-row { display:flex; align-items:center; gap:12px; background:white; border:1px solid var(--border); border-radius:8px; padding:12px 16px; margin-bottom:8px; cursor:pointer; transition:border-color 0.15s; }
+.cons-po-row:hover { border-color:rgba(37,14,15,0.20); }
+.cons-po-row input[type=checkbox] { width:16px; height:16px; accent-color:var(--slate); cursor:pointer; flex-shrink:0; }
+.cons-po-num  { font-size:12px; font-weight:600; min-width:70px; }
+.cons-po-info { flex:1; }
+.cons-po-name { font-size:13px; font-weight:500; }
+.cons-po-date { font-size:11px; color:var(--muted); margin-top:2px; }
+.cons-po-total { font-size:13px; font-weight:500; text-align:right; min-width:90px; }
+.cons-section-label { font-size:11px; font-weight:600; letter-spacing:0.16em; text-transform:uppercase; color:var(--muted); margin-bottom:10px; }
+.cons-divider { height:1px; background:var(--border); margin:24px 0; }
+
 /* Paste zone */
 .paste-zone { border:1px dashed rgba(37,14,15,0.18); border-radius:6px; padding:7px 10px; font-size:11px; color:var(--muted); text-align:center; cursor:pointer; transition:border-color 0.15s, background 0.15s; margin-top:6px; }
 .paste-zone:hover, .paste-zone.drag-over { border-color:var(--slate); background:rgba(76,98,112,0.04); color:var(--slate); }
@@ -304,6 +316,7 @@ textarea.fi { resize:vertical; }
     </div>
     <div style="display:flex;gap:10px">
       <button class="btn-ghost" onclick="go('clients')">Manage Clients &amp; Projects</button>
+      <button class="btn-ghost" onclick="go('consolidate')">Consolidate POs</button>
       <button class="btn-primary" onclick="newPO()">+ New PO</button>
     </div>
   </div>
@@ -388,8 +401,8 @@ textarea.fi { resize:vertical; }
       <button class="btn-sm-g" onclick="toggleClientEdit()" style="margin-left:8px">Close</button>
     </div>
 
-    <!-- Row 2: Status / Tax / Shipping / Procurement Fee / Payment -->
-    <div class="hd-row" style="grid-template-columns:160px 1fr 1fr 90px 1fr;gap:16px;margin-bottom:16px">
+    <!-- Row 2: Status / Tax / Shipping / Discount / Procurement Fee / Payment -->
+    <div class="hd-row" style="grid-template-columns:160px 1fr 1fr 1fr 90px 1fr;gap:16px;margin-bottom:16px">
       <div class="fg">
         <label class="fl">Status</label>
         <select class="fsel" id="poStatus">
@@ -414,6 +427,14 @@ textarea.fi { resize:vertical; }
           <button id="shipModeItem" class="mode-btn" onclick="setShipMode('per_item')">Per Item</button>
         </div>
         <input class="fi" type="number" id="poShipping" value="0" min="0" step="0.01" oninput="renderTotals()" placeholder="Shipping $">
+      </div>
+      <div class="fg">
+        <label class="fl">Discount</label>
+        <div class="mode-toggle">
+          <button id="discModeFlat" class="mode-btn active" onclick="setDiscountMode('flat_pct')">Flat %</button>
+          <button id="discModeItem" class="mode-btn" onclick="setDiscountMode('per_item')">Per Item $</button>
+        </div>
+        <input class="fi" type="number" id="poDiscount" value="0" min="0" max="100" step="0.1" oninput="renderTotals()" placeholder="Discount %">
       </div>
       <div class="fg">
         <label class="fl">Fee %</label>
@@ -480,6 +501,7 @@ textarea.fi { resize:vertical; }
         <h3>Internal — Her Cost</h3>
         <div class="tot-rows">
           <div class="tot-row"><span>Subtotal</span><span id="t-sub">—</span></div>
+          <div class="tot-row" id="t-disc-row" style="display:none;color:var(--moss)"><span>Discount</span><span id="t-disc">—</span></div>
           <div class="tot-row"><span>Shipping</span><span id="t-ship">—</span></div>
           <div class="tot-row"><span>Tax</span><span id="t-tax">—</span></div>
           <div class="tot-row grand"><span>She Pays</span><span id="t-total">—</span></div>
@@ -489,6 +511,7 @@ textarea.fi { resize:vertical; }
         <h3>Client Invoice</h3>
         <div class="tot-rows">
           <div class="tot-row"><span>Subtotal</span><span id="c-sub">—</span></div>
+          <div class="tot-row" id="c-disc-row" style="display:none;color:var(--moss)"><span>Discount</span><span id="c-disc">—</span></div>
           <div class="tot-row"><span>Shipping</span><span id="c-ship">—</span></div>
           <div class="tot-row"><span>Tax</span><span id="c-tax">—</span></div>
           <div class="tot-row"><span id="c-fee-label">Procurement Fee</span><span id="c-fee">—</span></div>
@@ -520,6 +543,55 @@ textarea.fi { resize:vertical; }
   </div>
 </div>
 
+<!-- ══════════════════════════════════════
+     SCREEN: CONSOLIDATE
+══════════════════════════════════════ -->
+<div class="screen" id="screen-consolidate">
+  <div class="page-hd">
+    <div>
+      <p class="eyebrow">Work Suite · Procurement</p>
+      <h1>Consolidate POs</h1>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center">
+      <button class="btn-ghost" onclick="go('list')">← Back to POs</button>
+    </div>
+  </div>
+  <div style="padding:32px;max-width:860px">
+    <div class="fg" style="margin-bottom:24px;max-width:360px">
+      <label class="fl">Select Project</label>
+      <select class="fsel" id="consProjectSel" onchange="renderConsSelections()">
+        <option value="">Choose a project…</option>
+      </select>
+    </div>
+    <div id="consPoList"></div>
+    <div id="consSettings" style="display:none">
+      <div class="cons-divider"></div>
+      <p class="eyebrow" style="margin-bottom:16px">Master PO Settings</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr 160px;gap:16px;margin-bottom:20px;max-width:640px">
+        <div class="fg">
+          <label class="fl">Master PO Name</label>
+          <input class="fi" type="text" id="consPoName" placeholder="e.g. Full Project">
+        </div>
+        <div class="fg">
+          <label class="fl">Date</label>
+          <input class="fi" type="date" id="consPoDate">
+        </div>
+        <div class="fg">
+          <label class="fl">Status</label>
+          <select class="fsel" id="consPoStatus">
+            <option value="draft">Draft</option>
+            <option value="ordered">Ordered</option>
+            <option value="received">Received</option>
+            <option value="invoiced">Invoiced</option>
+          </select>
+        </div>
+      </div>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:16px">Tax, shipping, discount, and fee settings will be inherited from the first selected PO. You can adjust them after the master PO opens.</p>
+      <button class="btn-primary" id="consCreateBtn" onclick="createMasterPO()">Create Master PO</button>
+    </div>
+  </div>
+</div>
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -540,6 +612,9 @@ textarea.fi { resize:vertical; }
   alter table procurement_clients add column if not exists city text;
   alter table procurement_clients add column if not exists state text;
   alter table procurement_clients add column if not exists zip text;
+  alter table purchase_orders add column if not exists discount_pct numeric default 0;
+  alter table purchase_orders add column if not exists discount_mode text default 'flat_pct';
+  alter table po_line_items add column if not exists discount_amt numeric default 0;
 */
 
 const SUPA_URL = 'https://danfcudpvzjcjxhwwqhp.supabase.co';
@@ -571,13 +646,14 @@ const P = {
   tax_rate: 7, tax_mode: 'flat',
   shipping: 0, shipping_mode: 'flat',
   markup_pct: 15,
+  discount_pct: 0, discount_mode: 'flat_pct',
   payment_method: '', payment_account: '',
   items: []
 };
 
 let _seq = 0;
 function blankItem() {
-  return { _k: ++_seq, id: null, category: '', item_name: '', description: '', source: '', product_url: '', image_url: '', qty: 1, unit_cost: 0, tax_amt: 0, shipping_amt: 0, white_glove: false, internal_notes: '', _open: false };
+  return { _k: ++_seq, id: null, category: '', item_name: '', description: '', source: '', product_url: '', image_url: '', qty: 1, unit_cost: 0, tax_amt: 0, shipping_amt: 0, discount_amt: 0, white_glove: false, internal_notes: '', _open: false };
 }
 
 
@@ -648,13 +724,17 @@ function renderPoList() {
 
 async function loadPoTotal(id) {
   const po = allPOs.find(p => p.id === id); if (!po) return;
-  const { data } = await DB().from('po_line_items').select('qty,unit_cost').eq('po_id', id);
+  const { data } = await DB().from('po_line_items').select('qty,unit_cost,discount_amt').eq('po_id', id);
   if (!data) return;
   const sub = data.reduce((a,it) => a + (+it.unit_cost||0) * (+it.qty||0), 0);
+  const disc = (po.discount_mode||'flat_pct') === 'flat_pct'
+    ? sub * ((+po.discount_pct||0)/100)
+    : data.reduce((a,it) => a + (+it.discount_amt||0), 0);
+  const effectiveSub = sub - disc;
   const ship = +po.shipping || 0;
-  const tax  = sub * ((+po.tax_rate||0)/100);
-  const fee  = sub * ((+po.markup_pct||15)/100);
-  const total = sub + ship + tax + fee;
+  const tax  = effectiveSub * ((+po.tax_rate||0)/100);
+  const fee  = effectiveSub * ((+po.markup_pct||15)/100);
+  const total = effectiveSub + ship + tax + fee;
   const el = document.getElementById('pct-'+id);
   if (el) el.textContent = total > 0 ? fmtMoney(total) : '—';
 }
@@ -673,7 +753,10 @@ function newPO() {
   P.id = null; P.client_id = null; P.project_id = null;
   P.po_number = ''; P.date = today(); P.due_date = '';
   P.status = 'draft'; P.notes = ''; P.please_note = DEFAULT_NOTE;
-  P.tax_rate = 7; P.shipping = 0; P.markup_pct = 15;
+  P.tax_rate = 7; P.tax_mode = 'flat';
+  P.shipping = 0; P.shipping_mode = 'flat';
+  P.markup_pct = 15;
+  P.discount_pct = 0; P.discount_mode = 'flat_pct';
   P.payment_method = ''; P.payment_account = '';
   P.items = [blankItem()];
   renderEditor(); go('po');
@@ -692,6 +775,7 @@ async function openPO(id) {
   P.tax_rate = po.tax_rate ?? 7; P.tax_mode = po.tax_mode || 'flat';
   P.shipping = po.shipping ?? 0; P.shipping_mode = po.shipping_mode || 'flat';
   P.markup_pct = po.markup_pct ?? 15;
+  P.discount_pct = po.discount_pct ?? 0; P.discount_mode = po.discount_mode || 'flat_pct';
   P.payment_method = po.payment_method||''; P.payment_account = po.payment_account||'';
   const proj = allProjects.find(p => p.id === po.project_id);
   P.project_id = po.project_id; P.client_id = proj?.client_id || null;
@@ -700,7 +784,7 @@ async function openPO(id) {
     description: it.description||'', source: it.source||'',
     product_url: it.product_url||'', image_url: it.image_url||'',
     qty: +it.qty||1, unit_cost: +it.unit_cost||0,
-    tax_amt: +it.tax_amt||0, shipping_amt: +it.shipping_amt||0,
+    tax_amt: +it.tax_amt||0, shipping_amt: +it.shipping_amt||0, discount_amt: +it.discount_amt||0,
     white_glove: !!it.white_glove,
     internal_notes: it.internal_notes||'', _open: false
   }));
@@ -717,12 +801,14 @@ function renderEditor() {
   gid('poTaxRate').value    = P.tax_rate;
   gid('poShipping').value   = P.shipping;
   gid('poMarkup').value     = P.markup_pct;
+  gid('poDiscount').value   = P.discount_pct;
   gid('poPayMethod').value  = P.payment_method;
   gid('poPayAccount').value = P.payment_account;
   gid('poNotes').value      = P.notes;
   gid('poNote').value       = P.please_note;
   setTaxMode(P.tax_mode, true);
   setShipMode(P.shipping_mode, true);
+  setDiscountMode(P.discount_mode, true);
   const csel = gid('clientSel');
   csel.innerHTML = '<option value="">Select client…</option>'
     + allClients.map(c => `<option value="${c.id}"${c.id===P.client_id?' selected':''}>${esc(c.name)}</option>`).join('')
@@ -840,6 +926,7 @@ function readRow(k) {
   it.internal_notes = gv('in-'+k);
   it.tax_amt        = parseFloat(gv('ta-'+k))  || 0;
   it.shipping_amt   = parseFloat(gv('sa-'+k))  || 0;
+  it.discount_amt   = parseFloat(gv('da-'+k))  || 0;
   const wgEl = gid('wg-'+k); if (wgEl) it.white_glove = wgEl.checked;
 }
 
@@ -873,6 +960,11 @@ function rowHTML(it, idx) {
     ? `<div class="fg" style="margin-top:10px">
         <label class="fl">Shipping $</label>
         <input class="fi" id="sa-${it._k}" type="number" value="${it.shipping_amt||0}" min="0" step="0.01" oninput="onRowChange(${it._k})">
+       </div>` : '';
+  const perItemDisc = P.discount_mode === 'per_item'
+    ? `<div class="fg" style="margin-top:10px">
+        <label class="fl">Discount $</label>
+        <input class="fi" id="da-${it._k}" type="number" value="${it.discount_amt||0}" min="0" step="0.01" oninput="onRowChange(${it._k})">
        </div>` : '';
   return `
 <tr>
@@ -920,6 +1012,7 @@ function rowHTML(it, idx) {
         </div>
         ${perItemTax}
         ${perItemShip}
+        ${perItemDisc}
       </div>
     </div>
   </td>
@@ -979,27 +1072,37 @@ function renderTotals() {
   P.items.forEach(it => readRow(it._k));
   const sub  = P.items.reduce((a,it) => a + it.unit_cost*it.qty, 0);
   const mkup = parseFloat(gv('poMarkup')) || 0;
-  const fee  = sub * mkup / 100;
+
+  const disc = P.discount_mode === 'flat_pct'
+    ? sub * ((parseFloat(gv('poDiscount')) || 0) / 100)
+    : P.items.reduce((a,it) => a + (it.discount_amt||0), 0);
+  const effectiveSub = sub - disc;
+
+  const fee  = effectiveSub * mkup / 100;
 
   const ship = P.shipping_mode === 'flat'
     ? (parseFloat(gv('poShipping')) || 0)
     : P.items.reduce((a,it) => a + (it.shipping_amt||0), 0);
 
   const tax = P.tax_mode === 'flat'
-    ? sub * ((parseFloat(gv('poTaxRate')) || 0) / 100)
+    ? effectiveSub * ((parseFloat(gv('poTaxRate')) || 0) / 100)
     : P.items.reduce((a,it) => a + (it.tax_amt||0), 0);
 
   sv('t-sub',   fmtMoney(sub));
+  sv('t-disc',  '−' + fmtMoney(disc));
   sv('t-ship',  fmtMoney(ship));
   sv('t-tax',   fmtMoney(tax));
-  sv('t-total', fmtMoney(sub + ship + tax));
+  sv('t-total', fmtMoney(effectiveSub + ship + tax));
+  const tDiscRow = gid('t-disc-row'); if (tDiscRow) tDiscRow.style.display = disc > 0 ? '' : 'none';
 
   sv('c-sub',   fmtMoney(sub));
+  sv('c-disc',  '−' + fmtMoney(disc));
   sv('c-ship',  fmtMoney(ship));
   sv('c-tax',   fmtMoney(tax));
   sv('c-fee',   fmtMoney(fee));
   sv('c-fee-label', mkup + '% Procurement Fee');
-  sv('c-total', fmtMoney(sub + ship + tax + fee));
+  sv('c-total', fmtMoney(effectiveSub + ship + tax + fee));
+  const cDiscRow = gid('c-disc-row'); if (cDiscRow) cDiscRow.style.display = disc > 0 ? '' : 'none';
 }
 
 /* ── SAVE PO ─────────────────────────────── */
@@ -1013,6 +1116,7 @@ async function savePO() {
   P.tax_rate        = parseFloat(gv('poTaxRate'))  || 0;
   P.shipping        = parseFloat(gv('poShipping')) || 0;
   P.markup_pct      = parseFloat(gv('poMarkup'))   || 0;
+  P.discount_pct    = parseFloat(gv('poDiscount')) || 0;
   P.payment_method  = gv('poPayMethod');
   P.payment_account = gv('poPayAccount');
   P.notes           = gv('poNotes');
@@ -1033,6 +1137,7 @@ async function savePO() {
       tax_rate: P.tax_rate, tax_mode: P.tax_mode,
       shipping: P.shipping, shipping_mode: P.shipping_mode,
       markup_pct: P.markup_pct,
+      discount_pct: P.discount_pct, discount_mode: P.discount_mode,
       payment_method: P.payment_method, payment_account: P.payment_account,
       updated_at: new Date().toISOString()
     };
@@ -1048,7 +1153,7 @@ async function savePO() {
       po_id: pid, sort_order: i, category: it.category, item_name: it.item_name,
       description: it.description, source: it.source, product_url: it.product_url,
       image_url: it.image_url, qty: it.qty, unit_cost: it.unit_cost,
-      tax_amt: it.tax_amt||0, shipping_amt: it.shipping_amt||0,
+      tax_amt: it.tax_amt||0, shipping_amt: it.shipping_amt||0, discount_amt: it.discount_amt||0,
       white_glove: !!it.white_glove, internal_notes: it.internal_notes
     }));
     if (lines.length) await DB().from('po_line_items').insert(lines);
@@ -1073,9 +1178,15 @@ function renderDoc() {
   const ship = parseFloat(gv('poShipping')) || P.shipping;
   const taxR = parseFloat(gv('poTaxRate'))  || P.tax_rate;
   const mkup = parseFloat(gv('poMarkup'))   || P.markup_pct;
-  const tax  = sub * taxR / 100;
-  const fee  = sub * mkup / 100;
-  const grandTotal = sub + ship + tax + fee;
+  const discPct  = parseFloat(gv('poDiscount')) ?? P.discount_pct;
+  const discMode = P.discount_mode || 'flat_pct';
+  const disc = discMode === 'flat_pct'
+    ? sub * discPct / 100
+    : P.items.reduce((a,it) => a + (it.discount_amt||0), 0);
+  const effectiveSub = sub - disc;
+  const tax  = effectiveSub * taxR / 100;
+  const fee  = effectiveSub * mkup / 100;
+  const grandTotal = effectiveSub + ship + tax + fee;
 
   const hasImages   = P.items.some(it => it.image_url);
   const showTaxCol  = P.tax_mode === 'per_item';
@@ -1170,6 +1281,7 @@ function renderDoc() {
     <div class="doc-totals">
       <div class="doc-tot-table">
         <div class="doc-tot-row"><span>Subtotal</span><span>${fmtMoney(sub)}</span></div>
+        ${disc ? `<div class="doc-tot-row" style="color:var(--moss)"><span>Discount${discMode==='flat_pct'&&discPct?' ('+discPct+'%)':''}</span><span>−${fmtMoney(disc)}</span></div>` : ''}
         ${ship ? `<div class="doc-tot-row"><span>Shipping</span><span>${fmtMoney(ship)}</span></div>` : ''}
         ${tax  ? `<div class="doc-tot-row"><span>Taxes</span><span>${fmtMoney(tax)}</span></div>` : ''}
         <div class="doc-tot-row"><span>${mkup}% Procurement Fee</span><span>${fmtMoney(fee)}</span></div>
@@ -1186,9 +1298,10 @@ function renderDoc() {
 
 /* ── CLIENT MANAGER ─────────────────────────── */
 function go(name) {
-  ['list','po','doc','clients'].forEach(s => { const el = document.getElementById('screen-'+s); if (el) el.classList.remove('active'); });
+  ['list','po','doc','clients','consolidate'].forEach(s => { const el = document.getElementById('screen-'+s); if (el) el.classList.remove('active'); });
   const t = document.getElementById('screen-'+name); if (t) t.classList.add('active');
   if (name === 'clients') renderMgr();
+  if (name === 'consolidate') renderConsolidate();
   window.scrollTo(0,0);
 }
 
@@ -1314,6 +1427,13 @@ function setShipMode(m, silent) {
   const el = gid('poShipping'); if (el) el.style.display = m==='flat' ? '' : 'none';
   if (!silent) { renderItems(); renderTotals(); }
 }
+function setDiscountMode(m, silent) {
+  P.discount_mode = m;
+  gid('discModeFlat')?.classList.toggle('active', m==='flat_pct');
+  gid('discModeItem')?.classList.toggle('active', m==='per_item');
+  const el = gid('poDiscount'); if (el) el.style.display = m==='flat_pct' ? '' : 'none';
+  if (!silent) { renderItems(); renderTotals(); }
+}
 
 /* ── PASTE IMAGE ─────────────────────────────── */
 function focusPaste(k) {
@@ -1352,6 +1472,95 @@ document.addEventListener('paste', e => {
     renderTotals();
   });
 });
+
+/* ── CONSOLIDATE ─────────────────────────── */
+function renderConsolidate() {
+  const sel = gid('consProjectSel');
+  sel.innerHTML = '<option value="">Choose a project…</option>'
+    + allProjects.map(p => {
+        const client = allClients.find(c => c.id === p.client_id);
+        const label  = client ? esc(client.name) + ' — ' + esc(p.name) : esc(p.name);
+        return `<option value="${p.id}">${label}</option>`;
+      }).join('');
+  gid('consPoDate').value = today();
+  gid('consPoList').innerHTML = '';
+  gid('consSettings').style.display = 'none';
+}
+
+function renderConsSelections() {
+  const projectId = gv('consProjectSel');
+  const list = gid('consPoList');
+  if (!projectId) { list.innerHTML = ''; gid('consSettings').style.display = 'none'; return; }
+  const pos = allPOs.filter(po => po.project_id === projectId);
+  if (!pos.length) {
+    list.innerHTML = `<p style="font-size:13px;color:var(--muted);margin-bottom:16px">No POs found for this project.</p>`;
+    gid('consSettings').style.display = 'none'; return;
+  }
+  list.innerHTML = `<p class="cons-section-label">Select POs to consolidate</p>`
+    + pos.map(po => `
+      <label class="cons-po-row">
+        <input type="checkbox" class="cons-po-cb" value="${po.id}" onchange="checkConsSettings()">
+        <div class="cons-po-num">${esc(po.po_number)}</div>
+        <div class="cons-po-info">
+          <div class="cons-po-name">${esc(po.notes||po.po_name||'—')}</div>
+          <div class="cons-po-date">${po.date ? fmtDate(po.date) : 'No date'}</div>
+        </div>
+        <span class="status-badge s-${po.status}">${po.status}</span>
+        <div class="cons-po-total" id="ctot-${po.id}">—</div>
+      </label>`).join('');
+  pos.forEach(po => {
+    const src = document.getElementById('pct-'+po.id);
+    const dst = document.getElementById('ctot-'+po.id);
+    if (src && dst) dst.textContent = src.textContent;
+  });
+  gid('consSettings').style.display = 'none';
+}
+
+function checkConsSettings() {
+  const count = document.querySelectorAll('.cons-po-cb:checked').length;
+  gid('consSettings').style.display = count >= 2 ? 'block' : 'none';
+}
+
+async function createMasterPO() {
+  const checked = Array.from(document.querySelectorAll('.cons-po-cb:checked')).map(el => el.value);
+  if (checked.length < 2) { alert('Select at least 2 POs to consolidate.'); return; }
+  const projectId = gv('consProjectSel');
+  const btn = gid('consCreateBtn'); btn.textContent = 'Creating…'; btn.disabled = true;
+  try {
+    const itemResults = await Promise.all(
+      checked.map(id => DB().from('po_line_items').select('*').eq('po_id', id).order('sort_order'))
+    );
+    const firstPO = allPOs.find(po => po.id === checked[0]);
+    const proj    = allProjects.find(p => p.id === projectId);
+
+    P.id = null; P.client_id = proj?.client_id || null; P.project_id = projectId;
+    P.po_number = ''; P.po_name = gv('consPoName');
+    P.date = gv('consPoDate') || today(); P.due_date = '';
+    P.status = gv('consPoStatus'); P.notes = 'Consolidated PO'; P.please_note = DEFAULT_NOTE;
+    P.tax_rate = firstPO?.tax_rate ?? 7; P.tax_mode = firstPO?.tax_mode || 'flat';
+    P.shipping = firstPO?.shipping ?? 0; P.shipping_mode = firstPO?.shipping_mode || 'flat';
+    P.markup_pct = firstPO?.markup_pct ?? 15;
+    P.discount_pct = firstPO?.discount_pct ?? 0; P.discount_mode = firstPO?.discount_mode || 'flat_pct';
+    P.payment_method = firstPO?.payment_method || ''; P.payment_account = firstPO?.payment_account || '';
+
+    let combined = [];
+    itemResults.forEach(({ data }) => { if (data) combined = combined.concat(data); });
+    P.items = combined.map(it => ({
+      _k: ++_seq, id: null,
+      category: it.category||'', item_name: it.item_name||'',
+      description: it.description||'', source: it.source||'',
+      product_url: it.product_url||'', image_url: it.image_url||'',
+      qty: +it.qty||1, unit_cost: +it.unit_cost||0,
+      tax_amt: +it.tax_amt||0, shipping_amt: +it.shipping_amt||0, discount_amt: +it.discount_amt||0,
+      white_glove: !!it.white_glove, internal_notes: it.internal_notes||'', _open: false
+    }));
+    if (!P.items.length) P.items = [blankItem()];
+    renderEditor(); go('po');
+  } catch(e) {
+    alert('Consolidation failed: ' + e.message);
+    btn.textContent = 'Create Master PO'; btn.disabled = false;
+  }
+}
 
 /* ── HELPERS ──────────────────────────────── */
 function gid(id) { return document.getElementById(id); }
