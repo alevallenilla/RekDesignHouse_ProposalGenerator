@@ -1,0 +1,1315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project Management — Rek Design Studio</title>
+<link rel="icon" href="/logos/rek-wordmark-ink.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Adamina&family=Cormorant+Garamond:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<script src="/shared/nav.js" defer></script>
+<style>
+/* ── RESET ──────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --ink:       #250E0F;
+  --parchment: #F5F5F5;
+  --ivory:     #FAF9F5;
+  --linen:     #EAE6E1;
+  --burg:      #7C3135;
+  --slate:     #4C6270;
+  --moss:      #3D5C3A;
+  --amber:     #8B6914;
+  --muted:     rgba(37,14,15,0.45);
+  --border:    rgba(37,14,15,0.10);
+  --nav-w:     220px;
+}
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--ivory);
+  color: var(--ink);
+  min-height: 100vh;
+  padding-left: var(--nav-w);
+}
+
+/* ── TOP BAR ────────────────────────────────── */
+.topbar {
+  position: sticky; top: 0; z-index: 200;
+  background: var(--ink); height: 52px;
+  display: flex; align-items: center;
+  padding: 0 28px; justify-content: space-between;
+}
+.tb-title { font-size: 11px; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(245,245,245,0.6); }
+.tb-date  { font-size: 11px; color: rgba(245,245,245,0.4); }
+
+/* ── TAB BAR ────────────────────────────────── */
+.tab-bar {
+  display: flex; border-bottom: 1px solid var(--border);
+  background: var(--ivory); padding: 0 32px;
+  position: sticky; top: 52px; z-index: 100;
+}
+.tab-btn {
+  font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 500;
+  color: var(--muted); background: none; border: none;
+  border-bottom: 2px solid transparent; padding: 14px 20px;
+  cursor: pointer; transition: color .15s, border-color .15s; letter-spacing: .04em;
+}
+.tab-btn.active { color: var(--ink); border-bottom-color: var(--burg); }
+.tab-btn:hover:not(.active) { color: var(--ink); }
+
+/* ── CONTENT ────────────────────────────────── */
+.tab-pane { display: none; }
+.tab-pane.active { display: block; }
+.inner { padding: 28px 32px; }
+
+/* ── STATS CARDS ────────────────────────────── */
+.stats-row {
+  display: grid; grid-template-columns: repeat(4,1fr);
+  gap: 16px; margin-bottom: 24px;
+}
+.stat-card {
+  background: white; border: 1px solid var(--border);
+  border-radius: 10px; padding: 18px 20px;
+}
+.stat-card.warn .stat-val { color: var(--burg); }
+.stat-label { font-size: 10px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+.stat-val   { font-family: 'Adamina', serif; font-size: 26px; color: var(--ink); }
+.stat-sub   { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+/* ── CAPACITY BAR ───────────────────────────── */
+.cap-row { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+.cap-label { font-size: 11px; font-weight: 500; color: var(--muted); white-space: nowrap; }
+.cap-track { flex: 1; max-width: 220px; background: var(--linen); border-radius: 4px; height: 6px; overflow: hidden; }
+.cap-fill  { height: 100%; border-radius: 4px; background: var(--moss); transition: width .3s; }
+.cap-fill.warn { background: var(--amber); }
+.cap-fill.full { background: var(--burg); }
+.cap-count { font-size: 11px; font-weight: 600; color: var(--ink); }
+
+/* ── SEARCH ─────────────────────────────────── */
+.search-wrap { position: relative; margin-bottom: 14px; }
+.search-input {
+  font-family: 'Inter', sans-serif; font-size: 13px; color: var(--ink);
+  background: white; border: 1px solid var(--border); border-radius: 8px;
+  padding: 9px 12px 9px 36px; outline: none; width: 100%; max-width: 380px;
+  transition: border-color .15s;
+}
+.search-input:focus { border-color: rgba(37,14,15,.35); }
+.search-icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+
+/* ── FILTER ROW ─────────────────────────────── */
+.filter-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.pills      { display: flex; gap: 6px; }
+.pill {
+  font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 500;
+  background: none; border: 1px solid var(--border); color: var(--muted);
+  border-radius: 20px; padding: 5px 14px; cursor: pointer; transition: all .15s;
+}
+.pill:hover          { border-color: var(--ink); color: var(--ink); }
+.pill.active         { background: var(--ink); color: var(--parchment); border-color: var(--ink); }
+.btn-export {
+  font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 500;
+  background: none; color: var(--muted); border: 1px solid var(--border);
+  border-radius: 6px; padding: 9px 14px; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px; transition: all .15s;
+}
+.btn-export:hover { background: rgba(37,14,15,.05); color: var(--ink); border-color: rgba(37,14,15,.2); }
+
+/* ── BUTTONS ────────────────────────────────── */
+.btn-primary {
+  font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 500;
+  background: var(--ink); color: var(--parchment); border: none;
+  border-radius: 6px; padding: 9px 16px; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px; transition: opacity .15s;
+}
+.btn-primary:hover    { opacity: .85; }
+.btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+.btn-ghost {
+  font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 500;
+  background: none; color: var(--muted); border: 1px solid var(--border);
+  border-radius: 6px; padding: 9px 16px; cursor: pointer; transition: background .15s;
+}
+.btn-ghost:hover  { background: rgba(37,14,15,.05); }
+.btn-danger {
+  font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 500;
+  background: none; color: var(--burg); border: 1px solid rgba(124,49,53,.25);
+  border-radius: 6px; padding: 8px 14px; cursor: pointer; transition: background .15s;
+}
+.btn-danger:hover { background: rgba(124,49,53,.06); }
+
+/* ── PROJECT TABLE ──────────────────────────── */
+.proj-table { width: 100%; border-collapse: collapse; }
+.proj-table th {
+  font-size: 10px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--muted); padding: 0 14px 10px; text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+.proj-table th.r { text-align: right; }
+.proj-table th.sortable { cursor: pointer; user-select: none; white-space: nowrap; }
+.proj-table th.sortable:hover { color: var(--ink); }
+.proj-table th.sorted { color: var(--ink); }
+.sort-icon { margin-left: 4px; font-size: 10px; opacity: .5; }
+.sort-icon.on { opacity: 1; color: var(--burg); }
+.proj-table td   { padding: 14px; border-bottom: 1px solid var(--border); font-size: 13px; vertical-align: middle; }
+.proj-table td.r { text-align: right; font-variant-numeric: tabular-nums; }
+.proj-table tr.prow { cursor: pointer; transition: background .12s; }
+.proj-table tr.prow:hover { background: rgba(37,14,15,.025); }
+.proj-table tr.prow:last-child td { border-bottom: none; }
+.pname   { font-weight: 500; }
+.pclient { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+
+/* ── STATUS PILLS ───────────────────────────── */
+.spill { font-size: 10px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; padding: 3px 9px; border-radius: 20px; display: inline-block; white-space: nowrap; }
+.s-prospect  { background: rgba(76,98,112,.12);  color: #3a5060; }
+.s-active    { background: rgba(61,92,58,.12);   color: #2e4a2b; }
+.s-on-hold   { background: rgba(139,105,20,.12); color: #6b4f0a; }
+.s-completed { background: rgba(37,14,15,.08);   color: rgba(37,14,15,.55); }
+.s-cancelled { background: rgba(124,49,53,.1);   color: #7C3135; }
+
+/* ── EMPTY STATE ────────────────────────────── */
+.empty { text-align: center; padding: 64px 32px; color: var(--muted); }
+.empty-icon { font-size: 30px; margin-bottom: 12px; }
+.empty-msg  { font-size: 14px; color: var(--ink); margin-bottom: 6px; }
+.empty-sub  { font-size: 12px; }
+
+/* ── FINANCIALS ─────────────────────────────── */
+.fin-section { font-size: 10px; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
+.fin-table { width: 100%; border-collapse: collapse; }
+.fin-table th {
+  font-size: 10px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--muted); padding: 0 12px 10px; text-align: left;
+  border-bottom: 1px solid var(--border); white-space: nowrap;
+}
+.fin-table th.r { text-align: right; }
+.fin-table td   { padding: 13px 12px; border-bottom: 1px solid var(--border); font-size: 12.5px; vertical-align: middle; }
+.fin-table td.r { text-align: right; font-variant-numeric: tabular-nums; }
+.fin-table tr:last-child td { border-bottom: none; }
+.fin-total td { font-weight: 600; border-top: 2px solid var(--linen); border-bottom: none; padding-top: 14px; }
+
+/* ── MODAL ──────────────────────────────────── */
+.overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(37,14,15,.38); z-index: 500;
+  align-items: center; justify-content: center;
+}
+.overlay.open { display: flex; }
+.modal {
+  background: var(--ivory); border-radius: 14px;
+  width: 700px; max-width: calc(100vw - 48px);
+  max-height: calc(100vh - 48px); overflow: hidden;
+  display: flex; flex-direction: column;
+  box-shadow: 0 20px 60px rgba(37,14,15,.22);
+}
+.modal.sm { width: 480px; }
+.modal.po { width: 640px; }
+.modal-hd {
+  padding: 24px 28px 20px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: flex-start; justify-content: space-between; flex-shrink: 0;
+}
+.modal-title { font-family: 'Adamina', serif; font-size: 22px; }
+.modal-sub   { font-size: 12px; color: var(--muted); margin-top: 4px; }
+.modal-x { background: none; border: none; cursor: pointer; color: var(--muted); font-size: 22px; line-height: 1; padding: 2px; }
+.modal-x:hover { color: var(--ink); }
+.modal-body { padding: 24px 28px; overflow-y: auto; flex: 1; }
+.modal-ft {
+  padding: 16px 28px; border-top: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: flex-end; gap: 10px; flex-shrink: 0;
+}
+.modal-ft.space { justify-content: space-between; }
+
+/* ── MODAL INNER TABS ───────────────────────── */
+.mtabs { display: flex; border-bottom: 1px solid var(--border); margin: -24px -28px 24px; padding: 0 28px; }
+.mtab {
+  font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 500;
+  background: none; border: none; border-bottom: 2px solid transparent;
+  padding: 12px 16px; cursor: pointer; color: var(--muted); transition: color .15s, border-color .15s;
+}
+.mtab.active { color: var(--ink); border-bottom-color: var(--burg); }
+.mpane { display: none; }
+.mpane.active { display: block; }
+
+/* ── DETAIL SECTIONS ────────────────────────── */
+.fin-summary { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 24px; }
+.fsc { background: white; border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; }
+.fsc-label { font-size: 10px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+.fsc-val   { font-size: 19px; font-weight: 500; color: var(--ink); font-variant-numeric: tabular-nums; }
+.fsc-val.pos { color: var(--moss); }
+.fsc-val.neg { color: var(--burg); }
+.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 20px; }
+.di-label { font-size: 10px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin-bottom: 3px; }
+.di-val   { font-size: 13.5px; }
+
+/* ── FORM ───────────────────────────────────── */
+.fgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.fg { display: flex; flex-direction: column; gap: 5px; }
+.fg.full { grid-column: 1 / -1; }
+.fl { font-size: 10px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.fi, .fsel {
+  font-family: 'Inter', sans-serif; font-size: 13px; color: var(--ink);
+  background: white; border: 1px solid var(--border); border-radius: 6px;
+  padding: 9px 12px; outline: none; width: 100%; transition: border-color .15s;
+}
+.fi:focus, .fsel:focus { border-color: rgba(37,14,15,.35); }
+.fi[readonly] { background: var(--parchment); color: var(--muted); }
+textarea.fi { resize: vertical; min-height: 72px; }
+
+/* ── PAYMENT LIST ───────────────────────────── */
+.pay-list   { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+.pay-row    { display: flex; align-items: center; gap: 10px; background: white; border: 1px solid var(--border); border-radius: 8px; padding: 11px 14px; }
+.pay-type   { font-size: 10px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); min-width: 58px; }
+.pay-date   { font-size: 11.5px; color: var(--muted); white-space: nowrap; }
+.pay-note   { flex: 1; font-size: 12px; color: var(--ink); }
+.pay-amt    { font-size: 13px; font-weight: 600; color: var(--moss); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pay-del    { background: none; border: none; cursor: pointer; color: var(--muted); font-size: 16px; line-height: 1; padding: 2px; transition: color .15s; }
+.pay-del:hover { color: var(--burg); }
+.pay-total  { font-size: 12px; color: var(--muted); margin-bottom: 16px; }
+
+/* ── PO LIST ────────────────────────────────── */
+.po-row  { display: flex; align-items: center; gap: 12px; background: white; border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; margin-bottom: 8px; }
+.po-num  { font-size: 12px; font-weight: 600; min-width: 70px; }
+.po-info { flex: 1; }
+.po-name { font-size: 13px; font-weight: 500; }
+.po-proj { font-size: 11px; color: var(--muted); margin-top: 1px; }
+.po-total-val { font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.po-del  { background: none; border: none; cursor: pointer; color: var(--muted); font-size: 16px; line-height: 1; padding: 2px; }
+.po-del:hover { color: var(--burg); }
+
+/* ── LINK POs ───────────────────────────────── */
+.lpo-group { margin-bottom: 18px; }
+.lpo-group-label { font-size: 10px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+.lpo-item { display: flex; align-items: center; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--border); }
+.lpo-item:last-child { border-bottom: none; }
+.lpo-cb   { width: 15px; height: 15px; cursor: pointer; accent-color: var(--ink); flex-shrink: 0; }
+.lpo-text { flex: 1; }
+.lpo-num  { font-size: 12px; font-weight: 600; }
+.lpo-sub  { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.lpo-search { font-family: 'Inter',sans-serif; font-size: 12px; color: var(--ink); background: white; border: 1px solid var(--border); border-radius: 6px; padding: 8px 12px; outline: none; width: 100%; margin-bottom: 16px; }
+.lpo-search:focus { border-color: rgba(37,14,15,.35); }
+</style>
+</head>
+<body>
+
+<!-- topbar -->
+<div class="topbar">
+  <span class="tb-title">Project Management</span>
+  <span class="tb-date" id="tbDate"></span>
+</div>
+
+<!-- tab bar -->
+<div class="tab-bar">
+  <button class="tab-btn active"  id="tbPipeline"   onclick="switchTab('pipeline')">Pipeline</button>
+  <button class="tab-btn"        id="tbFinancials"  onclick="switchTab('financials')">Financials</button>
+</div>
+
+<!-- ═══════════════════ PIPELINE ═══════════════════ -->
+<div class="tab-pane active" id="pane-pipeline">
+  <div class="inner">
+
+    <!-- stats -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">Pipeline</div>
+        <div class="stat-val" id="s-pipeline">—</div>
+        <div class="stat-sub">Prospect project fees</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Committed</div>
+        <div class="stat-val" id="s-committed">—</div>
+        <div class="stat-sub">Active project fees</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Collected</div>
+        <div class="stat-val" id="s-collected">—</div>
+        <div class="stat-sub">Cash received to date</div>
+      </div>
+      <div class="stat-card" id="s-out-card">
+        <div class="stat-label">Outstanding</div>
+        <div class="stat-val" id="s-outstanding">—</div>
+        <div class="stat-sub" id="s-out-sub">Across active projects</div>
+      </div>
+    </div>
+
+    <!-- capacity -->
+    <div class="cap-row">
+      <span class="cap-label">Active capacity</span>
+      <div class="cap-track"><div class="cap-fill" id="capFill" style="width:0%"></div></div>
+      <span class="cap-count" id="capCount">0 / 10</span>
+    </div>
+
+    <!-- search -->
+    <div class="search-wrap">
+      <svg class="search-icon" width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.3"/><path d="M9.5 9.5L13 13" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      <input class="search-input" type="text" id="projSearch" placeholder="Search projects, clients…" oninput="onSearch(this.value)">
+    </div>
+
+    <!-- filters + actions -->
+    <div class="filter-row">
+      <div class="pills" id="filterPills">
+        <button class="pill active" data-f="all"       onclick="setFilter(this)">All</button>
+        <button class="pill"        data-f="prospect"  onclick="setFilter(this)">Prospect</button>
+        <button class="pill"        data-f="active"    onclick="setFilter(this)">Active</button>
+        <button class="pill"        data-f="on-hold"   onclick="setFilter(this)">On Hold</button>
+        <button class="pill"        data-f="completed" onclick="setFilter(this)">Completed</button>
+        <button class="pill"        data-f="cancelled" onclick="setFilter(this)">Cancelled</button>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn-export" onclick="exportXLS()">
+          <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M7 1v8M4 6l3 3 3-3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M1 10v1a2 2 0 002 2h8a2 2 0 002-2v-1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          Export XLS
+        </button>
+        <button class="btn-primary" onclick="openNewProject()">
+          <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          New Project
+        </button>
+      </div>
+    </div>
+
+    <!-- project table -->
+    <div id="projTableWrap"></div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════ FINANCIALS ═══════════════════ -->
+<div class="tab-pane" id="pane-financials">
+  <div class="inner">
+
+    <div class="stats-row" id="finCards">
+      <div class="stat-card">
+        <div class="stat-label">Total Invoiced</div>
+        <div class="stat-val" id="f-invoiced">—</div>
+        <div class="stat-sub">Design + proc fees</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Collected</div>
+        <div class="stat-val" id="f-collected">—</div>
+        <div class="stat-sub">Cash received to date</div>
+      </div>
+      <div class="stat-card" id="f-out-card">
+        <div class="stat-label">Outstanding</div>
+        <div class="stat-val" id="f-outstanding">—</div>
+        <div class="stat-sub">Owed across all projects</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">PO Volume</div>
+        <div class="stat-val" id="f-po-vol">—</div>
+        <div class="stat-sub" id="f-po-sub">Across linked POs</div>
+      </div>
+    </div>
+
+    <div class="fin-section">Per-Project Breakdown</div>
+    <div id="finTableWrap"></div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════ DETAIL MODAL ═══════════════════ -->
+<div class="overlay" id="detailOverlay" onclick="maybeClose('detailOverlay',event)">
+  <div class="modal">
+    <div class="modal-hd">
+      <div>
+        <div class="modal-title" id="dt-title">Project</div>
+        <div class="modal-sub"   id="dt-sub"></div>
+      </div>
+      <button class="modal-x" onclick="closeOverlay('detailOverlay')">×</button>
+    </div>
+    <div class="modal-body">
+      <!-- inner tabs -->
+      <div class="mtabs">
+        <button class="mtab active" onclick="switchMTab('overview',this)">Overview</button>
+        <button class="mtab"        onclick="switchMTab('payments',this)">Payments</button>
+        <button class="mtab"        onclick="switchMTab('pos',this)">Purchase Orders</button>
+      </div>
+
+      <!-- overview -->
+      <div class="mpane active" id="mp-overview">
+        <div class="fin-summary" id="dt-fin"></div>
+        <div class="detail-grid" id="dt-grid"></div>
+        <div id="dt-notes" style="margin-top:16px"></div>
+      </div>
+
+      <!-- payments -->
+      <div class="mpane" id="mp-payments">
+        <div id="payList"></div>
+        <button class="btn-primary" onclick="openAddPayment()">
+          <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          Log Payment
+        </button>
+      </div>
+
+      <!-- POs -->
+      <div class="mpane" id="mp-pos">
+        <div id="poList"></div>
+        <button class="btn-primary" onclick="openLinkPOs()">
+          <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          Link Purchase Orders
+        </button>
+      </div>
+    </div>
+    <div class="modal-ft space">
+      <button class="btn-danger" onclick="confirmDelete()">Delete Project</button>
+      <div style="display:flex;gap:10px">
+        <button class="btn-ghost"   onclick="closeOverlay('detailOverlay')">Close</button>
+        <button class="btn-primary" onclick="openEditProject()">Edit Project</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ NEW / EDIT MODAL ═══════════════════ -->
+<div class="overlay" id="editOverlay" onclick="maybeClose('editOverlay',event)">
+  <div class="modal">
+    <div class="modal-hd">
+      <div class="modal-title" id="edit-title">New Project</div>
+      <button class="modal-x" onclick="closeOverlay('editOverlay')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="fgrid">
+        <div class="fg">
+          <label class="fl">Client Name</label>
+          <input class="fi" type="text" id="f-client" placeholder="Client full name">
+        </div>
+        <div class="fg">
+          <label class="fl">Project Name</label>
+          <input class="fi" type="text" id="f-pname" placeholder="e.g. Primary Residence">
+        </div>
+        <div class="fg">
+          <label class="fl">Service Type</label>
+          <select class="fsel" id="f-svc">
+            <option value="">— Select —</option>
+            <option value="fse">Full Studio Experience</option>
+            <option value="atelier">E-Design Atelier</option>
+            <option value="signature">The Signature Room</option>
+            <option value="styling">The Styling Edit</option>
+            <option value="call">Discovery Call</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label class="fl">Category</label>
+          <select class="fsel" id="f-cat">
+            <option value="residential">Residential</option>
+            <option value="commercial">Commercial</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label class="fl">Status</label>
+          <select class="fsel" id="f-status">
+            <option value="prospect">Prospect</option>
+            <option value="active">Active</option>
+            <option value="on-hold">On Hold</option>
+            <option value="completed">Completed</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label class="fl">Start Date</label>
+          <input class="fi" type="date" id="f-start">
+        </div>
+        <div class="fg">
+          <label class="fl">Design Fee ($)</label>
+          <input class="fi" type="number" id="f-dfee" placeholder="0" min="0">
+        </div>
+        <div class="fg">
+          <label class="fl">Procurement Budget ($)</label>
+          <input class="fi" type="number" id="f-budget" placeholder="0" min="0" oninput="calcProcFee()">
+        </div>
+        <div class="fg">
+          <label class="fl">Procurement Fee (15% auto)</label>
+          <input class="fi" type="number" id="f-pfee" placeholder="0" readonly>
+        </div>
+        <div class="fg full">
+          <label class="fl">Notes</label>
+          <textarea class="fi" id="f-notes" rows="3" placeholder="Internal notes about this project…"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn-ghost"   onclick="closeOverlay('editOverlay')">Cancel</button>
+      <button class="btn-primary" id="editSaveBtn" onclick="saveProject()">Save Project</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ ADD PAYMENT MODAL ═══════════════════ -->
+<div class="overlay" id="payOverlay" onclick="maybeClose('payOverlay',event)">
+  <div class="modal sm">
+    <div class="modal-hd">
+      <div class="modal-title">Log Payment</div>
+      <button class="modal-x" onclick="closeOverlay('payOverlay')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="fgrid">
+        <div class="fg">
+          <label class="fl">Payment Type</label>
+          <select class="fsel" id="pay-type">
+            <option value="deposit">Deposit</option>
+            <option value="balance">Balance</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label class="fl">Amount ($)</label>
+          <input class="fi" type="number" id="pay-amt" placeholder="0" min="0">
+        </div>
+        <div class="fg">
+          <label class="fl">Date Received</label>
+          <input class="fi" type="date" id="pay-date">
+        </div>
+        <div class="fg">
+          <label class="fl">Note (optional)</label>
+          <input class="fi" type="text" id="pay-note" placeholder="e.g. Zelle transfer">
+        </div>
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn-ghost"   onclick="closeOverlay('payOverlay')">Cancel</button>
+      <button class="btn-primary" onclick="savePayment()">Log Payment</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ LINK POs MODAL ═══════════════════ -->
+<div class="overlay" id="linkOverlay" onclick="maybeClose('linkOverlay',event)">
+  <div class="modal po">
+    <div class="modal-hd">
+      <div>
+        <div class="modal-title">Link Purchase Orders</div>
+        <div class="modal-sub">Select POs from the Procurement Tool to associate with this project</div>
+      </div>
+      <button class="modal-x" onclick="closeOverlay('linkOverlay')">×</button>
+    </div>
+    <div class="modal-body">
+      <input class="lpo-search" type="text" id="lpoSearch" placeholder="Search by PO number, name, or client…" oninput="filterLPOs()">
+      <div id="lpoBody"></div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn-ghost"   onclick="closeOverlay('linkOverlay')">Cancel</button>
+      <button class="btn-primary" onclick="savePOLinks()">Save Links</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ SCRIPTS ═══════════════════ -->
+<script>
+/*
+  ┌─────────────────────────────────────────────────────────────────────────────┐
+  │  SUPABASE SETUP — run these in your Supabase SQL Editor (once):             │
+  │                                                                             │
+  │  create table if not exists projects (                                      │
+  │    id                uuid primary key default gen_random_uuid(),            │
+  │    client_name       text not null,                                         │
+  │    project_name      text,                                                  │
+  │    service_type      text,                                                  │
+  │    status            text default 'prospect',                               │
+  │    design_fee        numeric default 0,                                     │
+  │    procurement_budget numeric default 0,                                    │
+  │    procurement_fee   numeric default 0,                                     │
+  │    start_date        date,                                                  │
+  │    notes             text,                                                  │
+  │    created_at        timestamptz default now(),                             │
+  │    updated_at        timestamptz default now()                              │
+  │  );                                                                         │
+  │                                                                             │
+  │  create table if not exists project_payments (                              │
+  │    id            uuid primary key default gen_random_uuid(),                │
+  │    project_id    uuid references projects(id) on delete cascade,            │
+  │    type          text default 'deposit',                                    │
+  │    amount        numeric not null,                                          │
+  │    received_date date not null,                                             │
+  │    note          text,                                                      │
+  │    created_at    timestamptz default now()                                  │
+  │  );                                                                         │
+  │                                                                             │
+  │  create table if not exists project_pos (                                   │
+  │    id         uuid primary key default gen_random_uuid(),                   │
+  │    project_id uuid references projects(id) on delete cascade,               │
+  │    po_id      uuid not null,                                                │
+  │    created_at timestamptz default now(),                                    │
+  │    unique(project_id, po_id)                                                │
+  │  );                                                                         │
+  └─────────────────────────────────────────────────────────────────────────────┘
+*/
+
+const SUPA_URL  = 'https://danfcudpvzjcjxhwwqhp.supabase.co';
+const SUPA_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRhbmZjdWRwdnpqY2p4aHd3cWhwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwMTg3NjMsImV4cCI6MjA5MzU5NDc2M30.KdDpMNteoNFnnPX-47ZLlDJQnwlsH4ohHMjo20goDFE';
+const MAX_ACTIVE = 10;
+const PROC_MARKUP = 0.15;
+
+let _db = null;
+const DB = () => { if (!_db) _db = supabase.createClient(SUPA_URL, SUPA_KEY); return _db; };
+
+const SVC = {
+  fse:'Full Studio Experience', atelier:'E-Design Atelier',
+  signature:'The Signature Room', styling:'The Styling Edit', call:'Discovery Call'
+};
+
+/* ── STATE ─────────────────────────────────── */
+let projects    = [];
+let allPOs      = [];
+let curFilter   = 'all';
+let curSearch   = '';
+let sortCol     = 'start_date';
+let sortDir     = 'desc';
+let curId       = null;   // project open in detail
+let editingId   = null;   // null = new project
+let _pendingChecks = new Set(); // PO IDs currently checked in Link POs modal
+
+/* ── HELPERS ───────────────────────────────── */
+const $  = id => document.getElementById(id);
+const fmt = n  => '$' + Math.round(+n || 0).toLocaleString();
+const fmtDate = s => s ? new Date(s + 'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—';
+const todayStr = () => new Date().toISOString().split('T')[0];
+
+const totalCollected  = p => (p.project_payments||[]).reduce((s,x)=>s+(+x.amount||0),0);
+const totalInvoiced   = p => (+p.design_fee||0) + (+p.procurement_fee||0);
+const totalOutstanding = p => Math.max(0, totalInvoiced(p) - totalCollected(p));
+
+function isOverdue(p) {
+  if (p.status !== 'active') return false;
+  if (totalOutstanding(p) <= 0) return false;
+  if (!p.start_date) return false;
+  return (Date.now() - new Date(p.start_date)) / 86400000 > 30;
+}
+
+const sCls = s => ({prospect:'s-prospect',active:'s-active','on-hold':'s-on-hold',completed:'s-completed',cancelled:'s-cancelled'}[s]||'');
+const sLbl = s => ({prospect:'Prospect',active:'Active','on-hold':'On Hold',completed:'Completed',cancelled:'Cancelled'}[s]||s);
+
+/* ── INIT ──────────────────────────────────── */
+document.addEventListener('DOMContentLoaded', async () => {
+  $('tbDate').textContent = new Date().toLocaleDateString('en-US',{weekday:'short',month:'long',day:'numeric',year:'numeric'});
+  await loadAll();
+});
+
+async function loadAll() {
+  const [pRes, poRes] = await Promise.all([
+    DB().from('projects').select('*, project_payments(*)').order('created_at', {ascending:false}),
+    DB().from('purchase_orders').select('*, procurement_projects(name, procurement_clients(name))').order('po_number')
+  ]);
+  projects = pRes.data  || [];
+  allPOs   = poRes.data || [];
+  renderPipeline();
+}
+
+/* ── TABS ──────────────────────────────────── */
+function switchTab(tab) {
+  ['pipeline','financials'].forEach(t => {
+    $('tb'+t.charAt(0).toUpperCase()+t.slice(1)).classList.toggle('active', t===tab);
+    $('pane-'+t).classList.toggle('active', t===tab);
+  });
+  if (tab === 'financials') renderFinancials();
+}
+
+/* ══════════════════════════════════════════════
+   PIPELINE
+══════════════════════════════════════════════ */
+function renderPipeline() { renderStats(); renderCapacity(); renderTable(); }
+
+function renderStats() {
+  const pipeline    = projects.filter(p=>p.status==='prospect').reduce((s,p)=>s+totalInvoiced(p),0);
+  const committed   = projects.filter(p=>p.status==='active').reduce((s,p)=>s+totalInvoiced(p),0);
+  const collected   = projects.reduce((s,p)=>s+totalCollected(p),0);
+  const outstanding = projects.filter(p=>p.status==='active').reduce((s,p)=>s+totalOutstanding(p),0);
+  const hasOverdue  = projects.some(isOverdue);
+
+  $('s-pipeline').textContent    = fmt(pipeline);
+  $('s-committed').textContent   = fmt(committed);
+  $('s-collected').textContent   = fmt(collected);
+  $('s-outstanding').textContent = fmt(outstanding);
+  $('s-out-card').classList.toggle('warn', hasOverdue);
+  $('s-out-sub').textContent = hasOverdue ? '⚠ Overdue payment(s)' : 'Across active projects';
+}
+
+function renderCapacity() {
+  const active = projects.filter(p=>p.status==='active').length;
+  const pct    = Math.min(100, Math.round(active / MAX_ACTIVE * 100));
+  const fill   = $('capFill');
+  fill.style.width = pct + '%';
+  fill.className   = 'cap-fill' + (pct >= 90 ? ' full' : pct >= 70 ? ' warn' : '');
+  $('capCount').textContent = `${active} / ${MAX_ACTIVE} active`;
+}
+
+function onSearch(val) {
+  curSearch = val.trim().toLowerCase();
+  renderTable();
+}
+
+function setSort(col) {
+  if (sortCol === col) sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+  else { sortCol = col; sortDir = col === 'start_date' ? 'desc' : 'asc'; }
+  renderTable();
+}
+
+function si(col) {
+  const on = sortCol === col;
+  const arrow = on ? (sortDir === 'asc' ? '↑' : '↓') : '⇅';
+  return `<span class="sort-icon${on?' on':''}">${arrow}</span>`;
+}
+
+function applySortAndFilter(list) {
+  if (curSearch) list = list.filter(p =>
+    (p.project_name||'').toLowerCase().includes(curSearch) ||
+    (p.client_name||'').toLowerCase().includes(curSearch) ||
+    (SVC[p.service_type]||'').toLowerCase().includes(curSearch)
+  );
+  return [...list].sort((a, b) => {
+    let va, vb;
+    switch (sortCol) {
+      case 'project_name': va = (a.project_name||'').toLowerCase(); vb = (b.project_name||'').toLowerCase(); break;
+      case 'start_date':   va = a.start_date||'0000'; vb = b.start_date||'0000'; break;
+      case 'design_fee':   va = +a.design_fee||0;     vb = +b.design_fee||0;     break;
+      case 'collected':    va = totalCollected(a);     vb = totalCollected(b);    break;
+      case 'outstanding':  va = totalOutstanding(a);   vb = totalOutstanding(b);  break;
+      case 'status':       va = a.status||'';          vb = b.status||'';         break;
+      default: return 0;
+    }
+    if (va < vb) return sortDir === 'asc' ? -1 : 1;
+    if (va > vb) return sortDir === 'asc' ?  1 : -1;
+    return 0;
+  });
+}
+
+function setFilter(btn) {
+  curFilter = btn.dataset.f;
+  document.querySelectorAll('.pills .pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  renderTable();
+}
+
+function renderTable() {
+  const base = curFilter === 'all' ? projects : projects.filter(p => p.status === curFilter);
+  const list = applySortAndFilter(base);
+  const wrap = $('projTableWrap');
+
+  if (!list.length) {
+    wrap.innerHTML = `<div class="empty">
+      <div class="empty-icon">📋</div>
+      <div class="empty-msg">${curSearch ? 'No projects match "'+curSearch+'"' : curFilter==='all'?'No projects yet':'No '+sLbl(curFilter)+' projects'}</div>
+      <div class="empty-sub">${curSearch ? 'Try a different search term' : 'Click "New Project" to get started'}</div>
+    </div>`;
+    return;
+  }
+
+  wrap.innerHTML = `<table class="proj-table">
+    <thead><tr>
+      <th class="sortable${sortCol==='project_name'?' sorted':''}" onclick="setSort('project_name')">Project${si('project_name')}</th>
+      <th>Service</th>
+      <th class="sortable${sortCol==='status'?' sorted':''}" onclick="setSort('status')">Status${si('status')}</th>
+      <th class="r sortable${sortCol==='design_fee'?' sorted':''}" onclick="setSort('design_fee')">Design Fee${si('design_fee')}</th>
+      <th class="r sortable${sortCol==='collected'?' sorted':''}" onclick="setSort('collected')">Collected${si('collected')}</th>
+      <th class="r sortable${sortCol==='outstanding'?' sorted':''}" onclick="setSort('outstanding')">Outstanding${si('outstanding')}</th>
+      <th class="sortable${sortCol==='start_date'?' sorted':''}" onclick="setSort('start_date')">Start Date${si('start_date')}</th>
+    </tr></thead>
+    <tbody>${list.map(p => {
+      const col = totalCollected(p);
+      const out = totalOutstanding(p);
+      const od  = isOverdue(p);
+      return `<tr class="prow" onclick="openProject('${p.id}')">
+        <td>
+          <div class="pname">${p.project_name || '—'}</div>
+          <div class="pclient">${p.client_name}</div>
+        </td>
+        <td>
+          <div style="font-size:12px;color:var(--muted)">${SVC[p.service_type]||'—'}</div>
+          ${p.category?`<div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:2px;opacity:.7">${p.category}</div>`:''}
+        </td>
+        <td><span class="spill ${sCls(p.status)}">${sLbl(p.status)}</span></td>
+        <td class="r">${fmt(p.design_fee)}</td>
+        <td class="r" style="color:var(--moss)">${fmt(col)}</td>
+        <td class="r">${out > 0
+          ? `<span style="${od?'color:var(--burg);font-weight:600':''}">${fmt(out)}${od?' ⚠':''}</span>`
+          : '<span style="color:var(--muted)">—</span>'}</td>
+        <td style="font-size:12px;color:var(--muted)">${fmtDate(p.start_date)}</td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table>`;
+}
+
+/* ══════════════════════════════════════════════
+   FINANCIALS
+══════════════════════════════════════════════ */
+async function renderFinancials() {
+  const active = projects.filter(p => p.status !== 'cancelled');
+  $('f-invoiced').textContent   = fmt(active.reduce((s,p)=>s+totalInvoiced(p),0));
+  $('f-collected').textContent  = fmt(active.reduce((s,p)=>s+totalCollected(p),0));
+  $('f-outstanding').textContent= fmt(active.reduce((s,p)=>s+totalOutstanding(p),0));
+  $('f-out-card').classList.toggle('warn', active.some(isOverdue));
+
+  // Load PO totals
+  const { data: links } = await DB().from('project_pos').select('project_id, po_id');
+  const poIds = [...new Set((links||[]).map(l=>l.po_id))];
+  let poTotals = {};
+  if (poIds.length) {
+    const { data: li } = await DB().from('po_line_items').select('po_id, qty, unit_cost').in('po_id', poIds);
+    (li||[]).forEach(r => { poTotals[r.po_id] = (poTotals[r.po_id]||0) + (+r.qty||0) * (+r.unit_cost||0); });
+  }
+
+  const projPOTotal = {};
+  (links||[]).forEach(l => { projPOTotal[l.project_id] = (projPOTotal[l.project_id]||0) + (poTotals[l.po_id]||0); });
+  const grandPO = Object.values(projPOTotal).reduce((s,v)=>s+v,0);
+  $('f-po-vol').textContent = fmt(grandPO);
+  $('f-po-sub').textContent = `Across ${(links||[]).length} linked PO${(links||[]).length!==1?'s':''}`;
+
+  if (!active.length) {
+    $('finTableWrap').innerHTML = `<div class="empty"><div class="empty-msg">No projects to show</div></div>`;
+    return;
+  }
+
+  const rows = active.map(p => {
+    const col = totalCollected(p);
+    const inv = totalInvoiced(p);
+    const out = totalOutstanding(p);
+    const pot = projPOTotal[p.id] || 0;
+    const od  = isOverdue(p);
+    return `<tr>
+      <td><div style="font-weight:500">${p.project_name||'—'}</div><div style="font-size:11px;color:var(--muted)">${p.client_name}</div></td>
+      <td><span class="spill ${sCls(p.status)}">${sLbl(p.status)}</span></td>
+      <td class="r">${fmt(p.design_fee)}</td>
+      <td class="r">${+p.procurement_fee>0?fmt(p.procurement_fee):'<span style="color:var(--muted)">—</span>'}</td>
+      <td class="r" style="font-weight:500">${fmt(inv)}</td>
+      <td class="r" style="color:var(--moss);font-weight:500">${col>0?fmt(col):'<span style="color:var(--muted)">—</span>'}</td>
+      <td class="r">${out>0?`<span style="${od?'color:var(--burg);font-weight:600':''}">${fmt(out)}${od?' ⚠':''}</span>`:'<span style="color:var(--muted)">—</span>'}</td>
+      <td class="r">${pot>0?fmt(pot):'<span style="color:var(--muted)">—</span>'}</td>
+    </tr>`;
+  });
+
+  const tInv = active.reduce((s,p)=>s+totalInvoiced(p),0);
+  const tCol = active.reduce((s,p)=>s+totalCollected(p),0);
+  const tOut = active.reduce((s,p)=>s+totalOutstanding(p),0);
+
+  $('finTableWrap').innerHTML = `<table class="fin-table">
+    <thead><tr>
+      <th>Project</th><th>Status</th>
+      <th class="r">Design Fee</th><th class="r">Proc Fee</th>
+      <th class="r">Total Invoiced</th><th class="r">Collected</th>
+      <th class="r">Outstanding</th><th class="r">PO Total</th>
+    </tr></thead>
+    <tbody>${rows.join('')}</tbody>
+    <tfoot><tr class="fin-total">
+      <td colspan="2">Total</td>
+      <td></td><td></td>
+      <td class="r">${fmt(tInv)}</td>
+      <td class="r" style="color:var(--moss)">${fmt(tCol)}</td>
+      <td class="r">${fmt(tOut)}</td>
+      <td class="r">${fmt(grandPO)}</td>
+    </tr></tfoot>
+  </table>`;
+}
+
+/* ══════════════════════════════════════════════
+   PROJECT DETAIL
+══════════════════════════════════════════════ */
+async function openProject(id) {
+  curId = id;
+  const p = projects.find(x => x.id === id);
+  if (!p) return;
+
+  $('dt-title').textContent = p.project_name || p.client_name;
+  $('dt-sub').textContent   = p.client_name + (p.service_type ? ' · ' + SVC[p.service_type] : '');
+
+  // reset to overview tab
+  document.querySelectorAll('.mtab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.mpane').forEach(c=>c.classList.remove('active'));
+  document.querySelector('.mtab').classList.add('active');
+  $('mp-overview').classList.add('active');
+
+  const col = totalCollected(p);
+  const inv = totalInvoiced(p);
+  const out = totalOutstanding(p);
+
+  $('dt-fin').innerHTML = `
+    <div class="fsc"><div class="fsc-label">Total Invoiced</div><div class="fsc-val">${fmt(inv)}</div></div>
+    <div class="fsc"><div class="fsc-label">Collected</div><div class="fsc-val pos">${fmt(col)}</div></div>
+    <div class="fsc"><div class="fsc-label">Outstanding</div><div class="fsc-val ${out>0&&isOverdue(p)?'neg':''}">${out>0?fmt(out)+(isOverdue(p)?' ⚠':''):'—'}</div></div>`;
+
+  $('dt-grid').innerHTML = `
+    <div class="detail-item">
+      <div class="di-label">Status</div>
+      <div class="di-val"><span class="spill ${sCls(p.status)}">${sLbl(p.status)}</span></div>
+    </div>
+    <div class="detail-item">
+      <div class="di-label">Service</div>
+      <div class="di-val">${SVC[p.service_type]||'—'}</div>
+    </div>
+    <div class="detail-item">
+      <div class="di-label">Category</div>
+      <div class="di-val" style="text-transform:capitalize">${p.category||'—'}</div>
+    </div>
+    <div class="detail-item">
+      <div class="di-label">Start Date</div>
+      <div class="di-val">${fmtDate(p.start_date)}</div>
+    </div>
+    <div class="detail-item">
+      <div class="di-label">Design Fee</div>
+      <div class="di-val">${fmt(p.design_fee)}</div>
+    </div>
+    <div class="detail-item">
+      <div class="di-label">Procurement Budget</div>
+      <div class="di-val">${+p.procurement_budget>0?fmt(p.procurement_budget):'—'}</div>
+    </div>
+    <div class="detail-item">
+      <div class="di-label">Procurement Fee (15%)</div>
+      <div class="di-val">${+p.procurement_fee>0?fmt(p.procurement_fee):'—'}</div>
+    </div>`;
+
+  $('dt-notes').innerHTML = p.notes
+    ? `<div class="di-label" style="margin-bottom:6px">Notes</div><div style="font-size:13px;line-height:1.6;white-space:pre-wrap">${p.notes}</div>`
+    : '';
+
+  renderPaymentList(p);
+  await renderPOList(id);
+
+  $('detailOverlay').classList.add('open');
+}
+
+function switchMTab(tab, btn) {
+  document.querySelectorAll('.mtab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.mpane').forEach(c=>c.classList.remove('active'));
+  btn.classList.add('active');
+  $('mp-'+tab).classList.add('active');
+}
+
+/* ── PAYMENT LIST ──────────────────────────── */
+function renderPaymentList(p) {
+  const pays = [...(p.project_payments||[])].sort((a,b)=>new Date(a.received_date)-new Date(b.received_date));
+  if (!pays.length) {
+    $('payList').innerHTML = `<p style="color:var(--muted);font-size:13px;margin-bottom:16px">No payments logged yet.</p>`;
+    return;
+  }
+  const total = pays.reduce((s,x)=>s+(+x.amount||0),0);
+  $('payList').innerHTML = `
+    <div class="pay-list">${pays.map(pay=>`
+      <div class="pay-row">
+        <span class="pay-type">${pay.type}</span>
+        <span class="pay-date">${fmtDate(pay.received_date)}</span>
+        <span class="pay-note">${pay.note||''}</span>
+        <span class="pay-amt">${fmt(pay.amount)}</span>
+        <button class="pay-del" onclick="deletePayment('${pay.id}')" title="Remove">×</button>
+      </div>`).join('')}
+    </div>
+    <p class="pay-total">Total collected: <strong style="color:var(--ink)">${fmt(total)}</strong></p>`;
+}
+
+/* ── PO LIST ───────────────────────────────── */
+async function renderPOList(projectId) {
+  const { data: links } = await DB()
+    .from('project_pos')
+    .select('id, po_id, purchase_orders(id, po_number, po_name, procurement_projects(name, procurement_clients(name)))')
+    .eq('project_id', projectId);
+
+  if (!links?.length) {
+    $('poList').innerHTML = `<p style="color:var(--muted);font-size:13px;margin-bottom:16px">No POs linked yet.</p>`;
+    return;
+  }
+
+  const poIds = links.map(l=>l.po_id);
+  const { data: li } = await DB().from('po_line_items').select('po_id, qty, unit_cost').in('po_id', poIds);
+  const poTotals = {};
+  (li||[]).forEach(r => { poTotals[r.po_id] = (poTotals[r.po_id]||0) + (+r.qty||0) * (+r.unit_cost||0); });
+
+  $('poList').innerHTML = links.map(link => {
+    const po     = link.purchase_orders;
+    const client = po?.procurement_projects?.procurement_clients?.name || '—';
+    const proj   = po?.procurement_projects?.name || '';
+    const label  = [po?.po_number, po?.po_name].filter(Boolean).join(' — ') || '—';
+    return `<div class="po-row">
+      <div class="po-num">${label}</div>
+      <div class="po-info">
+        <div class="po-name">${client}</div>
+        <div class="po-proj">${proj}</div>
+      </div>
+      <div class="po-total-val">${fmt(poTotals[link.po_id]||0)}</div>
+      <button class="po-del" onclick="unlinkPO('${link.id}')" title="Unlink">×</button>
+    </div>`;
+  }).join('') + '<div style="margin-bottom:16px"></div>';
+}
+
+/* ══════════════════════════════════════════════
+   NEW / EDIT PROJECT
+══════════════════════════════════════════════ */
+function openNewProject() {
+  editingId = null;
+  $('edit-title').textContent = 'New Project';
+  ['f-client','f-pname','f-notes'].forEach(id => $(id).value = '');
+  $('f-svc').value    = '';
+  $('f-cat').value    = 'residential';
+  $('f-status').value = 'prospect';
+  $('f-start').value  = todayStr();
+  $('f-dfee').value   = '';
+  $('f-budget').value = '';
+  $('f-pfee').value   = '';
+  $('editOverlay').classList.add('open');
+}
+
+function openEditProject() {
+  const p = projects.find(x=>x.id===curId);
+  if (!p) return;
+  editingId = p.id;
+  $('edit-title').textContent = 'Edit Project';
+  $('f-client').value = p.client_name || '';
+  $('f-pname').value  = p.project_name || '';
+  $('f-svc').value    = p.service_type || '';
+  $('f-cat').value    = p.category || 'residential';
+  $('f-status').value = p.status || 'prospect';
+  $('f-start').value  = p.start_date || '';
+  $('f-dfee').value   = p.design_fee || '';
+  $('f-budget').value = p.procurement_budget || '';
+  $('f-pfee').value   = p.procurement_fee || '';
+  $('f-notes').value  = p.notes || '';
+  $('editOverlay').classList.add('open');
+}
+
+function calcProcFee() {
+  const budget = parseFloat($('f-budget').value) || 0;
+  $('f-pfee').value = budget > 0 ? Math.round(budget * PROC_MARKUP) : '';
+}
+
+async function saveProject() {
+  const client = $('f-client').value.trim();
+  if (!client) { $('f-client').focus(); return; }
+
+  const payload = {
+    client_name:         client,
+    project_name:        $('f-pname').value.trim() || null,
+    service_type:        $('f-svc').value || null,
+    category:            $('f-cat').value || 'residential',
+    status:              $('f-status').value,
+    start_date:          $('f-start').value || null,
+    design_fee:          parseFloat($('f-dfee').value)   || 0,
+    procurement_budget:  parseFloat($('f-budget').value) || 0,
+    procurement_fee:     parseFloat($('f-pfee').value)   || 0,
+    notes:               $('f-notes').value.trim() || null,
+    updated_at:          new Date().toISOString()
+  };
+
+  const btn = $('editSaveBtn');
+  btn.textContent = 'Saving…'; btn.disabled = true;
+
+  let error;
+  if (editingId) {
+    ({ error } = await DB().from('projects').update(payload).eq('id', editingId));
+    if (!error) {
+      const i = projects.findIndex(p=>p.id===editingId);
+      if (i >= 0) projects[i] = { ...projects[i], ...payload };
+    }
+  } else {
+    const { data, error: e } = await DB().from('projects')
+      .insert({ ...payload, created_at: new Date().toISOString() })
+      .select('*, project_payments(*)')
+      .single();
+    error = e;
+    if (!error && data) projects.unshift(data);
+  }
+
+  btn.textContent = 'Save Project'; btn.disabled = false;
+  if (error) { alert('Save failed: ' + error.message); return; }
+
+  closeOverlay('editOverlay');
+  renderPipeline();
+  if (editingId && curId === editingId) openProject(editingId);
+}
+
+async function confirmDelete() {
+  const p = projects.find(x=>x.id===curId);
+  if (!p) return;
+  if (!confirm(`Delete "${p.project_name || p.client_name}"? All payments will also be deleted. This cannot be undone.`)) return;
+  const { error } = await DB().from('projects').delete().eq('id', curId);
+  if (error) { alert('Delete failed: ' + error.message); return; }
+  projects = projects.filter(p=>p.id!==curId);
+  closeOverlay('detailOverlay');
+  renderPipeline();
+}
+
+/* ══════════════════════════════════════════════
+   PAYMENTS
+══════════════════════════════════════════════ */
+function openAddPayment() {
+  $('pay-type').value = 'deposit';
+  $('pay-amt').value  = '';
+  $('pay-date').value = todayStr();
+  $('pay-note').value = '';
+  $('payOverlay').classList.add('open');
+}
+
+async function savePayment() {
+  const amount = parseFloat($('pay-amt').value);
+  if (!amount || amount <= 0) { $('pay-amt').focus(); return; }
+  const date = $('pay-date').value;
+  if (!date) { $('pay-date').focus(); return; }
+
+  const { data, error } = await DB().from('project_payments').insert({
+    project_id:    curId,
+    type:          $('pay-type').value,
+    amount,
+    received_date: date,
+    note:          $('pay-note').value.trim() || null
+  }).select().single();
+
+  if (error) { alert('Save failed: ' + error.message); return; }
+
+  const p = projects.find(x=>x.id===curId);
+  if (p) p.project_payments = [...(p.project_payments||[]), data];
+
+  closeOverlay('payOverlay');
+  renderPipeline();
+  openProject(curId);
+}
+
+async function deletePayment(payId) {
+  if (!confirm('Remove this payment record?')) return;
+  const { error } = await DB().from('project_payments').delete().eq('id', payId);
+  if (error) { alert('Failed: ' + error.message); return; }
+  const p = projects.find(x=>x.id===curId);
+  if (p) p.project_payments = (p.project_payments||[]).filter(x=>x.id!==payId);
+  renderPipeline();
+  openProject(curId);
+}
+
+/* ══════════════════════════════════════════════
+   PO LINKING
+══════════════════════════════════════════════ */
+async function openLinkPOs() {
+  const { data: existing } = await DB().from('project_pos').select('po_id').eq('project_id', curId);
+  _pendingChecks = new Set((existing||[]).map(x=>x.po_id));
+  $('lpoSearch').value = '';
+  buildLPOList('');
+  $('linkOverlay').classList.add('open');
+}
+
+function buildLPOList(q) {
+  const query = q.trim().toLowerCase();
+  const filtered = allPOs.filter(po => {
+    if (!query) return true;
+    const clientName = po.procurement_projects?.procurement_clients?.name || '';
+    const projName   = po.procurement_projects?.name || '';
+    const num  = po.po_number  || '';
+    const name = po.po_name    || '';
+    return [clientName, projName, num, name].some(s => s.toLowerCase().includes(query));
+  });
+
+  if (!filtered.length) {
+    $('lpoBody').innerHTML = `<p style="color:var(--muted);font-size:13px">${allPOs.length?'No POs match your search.':'No purchase orders found in the Procurement Tool.'}</p>`;
+    return;
+  }
+
+  const byClient = {};
+  filtered.forEach(po => {
+    const key = po.procurement_projects?.procurement_clients?.name || 'Unknown Client';
+    (byClient[key] = byClient[key]||[]).push(po);
+  });
+
+  $('lpoBody').innerHTML = Object.entries(byClient).map(([client, pos]) => `
+    <div class="lpo-group">
+      <div class="lpo-group-label">${client}</div>
+      ${pos.map(po => {
+        const proj  = po.procurement_projects?.name || '';
+        const label = [po.po_number, po.po_name].filter(Boolean).join(' — ') || '—';
+        return `<div class="lpo-item">
+          <input type="checkbox" class="lpo-cb" value="${po.id}"
+            ${_pendingChecks.has(po.id)?'checked':''}
+            onchange="togglePendingPO(this)">
+          <div class="lpo-text">
+            <div class="lpo-num">${label}</div>
+            ${proj?`<div class="lpo-sub">${proj}</div>`:''}
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`).join('');
+}
+
+function togglePendingPO(cb) {
+  if (cb.checked) _pendingChecks.add(cb.value);
+  else _pendingChecks.delete(cb.value);
+}
+
+function filterLPOs() { buildLPOList($('lpoSearch').value); }
+
+async function savePOLinks() {
+  const saveBtn = document.querySelector('#linkOverlay .btn-primary');
+  saveBtn.textContent = 'Saving…'; saveBtn.disabled = true;
+
+  try {
+    const checked = Array.from(_pendingChecks);
+    const { data: existing, error: fetchErr } = await DB().from('project_pos').select('id, po_id').eq('project_id', curId);
+    if (fetchErr) throw fetchErr;
+
+    const existMap = {};
+    (existing||[]).forEach(x => { existMap[x.po_id] = x.id; });
+
+    const toAdd    = checked.filter(id => !existMap[id]);
+    const toRemove = Object.entries(existMap).filter(([pid])=>!checked.includes(pid)).map(([,lid])=>lid);
+
+    if (toAdd.length) {
+      const { error } = await DB().from('project_pos').insert(toAdd.map(po_id=>({project_id:curId, po_id})));
+      if (error) throw error;
+    }
+    if (toRemove.length) {
+      const { error } = await DB().from('project_pos').delete().in('id', toRemove);
+      if (error) throw error;
+    }
+
+    closeOverlay('linkOverlay');
+    await renderPOList(curId);
+  } catch (err) {
+    alert('Failed to save PO links: ' + (err.message || JSON.stringify(err)));
+  } finally {
+    saveBtn.textContent = 'Save Links'; saveBtn.disabled = false;
+  }
+}
+
+async function unlinkPO(linkId) {
+  if (!confirm('Unlink this PO from the project?')) return;
+  const { error } = await DB().from('project_pos').delete().eq('id', linkId);
+  if (error) { alert('Failed: ' + error.message); return; }
+  await renderPOList(curId);
+}
+
+/* ══════════════════════════════════════════════
+   EXPORT
+══════════════════════════════════════════════ */
+function exportXLS() {
+  const rows = projects.map(p => {
+    const col = totalCollected(p);
+    const inv = totalInvoiced(p);
+    return {
+      'Project Name':       p.project_name || '',
+      'Client':             p.client_name,
+      'Service':            SVC[p.service_type] || '',
+      'Category':           p.category ? p.category.charAt(0).toUpperCase() + p.category.slice(1) : '',
+      'Status':             sLbl(p.status),
+      'Start Date':         p.start_date || '',
+      'Design Fee':         +p.design_fee   || 0,
+      'Proc Fee':           +p.procurement_fee || 0,
+      'Total Invoiced':     inv,
+      'Collected':          col,
+      'Outstanding':        Math.max(0, inv - col),
+      'Notes':              p.notes || '',
+    };
+  });
+
+  const ws = XLSX.utils.json_to_sheet(rows);
+
+  // Column widths
+  ws['!cols'] = [
+    {wch:22},{wch:22},{wch:22},{wch:13},{wch:12},{wch:12},
+    {wch:12},{wch:12},{wch:14},{wch:12},{wch:12},{wch:36}
+  ];
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Projects');
+  const date = new Date().toISOString().split('T')[0];
+  XLSX.writeFile(wb, `RDS Project List ${date}.xlsx`);
+}
+
+/* ══════════════════════════════════════════════
+   MODALS
+══════════════════════════════════════════════ */
+function closeOverlay(id) {
+  $(id).classList.remove('open');
+  if (id === 'detailOverlay') curId = null;
+  if (id === 'editOverlay')   editingId = null;
+}
+function maybeClose(id, e) { if (e.target === $(id)) closeOverlay(id); }
+</script>
+</body>
+</html>
