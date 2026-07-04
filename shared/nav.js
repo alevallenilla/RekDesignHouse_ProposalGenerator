@@ -13,40 +13,19 @@
   ─────────────────────────────────────────────────── */
   const TOOLS = [
     {
-      name: 'Proposal Generator',
+      name: 'Proposals',
       path: '/proposal',
-      soon: false,
       icon: `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="1" width="10" height="13" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M5 5h5M5 8h5M5 11h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>`,
     },
     {
-      name: 'Concept Design',
-      path: '/concept',
-      soon: true,
-      icon: `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2a4 4 0 014 4c0 1.5-.8 2.8-2 3.5V11H6V9.5A4 4 0 018 2z" stroke="currentColor" stroke-width="1.2"/><path d="M6 12h4M6.5 14h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>`,
-    },
-    {
-      name: 'Invoice Generator',
-      path: '/invoice',
-      soon: true,
-      icon: `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 1h10v14l-2-1.5-2 1.5-2-1.5L5 15 3 13.5V1z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M6 5h4M6 8h4M6 11h2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>`,
-    },
-    {
-      name: 'Procurement Tool',
+      name: 'Procurement',
       path: '/procurement',
-      soon: false,
       icon: `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1.5L14 5v6l-6 3.5L2 11V5l6-3.5z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M2 5l6 3.5M8 8.5V15M14 5l-6 3.5" stroke="currentColor" stroke-width="1.2"/></svg>`,
     },
     {
-      name: 'Dashboard',
-      path: '/dashboard',
-      soon: true,
-      icon: `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.2"/><rect x="9" y="1" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.2"/><rect x="1" y="9" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.2"/><rect x="9" y="9" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.2"/></svg>`,
-    },
-    {
-      name: 'Finance / RevOps',
-      path: '/finance',
-      soon: true,
-      icon: `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M1 12l4-5 3 3 4-6 3 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M1 15h14" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>`,
+      name: 'Project Management',
+      path: '/projects',
+      icon: `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="4" height="9" rx="1" stroke="currentColor" stroke-width="1.2"/><rect x="6" y="2" width="4" height="6" rx="1" stroke="currentColor" stroke-width="1.2"/><rect x="11" y="2" width="4" height="12" rx="1" stroke="currentColor" stroke-width="1.2"/></svg>`,
     },
   ];
 
@@ -134,15 +113,6 @@
 
   const toolsHTML = TOOLS.map(t => {
     const active = cur === t.path || cur.startsWith(t.path + '/');
-    if (t.soon) {
-      return `<div class="ws-tool ws-soon">
-        <span class="ws-tool-icon">${t.icon}</span>
-        <div class="ws-tool-info">
-          <span class="ws-tool-name">${t.name}</span>
-          <span class="ws-tool-badge">Soon</span>
-        </div>
-      </div>`;
-    }
     return `<a href="${t.path}" class="ws-tool${active ? ' ws-active' : ''}">
       <span class="ws-tool-icon">${t.icon}</span>
       <div class="ws-tool-info">
