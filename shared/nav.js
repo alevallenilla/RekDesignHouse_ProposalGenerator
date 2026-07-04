@@ -28,6 +28,11 @@
       icon: `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.2"/><path d="M8 2v1.5M8 12.5V14M2 8h1.5M12.5 8H14M3.64 3.64l1.06 1.06M11.3 11.3l1.06 1.06M12.36 3.64l-1.06 1.06M4.7 11.3l-1.06 1.06" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>`,
     },
     {
+      name: 'Report',
+      path: '/report',
+      icon: `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="1" width="10" height="13" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M5 4.5h5M5 7h5M5 9.5h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><circle cx="12" cy="12" r="2.5" fill="currentColor" opacity="0.18" stroke="currentColor" stroke-width="1.1"/><path d="M12 11v1.5l.8.8" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg>`,
+    },
+    {
       name: 'Project Management',
       path: '/projects',
       icon: `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="4" height="9" rx="1" stroke="currentColor" stroke-width="1.2"/><rect x="6" y="2" width="4" height="6" rx="1" stroke="currentColor" stroke-width="1.2"/><rect x="11" y="2" width="4" height="12" rx="1" stroke="currentColor" stroke-width="1.2"/></svg>`,

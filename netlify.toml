@@ -22,6 +22,12 @@
   to   = "/tracker/index.html"
   status = 200
 
+# Procurement Report tool
+[[redirects]]
+  from = "/report"
+  to   = "/report/index.html"
+  status = 200
+
 # Project Management tool
 [[redirects]]
   from = "/projects"

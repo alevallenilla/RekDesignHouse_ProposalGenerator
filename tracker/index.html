@@ -382,6 +382,7 @@ async function loadTrackerPO(poId) {
       tracking_number:     ex?.tracking_number   || '',
       carrier:             ex?.carrier           || '',
       notes:               ex?.notes             || '',
+      image_url:           ex?.image_url         || '',
       _open: false,
     };
   });
@@ -550,6 +551,12 @@ function rowHTML(it, idx) {
             oninput="readRow(${it._k});renderVariance(${it._k});markUnsaved()">
         </div>
         <div class="fg" style="margin-top:10px">
+          <label class="fl">Item Image URL</label>
+          <input class="fi" id="imgurl-${it._k}" type="url"
+            value="${esc(it.image_url)}" placeholder="https://…"
+            oninput="readRow(${it._k});markUnsaved()">
+        </div>
+        <div class="fg" style="margin-top:10px">
           <label class="fl">Notes</label>
           <textarea class="fi" id="notes-${it._k}" rows="2"
             placeholder="Lead time, ref #, order details…"
@@ -661,6 +668,7 @@ function readRow(k) {
   it.tracking_number   = gv('track-'+k);
   it.carrier           = gv('carrier-'+k);
   it.notes             = gv('notes-'+k);
+  it.image_url         = gv('imgurl-'+k);
 }
 
 /* ── SAVE ──────────────────────────────────────── */
@@ -704,6 +712,7 @@ async function saveTracker() {
         tracking_number:     it.tracking_number     || null,
         carrier:             it.carrier             || null,
         notes:               it.notes               || null,
+        image_url:           it.image_url           || null,
         updated_at:          new Date().toISOString(),
       };
       if (it.id) {

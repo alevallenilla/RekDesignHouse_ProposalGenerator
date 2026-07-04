@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Procurement Report — Rek Design Studio</title>
+<link rel="icon" href="/favicon.png" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Adamina&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --ink:      #250E0F;
+  --parchment:#F5F5F5;
+  --ivory:    #FAF9F5;
+  --linen:    #EAE6E1;
+  --burgundy: #7C3135;
+  --slate:    #4C6270;
+  --moss:     #3D5C3A;
+  --amber:    #B8860B;
+  --muted:    rgba(37,14,15,0.45);
+  --border:   rgba(37,14,15,0.10);
+}
+body { font-family:'Inter',sans-serif; background:var(--ivory); color:var(--ink); min-height:100vh; }
+
+/* ── TOPBAR ─────────────────────────────── */
+.topbar {
+  position:sticky; top:0; width:100%; height:56px;
+  background:var(--ink); z-index:100;
+  display:flex; align-items:center; padding:0 28px;
+  justify-content:space-between; flex-shrink:0;
+}
+.tb-brand { display:flex; align-items:center; gap:12px; }
+.tb-logo  { height:28px; width:auto; display:block; }
+.tb-sub   { font-size:9px; font-weight:500; letter-spacing:0.22em; text-transform:uppercase; color:rgba(245,245,245,0.48); margin-left:2px; }
+
+/* ── CONTROLS BAR ───────────────────────── */
+.controls-bar {
+  padding:20px 32px; background:white; border-bottom:1px solid var(--border);
+  display:flex; align-items:flex-end; gap:20px; flex-wrap:wrap;
+}
+.fg  { display:flex; flex-direction:column; gap:5px; }
+.fl  { font-size:10px; font-weight:600; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted); }
+.fi, .fsel {
+  font-family:'Inter',sans-serif; font-size:13px; color:var(--ink);
+  background:white; border:1px solid var(--border); border-radius:6px;
+  padding:9px 12px; outline:none; transition:border-color 0.15s; min-width:280px;
+}
+.fi:focus, .fsel:focus { border-color:rgba(37,14,15,0.35); }
+.fsel { cursor:pointer; }
+.btn-primary {
+  font-family:'Inter',sans-serif; font-size:12px; font-weight:500;
+  background:var(--ink); color:var(--parchment); border:none; border-radius:6px;
+  padding:10px 18px; cursor:pointer; transition:opacity 0.15s; white-space:nowrap;
+}
+.btn-primary:hover { opacity:0.85; }
+.btn-ghost {
+  font-family:'Inter',sans-serif; font-size:12px; font-weight:500;
+  background:none; color:var(--muted); border:1px solid var(--border);
+  border-radius:6px; padding:10px 18px; cursor:pointer; transition:background 0.15s; white-space:nowrap;
+}
+.btn-ghost:hover { background:rgba(37,14,15,0.05); }
+
+/* Pricing toggle */
+.toggle-wrap { display:flex; align-items:center; gap:8px; padding-bottom:2px; }
+.toggle-wrap input[type=checkbox] { width:15px; height:15px; accent-color:var(--burgundy); cursor:pointer; }
+.toggle-wrap label { font-size:12px; color:var(--muted); cursor:pointer; white-space:nowrap; }
+
+/* ── REPORT AREA ────────────────────────── */
+.report-area { padding:40px 32px 80px; }
+.report-empty { text-align:center; padding:80px 24px; }
+.report-empty h2 { font-family:'Adamina',serif; font-size:22px; margin-bottom:10px; }
+.report-empty p  { font-size:13px; color:var(--muted); }
+
+/* ── DOCUMENT ───────────────────────────── */
+.doc {
+  max-width:860px; margin:0 auto;
+  background:white; border:1px solid var(--border); border-radius:12px;
+  overflow:hidden;
+  box-shadow:0 4px 32px rgba(37,14,15,0.07);
+}
+
+/* Doc header */
+.doc-header {
+  background:var(--ink); color:var(--parchment);
+  padding:40px 48px 36px;
+  display:flex; justify-content:space-between; align-items:flex-start; gap:24px;
+}
+.doc-header-left {}
+.doc-eyebrow {
+  font-size:9px; font-weight:600; letter-spacing:0.28em; text-transform:uppercase;
+  color:rgba(245,245,245,0.45); margin-bottom:12px;
+}
+.doc-title { font-family:'Adamina',serif; font-size:28px; font-weight:400; line-height:1.1; color:white; }
+.doc-header-right { text-align:right; flex-shrink:0; }
+.doc-logo { height:22px; width:auto; opacity:0.85; margin-bottom:16px; display:block; margin-left:auto; }
+.doc-meta-row { font-size:11px; color:rgba(245,245,245,0.55); line-height:1.9; }
+.doc-meta-row strong { color:rgba(245,245,245,0.85); font-weight:500; }
+
+/* Client band */
+.doc-client-band {
+  background:var(--linen); border-bottom:1px solid var(--border);
+  padding:20px 48px;
+  display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:16px;
+}
+.dcf-label { font-size:9px; font-weight:600; letter-spacing:0.18em; text-transform:uppercase; color:var(--muted); margin-bottom:4px; }
+.dcf-value { font-size:13px; font-weight:500; color:var(--ink); }
+
+/* Doc body */
+.doc-body { padding:36px 48px 48px; }
+
+/* Room section */
+.room-section { margin-bottom:36px; }
+.room-section:last-child { margin-bottom:0; }
+.room-heading {
+  font-size:9px; font-weight:600; letter-spacing:0.22em; text-transform:uppercase;
+  color:var(--muted); padding-bottom:10px;
+  border-bottom:1px solid var(--border); margin-bottom:0;
+}
+
+/* Item rows */
+.item-row {
+  display:grid;
+  grid-template-columns:72px 1fr auto;
+  gap:0;
+  border-bottom:1px solid rgba(37,14,15,0.06);
+  padding:16px 0;
+  align-items:start;
+}
+.item-row:last-child { border-bottom:none; }
+
+.item-img-cell { padding-right:16px; }
+.item-img {
+  width:60px; height:60px; object-fit:cover; border-radius:5px;
+  border:1px solid var(--border); display:block;
+}
+.item-img-placeholder {
+  width:60px; height:60px; border-radius:5px;
+  border:1px solid var(--border); background:var(--linen);
+  display:flex; align-items:center; justify-content:center;
+}
+.item-img-placeholder svg { opacity:0.25; }
+
+.item-main { padding-right:24px; }
+.item-name    { font-size:13.5px; font-weight:500; line-height:1.3; color:var(--ink); }
+.item-sub     { font-size:11px; color:var(--muted); margin-top:3px; }
+.item-notes   { font-size:11.5px; color:var(--slate); margin-top:8px; line-height:1.5; background:rgba(76,98,112,0.06); border-radius:4px; padding:6px 9px; }
+.pricing-cell { display:none; margin-top:8px; }
+.doc.show-pricing .pricing-cell { display:block; }
+.item-price   { font-size:11px; color:var(--muted); }
+.item-price strong { font-weight:600; color:var(--ink); }
+
+.item-right { text-align:right; flex-shrink:0; min-width:160px; }
+.status-badge {
+  display:inline-block; font-size:10px; font-weight:600; letter-spacing:0.08em;
+  text-transform:uppercase; padding:4px 10px; border-radius:4px; white-space:nowrap;
+  margin-bottom:10px;
+}
+.s-pending   { background:rgba(37,14,15,0.07);  color:rgba(37,14,15,0.50); }
+.s-approved  { background:rgba(184,134,11,0.13); color:#8a6508; }
+.s-purchased { background:rgba(76,98,112,0.13);  color:var(--slate); }
+.s-transit   { background:rgba(82,85,164,0.10);  color:#5255A4; }
+.s-delivered { background:rgba(61,92,58,0.13);   color:var(--moss); }
+
+.item-date-label { font-size:9px; font-weight:600; letter-spacing:0.16em; text-transform:uppercase; color:var(--muted); margin-bottom:3px; }
+.item-date-val   { font-size:12px; font-weight:500; color:var(--ink); }
+.item-track-wrap { margin-top:10px; }
+.item-carrier    { font-size:9px; font-weight:600; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted); margin-bottom:3px; }
+.item-track-num  { font-size:11px; color:var(--slate); word-break:break-all; }
+.item-track-num a { color:var(--slate); text-decoration:underline; text-decoration-color:rgba(76,98,112,0.35); }
+.item-track-num a:hover { color:var(--ink); }
+
+/* Doc footer */
+.doc-footer {
+  border-top:1px solid var(--border);
+  padding:18px 48px;
+  display:flex; justify-content:space-between; align-items:center;
+}
+.doc-footer-note  { font-size:10px; color:var(--muted); }
+.doc-footer-brand { font-size:10px; font-weight:600; letter-spacing:0.18em; text-transform:uppercase; color:rgba(37,14,15,0.30); }
+
+/* ── PRINT ──────────────────────────────── */
+@media print {
+  .topbar, #ws-nav, .controls-bar { display:none !important; }
+  body   { padding-left:0 !important; padding-top:0 !important; background:white !important; }
+  .report-area { padding:0 !important; }
+  .doc   { border:none !important; border-radius:0 !important; box-shadow:none !important; max-width:100% !important; }
+  .doc-header { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .doc-client-band { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .status-badge { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .item-notes   { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .room-section { page-break-inside:avoid; }
+  .item-row     { page-break-inside:avoid; }
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="tb-brand">
+    <img class="tb-logo" src="/logos/rek-wordmark-white.svg" alt="Rek Design Studio">
+    <span class="tb-sub">Design Studio</span>
+  </div>
+</header>
+
+<div class="controls-bar" id="controlsBar">
+  <div class="fg">
+    <label class="fl">Purchase Order</label>
+    <select class="fsel" id="poSel" onchange="loadReport(this.value)">
+      <option value="">Select a PO to generate report…</option>
+    </select>
+  </div>
+  <div class="toggle-wrap" style="padding-bottom:4px">
+    <input type="checkbox" id="showPricing" onchange="togglePricing()">
+    <label for="showPricing">Show quoted pricing</label>
+  </div>
+  <div style="flex:1"></div>
+  <button class="btn-ghost" id="btnPrint" onclick="window.print()" style="display:none">Print / Save PDF</button>
+</div>
+
+<div class="report-area">
+  <div class="report-empty" id="emptyState">
+    <h2>Select a Purchase Order</h2>
+    <p>Choose a PO above to generate the client-facing status report.</p>
+  </div>
+  <div id="docWrap" style="display:none"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/shared/nav.js"></script>
+<script>
+const SUPA_URL = 'https://danfcudpvzjcjxhwwqhp.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRhbmZjdWRwdnpqY2p4aHd3cWhwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwMTg3NjMsImV4cCI6MjA5MzU5NDc2M30.KdDpMNteoNFnnPX-47ZLlDJQnwlsH4ohHMjo20goDFE';
+let _db = null;
+const DB = () => { if (!_db) _db = supabase.createClient(SUPA_URL, SUPA_KEY); return _db; };
+
+const STATUS_MAP = {
+  pending_approval: { label:'Pending Approval', cls:'s-pending'  },
+  approved:         { label:'Approved',          cls:'s-approved' },
+  purchased:        { label:'Purchased',         cls:'s-purchased'},
+  in_transit:       { label:'In Transit',        cls:'s-transit'  },
+  delivered:        { label:'Delivered',         cls:'s-delivered'},
+};
+
+let allPOs = [];
+
+async function init() {
+  const { data } = await DB().from('purchase_orders')
+    .select('*, procurement_projects(name, client_id, procurement_clients(name, company))')
+    .order('created_at', { ascending: false });
+  allPOs = data || [];
+  renderSelector();
+}
+
+function renderSelector() {
+  const sel = gid('poSel');
+  if (!allPOs.length) { sel.innerHTML = '<option value="">No purchase orders found</option>'; return; }
+  const grouped = {};
+  allPOs.forEach(po => {
+    const proj = po.procurement_projects || {};
+    const cn   = proj.procurement_clients?.name || 'Unknown Client';
+    const pn   = proj.name || 'Unknown Project';
+    if (!grouped[cn]) grouped[cn] = {};
+    if (!grouped[cn][pn]) grouped[cn][pn] = [];
+    grouped[cn][pn].push(po);
+  });
+  let html = '<option value="">Select a PO to generate report…</option>';
+  for (const [client, projects] of Object.entries(grouped)) {
+    for (const [proj, pos] of Object.entries(projects)) {
+      html += `<optgroup label="${esc(client)} — ${esc(proj)}">`;
+      pos.forEach(po => {
+        const label = po.po_number + (po.po_name ? ' · ' + po.po_name : '');
+        html += `<option value="${po.id}">${esc(label)}</option>`;
+      });
+      html += `</optgroup>`;
+    }
+  }
+  sel.innerHTML = html;
+}
+
+async function loadReport(poId) {
+  gid('emptyState').style.display = 'none';
+  gid('docWrap').style.display    = 'none';
+  gid('btnPrint').style.display   = 'none';
+  if (!poId) { gid('emptyState').style.display = 'block'; return; }
+
+  const po = allPOs.find(p => p.id === poId);
+  if (!po) return;
+
+  const [lineRes, trackerRes, trackingRes] = await Promise.all([
+    DB().from('po_line_items').select('*').eq('po_id', poId).order('sort_order'),
+    DB().from('tracker_line_items').select('*').eq('po_id', poId),
+    DB().from('procurement_po_tracking').select('*').eq('po_id', poId).maybeSingle(),
+  ]);
+
+  const lineItems   = lineRes.data    || [];
+  const trackerData = trackerRes.data || [];
+  const tracking    = trackingRes.data;
+
+  const proj   = po.procurement_projects || {};
+  const client = proj.procurement_clients || {};
+
+  // Merge line items with tracker data
+  const items = lineItems.map(li => {
+    const tr = trackerData.find(t => t.po_line_item_id === li.id) || {};
+    return { ...li, ...tr, _li_id: li.id };
+  });
+
+  // Group by room
+  const rooms = {};
+  items.forEach(it => {
+    const room = (it.room || '').trim() || 'Unassigned';
+    if (!rooms[room]) rooms[room] = [];
+    rooms[room].push(it);
+  });
+
+  renderDoc({ po, proj, client, tracking, rooms, items });
+  gid('docWrap').style.display  = 'block';
+  gid('btnPrint').style.display = '';
+}
+
+function renderDoc({ po, proj, client, tracking, rooms, items }) {
+  const today  = new Date().toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' });
+  const sentDate = tracking?.po_sent_date  ? fmtDate(tracking.po_sent_date)  : '—';
+  const recvDate = tracking?.money_received_date ? fmtDate(tracking.money_received_date) : '—';
+
+  const roomSections = Object.entries(rooms).map(([room, roomItems]) => {
+    const rowsHTML = roomItems.map(it => itemRowHTML(it)).join('');
+    return `<div class="room-section">
+      <div class="room-heading">${esc(room)}</div>
+      ${rowsHTML}
+    </div>`;
+  }).join('');
+
+  const showPricing = gid('showPricing')?.checked;
+  const docClass = showPricing ? 'doc show-pricing' : 'doc';
+
+  gid('docWrap').innerHTML = `
+  <div class="${docClass}" id="theDoc">
+    <div class="doc-header">
+      <div class="doc-header-left">
+        <div class="doc-eyebrow">Rek Design Studio</div>
+        <div class="doc-title">Procurement<br>Status Report</div>
+      </div>
+      <div class="doc-header-right">
+        <img class="doc-logo" src="/logos/rek-wordmark-white.svg" alt="Rek Design Studio"
+          onerror="this.style.display='none'">
+        <div class="doc-meta-row">
+          <strong>Date Prepared</strong><br>${today}<br>
+          <strong>PO Sent</strong><br>${sentDate}<br>
+          <strong>Funds Received</strong><br>${recvDate}
+        </div>
+      </div>
+    </div>
+
+    <div class="doc-client-band">
+      <div>
+        <div class="dcf-label">Client</div>
+        <div class="dcf-value">${esc(client.name || '—')}</div>
+      </div>
+      <div>
+        <div class="dcf-label">Company</div>
+        <div class="dcf-value">${esc(client.company || '—')}</div>
+      </div>
+      <div>
+        <div class="dcf-label">Project</div>
+        <div class="dcf-value">${esc(proj.name || '—')}</div>
+      </div>
+      <div>
+        <div class="dcf-label">Purchase Order</div>
+        <div class="dcf-value">${esc(po.po_number)}${po.po_name ? ' · ' + esc(po.po_name) : ''}</div>
+      </div>
+    </div>
+
+    <div class="doc-body">
+      ${roomSections || '<p style="color:var(--muted);font-size:13px">No items found for this PO.</p>'}
+    </div>
+
+    <div class="doc-footer">
+      <div class="doc-footer-note">All delivery dates are estimates and subject to change.</div>
+      <div class="doc-footer-brand">Rek Design Studio</div>
+    </div>
+  </div>`;
+}
+
+function itemRowHTML(it) {
+  const status  = STATUS_MAP[it.status] || STATUS_MAP['pending_approval'];
+  const imgHTML = it.image_url
+    ? `<img class="item-img" src="${esc(it.image_url)}" alt="${esc(it.item_name)}" onerror="this.style.display='none'">`
+    : `<div class="item-img-placeholder"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="3" width="16" height="14" rx="2" stroke="currentColor" stroke-width="1.3"/><circle cx="7" cy="8" r="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M2 14l4-4 3 3 3-4 4 5" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg></div>`;
+
+  const delivDate = it.est_delivery_date ? fmtDate(it.est_delivery_date) : null;
+  const trackHTML = trackingLinkHTML(it.tracking_number, it.carrier);
+  const notesHTML = it.notes ? `<div class="item-notes">${esc(it.notes)}</div>` : '';
+
+  const qty = +it.qty || 1;
+  const quoted = it.quoted_cost ?? (+(it.unit_cost||0) * qty);
+  const cushAmt = it.cushion_enabled && it.cushion_visible ? quoted * (it.cushion_pct||10) / 100 : 0;
+  const clientPrice = quoted + cushAmt;
+  const priceHTML = `<div class="pricing-cell item-price">Quoted: <strong>${fmtMoney(clientPrice)}</strong></div>`;
+
+  return `
+  <div class="item-row">
+    <div class="item-img-cell">${imgHTML}</div>
+    <div class="item-main">
+      <div class="item-name">${esc(it.item_name || '—')}${qty > 1 ? ` <span style="font-weight:400;color:var(--muted)">× ${qty}</span>` : ''}</div>
+      ${it.source ? `<div class="item-sub">${esc(it.source)}</div>` : ''}
+      ${notesHTML}
+      ${priceHTML}
+    </div>
+    <div class="item-right">
+      <div class="status-badge ${status.cls}">${status.label}</div>
+      ${delivDate ? `<div class="item-date-label">Est. Delivery</div><div class="item-date-val">${delivDate}</div>` : ''}
+      ${trackHTML ? `<div class="item-track-wrap"><div class="item-carrier">${esc(it.carrier || 'Tracking')}</div><div class="item-track-num">${trackHTML}</div></div>` : ''}
+    </div>
+  </div>`;
+}
+
+function trackingLinkHTML(num, carrier) {
+  if (!num) return '';
+  const n = (num || '').trim();
+  const c = (carrier || '').toLowerCase();
+  let url = null;
+  if (c.includes('ups') || n.startsWith('1Z'))        url = `https://www.ups.com/track?tracknum=${encodeURIComponent(n)}`;
+  else if (c.includes('fedex'))                        url = `https://www.fedex.com/fedextrack/?trknbr=${encodeURIComponent(n)}`;
+  else if (c.includes('usps') || c.includes('postal')) url = `https://tools.usps.com/go/TrackConfirmAction?tLabels=${encodeURIComponent(n)}`;
+  else if (c.includes('dhl'))                          url = `https://www.dhl.com/en/express/tracking.html?AWB=${encodeURIComponent(n)}`;
+  return url ? `<a href="${url}" target="_blank" rel="noopener">${esc(n)}</a>` : esc(n);
+}
+
+function togglePricing() {
+  const doc = gid('theDoc'); if (!doc) return;
+  doc.classList.toggle('show-pricing', gid('showPricing').checked);
+}
+
+/* ── HELPERS ─────────────────────────────── */
+function gid(id) { return document.getElementById(id); }
+function esc(s)  { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmtMoney(n) { return '$' + Number(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function fmtDate(d) {
+  if (!d) return '';
+  const [y,m,dy] = d.split('-').map(Number);
+  return new Date(y,m-1,dy).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+}
+
+init();
+</script>
+</body>
+</html>
