@@ -23,6 +23,11 @@
       icon: `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1.5L14 5v6l-6 3.5L2 11V5l6-3.5z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M2 5l6 3.5M8 8.5V15M14 5l-6 3.5" stroke="currentColor" stroke-width="1.2"/></svg>`,
     },
     {
+      name: 'Tracker',
+      path: '/tracker',
+      icon: `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.2"/><path d="M8 2v1.5M8 12.5V14M2 8h1.5M12.5 8H14M3.64 3.64l1.06 1.06M11.3 11.3l1.06 1.06M12.36 3.64l-1.06 1.06M4.7 11.3l-1.06 1.06" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>`,
+    },
+    {
       name: 'Project Management',
       path: '/projects',
       icon: `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="4" height="9" rx="1" stroke="currentColor" stroke-width="1.2"/><rect x="6" y="2" width="4" height="6" rx="1" stroke="currentColor" stroke-width="1.2"/><rect x="11" y="2" width="4" height="12" rx="1" stroke="currentColor" stroke-width="1.2"/></svg>`,

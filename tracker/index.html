@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Procurement Tracker — Rek Design Studio</title>
+<link rel="icon" href="/favicon.png" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Adamina&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --ink:      #250E0F;
+  --parchment:#F5F5F5;
+  --ivory:    #FAF9F5;
+  --linen:    #EAE6E1;
+  --burgundy: #7C3135;
+  --slate:    #4C6270;
+  --moss:     #3D5C3A;
+  --amber:    #B8860B;
+  --muted:    rgba(37,14,15,0.45);
+  --border:   rgba(37,14,15,0.10);
+}
+body { font-family:'Inter',sans-serif; background:var(--ivory); color:var(--ink); min-height:100vh; }
+
+/* ── TOPBAR ─────────────────────────────── */
+.topbar {
+  position:sticky; top:0; width:100%; height:56px;
+  background:var(--ink); z-index:100;
+  display:flex; align-items:center; padding:0 28px;
+  justify-content:space-between; flex-shrink:0;
+}
+.tb-brand { display:flex; align-items:center; gap:12px; }
+.tb-logo  { height:28px; width:auto; display:block; }
+.tb-sub   { font-size:9px; font-weight:500; letter-spacing:0.22em; text-transform:uppercase; color:rgba(245,245,245,0.48); margin-left:2px; }
+.tb-date  { font-size:11px; color:rgba(245,245,245,0.45); }
+
+/* ── SHARED ──────────────────────────────── */
+.eyebrow { font-size:10px; font-weight:600; letter-spacing:0.24em; text-transform:uppercase; color:var(--muted); margin-bottom:8px; }
+.page-hd { padding:36px 32px 28px; border-bottom:1px solid var(--border); display:flex; align-items:flex-end; justify-content:space-between; }
+.page-hd h1 { font-family:'Adamina',serif; font-size:32px; font-weight:400; line-height:1.1; }
+
+.btn-primary { font-family:'Inter',sans-serif; font-size:12px; font-weight:500; background:var(--ink); color:var(--parchment); border:none; border-radius:6px; padding:10px 18px; cursor:pointer; transition:opacity 0.15s; }
+.btn-primary:hover  { opacity:0.85; }
+.btn-primary:disabled { opacity:0.45; cursor:default; }
+.btn-ghost  { font-family:'Inter',sans-serif; font-size:12px; font-weight:500; background:none; color:var(--muted); border:1px solid var(--border); border-radius:6px; padding:10px 18px; cursor:pointer; transition:background 0.15s; }
+.btn-ghost:hover { background:rgba(37,14,15,0.05); }
+
+.fg  { display:flex; flex-direction:column; gap:5px; }
+.fl  { font-size:10px; font-weight:600; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted); }
+.fi, .fsel {
+  font-family:'Inter',sans-serif; font-size:13px; color:var(--ink);
+  background:white; border:1px solid var(--border); border-radius:6px;
+  padding:9px 12px; outline:none; transition:border-color 0.15s; width:100%;
+}
+.fi:focus, .fsel:focus { border-color:rgba(37,14,15,0.35); }
+.fsel { cursor:pointer; }
+textarea.fi { resize:vertical; }
+
+/* ── PO SELECTOR ─────────────────────────── */
+.tracker-body { padding:32px; padding-bottom:100px; }
+.po-selector-wrap { max-width:520px; margin-bottom:28px; }
+
+/* ── PO INFO CARD ─────────────────────────── */
+.po-info-card {
+  background:white; border:1px solid var(--border); border-radius:10px;
+  padding:20px 24px; margin-bottom:24px;
+}
+.po-info-top {
+  display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:16px;
+  padding-bottom:16px; border-bottom:1px solid var(--border); margin-bottom:16px;
+}
+.po-info-field label { font-size:9px; font-weight:600; letter-spacing:0.18em; text-transform:uppercase; color:var(--muted); display:block; margin-bottom:4px; }
+.po-info-field span  { font-size:13px; color:var(--ink); font-weight:500; }
+.po-info-dates { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; align-items:end; }
+
+/* ── TRACKER TABLE ───────────────────────── */
+.tracker-table-wrap { overflow-x:auto; }
+.tracker-table { width:100%; border-collapse:collapse; font-size:12.5px; }
+.tracker-table th {
+  font-size:9.5px; font-weight:600; letter-spacing:0.14em; text-transform:uppercase;
+  color:var(--muted); text-align:left; padding:8px 8px 10px;
+  border-bottom:1px solid var(--border); white-space:nowrap;
+}
+.tracker-table th.r { text-align:right; }
+.tracker-table td   { padding:5px 6px; vertical-align:top; border-bottom:1px solid rgba(37,14,15,0.04); }
+
+.tc-num    { width:28px; text-align:center; color:var(--muted); font-size:11px; padding-top:12px !important; }
+.tc-room   { width:140px; }
+.tc-item   { min-width:150px; }
+.tc-vendor { width:110px; }
+.tc-status { width:150px; }
+.tc-quoted { width:88px; }
+.tc-actual { width:96px; }
+.tc-curr   { width:68px; }
+.tc-var    { width:80px; }
+.tc-act    { width:40px; white-space:nowrap; padding-top:8px !important; }
+
+.ti {
+  font-family:'Inter',sans-serif; font-size:12.5px; color:var(--ink);
+  background:transparent; border:1px solid transparent; border-radius:4px;
+  padding:5px 7px; width:100%; outline:none;
+  transition:border-color 0.15s, background 0.15s;
+}
+.ti:hover { border-color:var(--border); background:white; }
+.ti:focus { border-color:rgba(37,14,15,0.30); background:white; }
+.ti.r { text-align:right; }
+
+.tsel {
+  font-family:'Inter',sans-serif; font-size:12px; color:var(--ink);
+  background:transparent; border:1px solid transparent; border-radius:4px;
+  padding:5px 6px; width:100%; outline:none; cursor:pointer;
+  transition:border-color 0.15s, background 0.15s;
+}
+.tsel:hover { border-color:var(--border); background:white; }
+.tsel:focus { border-color:rgba(37,14,15,0.30); background:white; }
+
+/* Read-only item name / vendor */
+.item-ro     { font-size:12.5px; font-weight:500; color:var(--ink); padding:6px 0; line-height:1.3; }
+.item-ro-sub { font-size:11px; color:var(--muted); margin-top:2px; }
+.vendor-ro   { font-size:12px; color:var(--muted); padding:7px 0; }
+
+/* Status select */
+.status-sel { font-family:'Inter',sans-serif; font-size:11px; font-weight:600; letter-spacing:0.07em; border-radius:5px; padding:5px 8px; border:none; cursor:pointer; width:100%; outline:none; }
+.s-pending  { background:rgba(37,14,15,0.07);  color:rgba(37,14,15,0.55); }
+.s-approved { background:rgba(184,134,11,0.13); color:var(--amber); }
+.s-purchased{ background:rgba(76,98,112,0.13);  color:var(--slate); }
+.s-transit  { background:rgba(82,85,164,0.10);  color:#5255A4; }
+.s-delivered{ background:rgba(61,92,58,0.13);   color:var(--moss); }
+
+/* Quoted / Actual cells */
+.amt-cell { font-size:12px; font-weight:500; text-align:right; padding-top:10px; }
+.amt-sub  { font-size:10px; color:var(--muted); text-align:right; margin-top:2px; }
+
+/* Variance */
+.var-over  { font-size:12px; font-weight:500; color:#b03030; text-align:right; padding-top:10px; }
+.var-under { font-size:12px; font-weight:500; color:var(--moss); text-align:right; padding-top:10px; }
+.var-none  { font-size:12px; color:var(--muted); text-align:right; padding-top:10px; }
+
+/* xbtn */
+.xbtn { background:none; border:none; cursor:pointer; color:var(--muted); padding:4px 5px; border-radius:4px; font-size:13px; transition:color 0.15s,background 0.15s; }
+.xbtn:hover { color:var(--ink); background:rgba(37,14,15,0.05); }
+
+/* Detail row */
+.det-row { display:none; }
+.det-row.open { display:table-row; }
+.det-row td { background:rgba(37,14,15,0.018) !important; border-bottom:1px solid var(--border) !important; padding:16px 18px 20px 36px !important; }
+.det-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:18px; }
+
+/* Cushion panel */
+.cushion-panel { background:rgba(61,92,58,0.05); border:1px solid rgba(61,92,58,0.15); border-radius:7px; padding:12px 14px; }
+.cushion-toggle-row { display:flex; align-items:center; gap:9px; }
+.cushion-toggle-row input[type=checkbox] { width:14px; height:14px; accent-color:var(--moss); cursor:pointer; flex-shrink:0; }
+.cushion-toggle-row label { font-size:12px; cursor:pointer; }
+.cushion-detail { margin-top:10px; }
+.cushion-vis-row { display:flex; align-items:center; gap:8px; margin-top:8px; }
+.cushion-vis-row input[type=checkbox] { width:13px; height:13px; accent-color:var(--slate); cursor:pointer; }
+.cushion-vis-row label { font-size:11px; color:var(--muted); cursor:pointer; }
+.cushion-summary { font-size:11px; color:var(--moss); margin-top:8px; line-height:1.5; }
+.cushion-off-note { font-size:11px; color:var(--muted); margin-top:6px; }
+
+/* Section header */
+.section-hd { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+.section-hd h2 { font-size:13px; font-weight:600; }
+.item-count-lbl { font-size:11px; color:var(--muted); }
+
+/* Empty state */
+.empty-state { text-align:center; padding:80px 24px; }
+.empty-state h2 { font-family:'Adamina',serif; font-size:22px; margin-bottom:10px; }
+.empty-state p { font-size:13px; color:var(--muted); }
+
+/* Save bar */
+.save-bar {
+  position:fixed; bottom:0; left:220px; right:0;
+  background:white; border-top:1px solid var(--border);
+  padding:14px 32px; display:flex; align-items:center;
+  justify-content:space-between; z-index:50;
+  box-shadow:0 -4px 20px rgba(37,14,15,0.06);
+}
+.save-bar-info { font-size:12px; color:var(--muted); }
+
+@media print {
+  .topbar, #ws-nav, .save-bar { display:none !important; }
+  body { padding-left:0 !important; padding-top:0 !important; }
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="tb-brand">
+    <img class="tb-logo" src="/logos/rek-wordmark-white.svg" alt="Rek Design Studio">
+    <span class="tb-sub">Design Studio</span>
+  </div>
+  <div class="tb-date" id="tbDate"></div>
+</header>
+
+<datalist id="roomSuggestions"></datalist>
+
+<div class="page-wrap">
+
+  <div class="page-hd">
+    <div>
+      <p class="eyebrow">Work Suite · Procurement</p>
+      <h1>Procurement Tracker</h1>
+    </div>
+  </div>
+
+  <div class="tracker-body">
+
+    <!-- PO Selector -->
+    <div class="po-selector-wrap">
+      <div class="fg">
+        <label class="fl">Select Purchase Order</label>
+        <select class="fsel" id="poSel" onchange="loadTrackerPO(this.value)">
+          <option value="">Choose a PO to track…</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Tracker content — shown after PO selected -->
+    <div id="trackerContent" style="display:none">
+
+      <!-- PO Info Card -->
+      <div class="po-info-card" id="poInfoCard"></div>
+
+      <!-- Items Table -->
+      <div class="section-hd">
+        <h2>Line Items</h2>
+        <span class="item-count-lbl" id="itemCountLbl"></span>
+      </div>
+
+      <div class="tracker-table-wrap">
+        <table class="tracker-table">
+          <thead>
+            <tr>
+              <th class="tc-num"></th>
+              <th class="tc-room">Room / Space</th>
+              <th class="tc-item">Item</th>
+              <th class="tc-vendor">Vendor</th>
+              <th class="tc-status">Status</th>
+              <th class="tc-quoted r">Quoted</th>
+              <th class="tc-actual r">Actual</th>
+              <th class="tc-curr">Currency</th>
+              <th class="tc-var r">Variance</th>
+              <th class="tc-act"></th>
+            </tr>
+          </thead>
+          <tbody id="trackerTbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /tracker-body -->
+
+  <!-- Save Bar -->
+  <div class="save-bar" id="saveBar" style="display:none">
+    <span class="save-bar-info" id="saveBarInfo">No changes</span>
+    <button class="btn-primary" id="btnSave" onclick="saveTracker()">Save Changes</button>
+  </div>
+
+</div><!-- /page-wrap -->
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/shared/nav.js"></script>
+<script>
+const SUPA_URL = 'https://danfcudpvzjcjxhwwqhp.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRhbmZjdWRwdnpqY2p4aHd3cWhwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwMTg3NjMsImV4cCI6MjA5MzU5NDc2M30.KdDpMNteoNFnnPX-47ZLlDJQnwlsH4ohHMjo20goDFE';
+let _db = null;
+const DB = () => { if (!_db) _db = supabase.createClient(SUPA_URL, SUPA_KEY); return _db; };
+
+const STATUSES = [
+  { value:'pending_approval', label:'Pending Approval', cls:'s-pending'  },
+  { value:'approved',         label:'Approved',         cls:'s-approved' },
+  { value:'purchased',        label:'Purchased',        cls:'s-purchased'},
+  { value:'in_transit',       label:'In Transit',       cls:'s-transit'  },
+  { value:'delivered',        label:'Delivered',        cls:'s-delivered'},
+];
+
+let allPOs       = [];
+let allClients   = [];
+let allProjects  = [];
+let currentPO    = null;
+let poTracking   = null;
+let trackerItems = [];
+let _seq = 0;
+
+/* ── INIT ────────────────────────────────────── */
+async function init() {
+  gid('tbDate').textContent = new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'});
+  const [cr, pr, por] = await Promise.all([
+    DB().from('procurement_clients').select('*').order('name'),
+    DB().from('procurement_projects').select('*').order('name'),
+    DB().from('purchase_orders')
+      .select('*, procurement_projects(name, client_id, procurement_clients(name))')
+      .order('created_at',{ascending:false})
+  ]);
+  allClients  = cr.data  || [];
+  allProjects = pr.data  || [];
+  allPOs      = por.data || [];
+  renderPoSelector();
+}
+
+/* ── PO SELECTOR ─────────────────────────────── */
+function renderPoSelector() {
+  const sel = gid('poSel');
+  if (!allPOs.length) {
+    sel.innerHTML = '<option value="">No purchase orders found</option>';
+    return;
+  }
+  const grouped = {};
+  allPOs.forEach(po => {
+    const proj = po.procurement_projects || {};
+    const cn = proj.procurement_clients?.name || 'Unknown Client';
+    const pn = proj.name || 'Unknown Project';
+    if (!grouped[cn]) grouped[cn] = {};
+    if (!grouped[cn][pn]) grouped[cn][pn] = [];
+    grouped[cn][pn].push(po);
+  });
+  let html = '<option value="">Choose a PO to track…</option>';
+  for (const [client, projects] of Object.entries(grouped)) {
+    for (const [proj, pos] of Object.entries(projects)) {
+      html += `<optgroup label="${esc(client)} — ${esc(proj)}">`;
+      pos.forEach(po => {
+        const label = po.po_number + (po.po_name ? ' · ' + po.po_name : '') + (po.notes ? '  (' + po.notes + ')' : '');
+        html += `<option value="${po.id}">${esc(label)}</option>`;
+      });
+      html += `</optgroup>`;
+    }
+  }
+  sel.innerHTML = html;
+}
+
+/* ── LOAD TRACKER PO ─────────────────────────── */
+async function loadTrackerPO(poId) {
+  if (!poId) {
+    gid('trackerContent').style.display = 'none';
+    gid('saveBar').style.display = 'none';
+    currentPO = null;
+    return;
+  }
+  currentPO = allPOs.find(p => p.id === poId);
+  if (!currentPO) return;
+
+  const [trackRes, lineRes, trackerRes] = await Promise.all([
+    DB().from('procurement_po_tracking').select('*').eq('po_id', poId).maybeSingle(),
+    DB().from('po_line_items').select('*').eq('po_id', poId).order('sort_order'),
+    DB().from('tracker_line_items').select('*').eq('po_id', poId),
+  ]);
+
+  poTracking = trackRes.data || { id: null, po_id: poId, po_sent_date: null, money_received_date: null };
+
+  const lineItems = lineRes.data || [];
+  const existing  = trackerRes.data || [];
+
+  trackerItems = lineItems.map(li => {
+    const ex = existing.find(t => t.po_line_item_id === li.id);
+    return {
+      _k:  ++_seq,
+      id:  ex?.id || null,
+      po_id:           poId,
+      po_line_item_id: li.id,
+      // Source fields from PO (display only)
+      _item_name: li.item_name || '',
+      _source:    li.source    || '',
+      _qty:       +li.qty      || 1,
+      _unit_cost: +li.unit_cost|| 0,
+      _currency:  li.currency  || 'USD',
+      // Tracker fields
+      room:                ex?.room              || '',
+      status:              ex?.status            || 'pending_approval',
+      quoted_cost:         ex?.quoted_cost       ?? (+li.unit_cost * +li.qty),
+      actual_cost:         ex?.actual_cost       ?? null,
+      actual_currency:     ex?.actual_currency   || li.currency || 'USD',
+      actual_exchange_rate: ex?.actual_exchange_rate ?? 1,
+      cushion_enabled:     ex?.cushion_enabled   ?? false,
+      cushion_pct:         ex?.cushion_pct       ?? 10,
+      cushion_visible:     ex?.cushion_visible   ?? false,
+      purchase_date:       ex?.purchase_date     || '',
+      est_delivery_date:   ex?.est_delivery_date || '',
+      actual_delivery_date:ex?.actual_delivery_date || '',
+      tracking_number:     ex?.tracking_number   || '',
+      carrier:             ex?.carrier           || '',
+      notes:               ex?.notes             || '',
+      _open: false,
+    };
+  });
+
+  await loadRoomSuggestions(currentPO.project_id);
+  renderPoInfoCard();
+  renderTrackerTable();
+  gid('trackerContent').style.display = 'block';
+  gid('saveBar').style.display = 'flex';
+  gid('saveBarInfo').textContent = 'No unsaved changes';
+}
+
+/* ── ROOM SUGGESTIONS ────────────────────────── */
+async function loadRoomSuggestions(projectId) {
+  const poIds = allPOs.filter(p => p.project_id === projectId).map(p => p.id);
+  if (!poIds.length) return;
+  const { data } = await DB().from('tracker_line_items')
+    .select('room').in('po_id', poIds).not('room','is',null);
+  const rooms = [...new Set((data||[]).map(r => r.room).filter(Boolean))];
+  gid('roomSuggestions').innerHTML = rooms.map(r => `<option value="${esc(r)}">`).join('');
+}
+
+/* ── PO INFO CARD ────────────────────────────── */
+function renderPoInfoCard() {
+  const proj   = allProjects.find(p => p.id === currentPO.project_id);
+  const client = allClients.find(c => c.id === proj?.client_id);
+  const stClass = {draft:'s-pending',ordered:'s-purchased',received:'s-transit',invoiced:'s-delivered'}[currentPO.status] || 's-pending';
+  gid('poInfoCard').innerHTML = `
+    <div class="po-info-top">
+      <div class="po-info-field">
+        <label>Purchase Order</label>
+        <span>${esc(currentPO.po_number)}${currentPO.po_name?' &middot; '+esc(currentPO.po_name):''}</span>
+      </div>
+      <div class="po-info-field">
+        <label>Project</label>
+        <span>${esc(proj?.name||'—')}</span>
+      </div>
+      <div class="po-info-field">
+        <label>Client</label>
+        <span>${esc(client?.name||'—')}</span>
+      </div>
+      <div class="po-info-field">
+        <label>PO Status</label>
+        <span class="status-sel ${stClass}" style="display:inline-block;width:auto;padding:4px 10px">${currentPO.status.charAt(0).toUpperCase()+currentPO.status.slice(1)}</span>
+      </div>
+    </div>
+    <div class="po-info-dates">
+      <div class="fg">
+        <label class="fl">PO Sent Date</label>
+        <input class="fi" type="date" id="poSentDate" value="${poTracking.po_sent_date||''}" oninput="markUnsaved()">
+      </div>
+      <div class="fg">
+        <label class="fl">Funds Received Date</label>
+        <input class="fi" type="date" id="moneyReceivedDate" value="${poTracking.money_received_date||''}" oninput="markUnsaved()">
+      </div>
+      <div></div>
+    </div>`;
+}
+
+/* ── TRACKER TABLE ───────────────────────────── */
+function renderTrackerTable() {
+  const n = trackerItems.length;
+  gid('itemCountLbl').textContent = n + ' item' + (n !== 1 ? 's' : '');
+  if (!n) {
+    gid('trackerTbody').innerHTML = `<tr><td colspan="10" style="padding:32px;text-align:center;color:var(--muted);font-size:13px">This PO has no line items.</td></tr>`;
+    return;
+  }
+  gid('trackerTbody').innerHTML = trackerItems.map((it, idx) => rowHTML(it, idx)).join('');
+}
+
+function rowHTML(it, idx) {
+  const stCls   = STATUSES.find(s => s.value === it.status)?.cls || 's-pending';
+  const stOpts  = STATUSES.map(s => `<option value="${s.value}"${it.status===s.value?' selected':''}>${s.label}</option>`).join('');
+  const currOpts = ['USD','EUR','BOB'].map(c => `<option value="${c}"${it.actual_currency===c?' selected':''}>${c}</option>`).join('');
+  const quotedUSD = it.quoted_cost ?? 0;
+  const actSet    = it.actual_cost !== null && it.actual_cost !== undefined && it.actual_cost !== '';
+  const actUSD    = actSet ? (+it.actual_cost * (it.actual_exchange_rate || 1)) : null;
+  const variance  = actUSD !== null ? actUSD - quotedUSD : null;
+  const varHTML   = variance === null
+    ? `<div class="var-none">—</div>`
+    : variance >  0.01 ? `<div class="var-over">+${fmtMoney(variance)}</div>`
+    : variance < -0.01 ? `<div class="var-under">${fmtMoney(variance)}</div>`
+    : `<div class="var-none">—</div>`;
+  const cushAmt = it.cushion_enabled ? (it.quoted_cost||0) * (it.cushion_pct||10) / 100 : 0;
+  const showRate = it.actual_currency !== 'USD';
+
+  return `
+<tr>
+  <td class="tc-num">${idx+1}</td>
+  <td class="tc-room">
+    <input class="ti" list="roomSuggestions" id="room-${it._k}"
+      value="${esc(it.room)}" placeholder="e.g. Living Room"
+      oninput="readRow(${it._k});markUnsaved()">
+  </td>
+  <td class="tc-item">
+    <div class="item-ro">${esc(it._item_name||'—')}</div>
+    ${it._qty !== 1 ? `<div class="item-ro-sub">Qty: ${it._qty}</div>` : ''}
+  </td>
+  <td class="tc-vendor">
+    <div class="vendor-ro">${esc(it._source||'—')}</div>
+  </td>
+  <td class="tc-status">
+    <select class="${stCls} status-sel" id="status-${it._k}" onchange="onStatusChange(${it._k})">
+      ${stOpts}
+    </select>
+  </td>
+  <td class="tc-quoted">
+    <div class="amt-cell">${fmtMoney(quotedUSD)}</div>
+    ${it._currency!=='USD'?`<div class="amt-sub">${it._currency}</div>`:''}
+  </td>
+  <td class="tc-actual">
+    <input class="ti r" id="actual-${it._k}" type="number"
+      value="${actSet ? it.actual_cost : ''}" min="0" step="0.01"
+      placeholder="—"
+      oninput="readRow(${it._k});renderVariance(${it._k});markUnsaved()">
+  </td>
+  <td class="tc-curr">
+    <select class="tsel" id="acurr-${it._k}" onchange="onActualCurrencyChange(${it._k})">
+      ${currOpts}
+    </select>
+  </td>
+  <td class="tc-var" id="var-${it._k}">${varHTML}</td>
+  <td class="tc-act">
+    <button class="xbtn" id="xbtn-${it._k}" onclick="toggleDet(${it._k})">${it._open?'▲':'▼'}</button>
+  </td>
+</tr>
+<tr id="det-${it._k}" class="det-row${it._open?' open':''}">
+  <td colspan="10">
+    <div class="det-grid">
+
+      <!-- Col 1: Dates -->
+      <div>
+        <div class="fg">
+          <label class="fl">Purchase Date</label>
+          <input class="fi" type="date" id="pdate-${it._k}" value="${it.purchase_date||''}" oninput="readRow(${it._k});markUnsaved()">
+        </div>
+        <div class="fg" style="margin-top:10px">
+          <label class="fl">Est. Delivery Date</label>
+          <input class="fi" type="date" id="estdate-${it._k}" value="${it.est_delivery_date||''}" oninput="readRow(${it._k});markUnsaved()">
+        </div>
+        <div class="fg" style="margin-top:10px">
+          <label class="fl">Actual Delivery Date</label>
+          <input class="fi" type="date" id="actdate-${it._k}" value="${it.actual_delivery_date||''}" oninput="readRow(${it._k});markUnsaved()">
+        </div>
+      </div>
+
+      <!-- Col 2: Tracking + Rate + Notes -->
+      <div>
+        <div class="fg">
+          <label class="fl">Tracking Number</label>
+          <input class="fi" id="track-${it._k}" type="text"
+            value="${esc(it.tracking_number)}" placeholder="e.g. 1Z999AA10123456784"
+            oninput="readRow(${it._k});markUnsaved()">
+        </div>
+        <div class="fg" style="margin-top:10px">
+          <label class="fl">Carrier</label>
+          <input class="fi" id="carrier-${it._k}" type="text"
+            value="${esc(it.carrier)}" placeholder="UPS, FedEx, DHL, USPS…"
+            oninput="readRow(${it._k});markUnsaved()">
+        </div>
+        <div class="fg" id="arate-fg-${it._k}" style="margin-top:10px${showRate?'':';display:none'}">
+          <label class="fl">Actual Rate to USD</label>
+          <input class="fi" id="arate-${it._k}" type="number"
+            value="${it.actual_exchange_rate||1}" min="0.0000001" step="0.000001"
+            placeholder="e.g. 0.1456"
+            oninput="readRow(${it._k});renderVariance(${it._k});markUnsaved()">
+        </div>
+        <div class="fg" style="margin-top:10px">
+          <label class="fl">Notes</label>
+          <textarea class="fi" id="notes-${it._k}" rows="2"
+            placeholder="Lead time, ref #, order details…"
+            oninput="readRow(${it._k});markUnsaved()">${esc(it.notes)}</textarea>
+        </div>
+      </div>
+
+      <!-- Col 3: Cushion -->
+      <div>
+        <label class="fl" style="margin-bottom:8px">Cushion</label>
+        <div class="cushion-panel">
+          <div class="cushion-toggle-row">
+            <input type="checkbox" id="cush-${it._k}" ${it.cushion_enabled?'checked':''} onchange="onCushionChange(${it._k})">
+            <label for="cush-${it._k}">Apply cushion to this item</label>
+          </div>
+          <div id="cush-det-${it._k}" style="${it.cushion_enabled?'':'display:none'}">
+            <div class="cushion-detail">
+              <div class="fg">
+                <label class="fl">Cushion %</label>
+                <input class="fi" id="cush-pct-${it._k}" type="number"
+                  value="${it.cushion_pct||10}" min="0" step="0.5"
+                  oninput="readRow(${it._k});updateCushionDisplay(${it._k});markUnsaved()">
+              </div>
+              <div class="cushion-vis-row">
+                <input type="checkbox" id="cush-vis-${it._k}" ${it.cushion_visible?'checked':''} onchange="readRow(${it._k});markUnsaved()">
+                <label for="cush-vis-${it._k}">Show cushion to client</label>
+              </div>
+              <div class="cushion-summary" id="cush-sum-${it._k}">
+                Cushion: ${fmtMoney(cushAmt)}<br>
+                Base: ${fmtMoney(it.quoted_cost||0)} · Client sees: ${fmtMoney((it.quoted_cost||0)+cushAmt)}
+              </div>
+            </div>
+          </div>
+          ${!it.cushion_enabled?`<div class="cushion-off-note">Not applied — base quoted price used</div>`:''}
+        </div>
+      </div>
+
+    </div>
+  </td>
+</tr>`;
+}
+
+/* ── ROW INTERACTIONS ─────────────────────────── */
+function toggleDet(k) {
+  const it = trackerItems.find(i => i._k === k); if (!it) return;
+  it._open = !it._open;
+  gid('det-'+k)?.classList.toggle('open', it._open);
+  const btn = gid('xbtn-'+k); if (btn) btn.textContent = it._open ? '▲' : '▼';
+}
+
+function onStatusChange(k) {
+  readRow(k);
+  const it = trackerItems.find(i => i._k === k); if (!it) return;
+  const sel = gid('status-'+k);
+  if (sel) sel.className = (STATUSES.find(s => s.value === it.status)?.cls || 's-pending') + ' status-sel';
+  markUnsaved();
+}
+
+function onActualCurrencyChange(k) {
+  readRow(k);
+  const it = trackerItems.find(i => i._k === k); if (!it) return;
+  const rateFg = gid('arate-fg-'+k);
+  if (rateFg) rateFg.style.display = it.actual_currency === 'USD' ? 'none' : '';
+  renderVariance(k);
+  markUnsaved();
+}
+
+function onCushionChange(k) {
+  readRow(k);
+  const it = trackerItems.find(i => i._k === k); if (!it) return;
+  gid('cush-det-'+k).style.display = it.cushion_enabled ? '' : 'none';
+  updateCushionDisplay(k);
+  markUnsaved();
+}
+
+function updateCushionDisplay(k) {
+  const it  = trackerItems.find(i => i._k === k); if (!it) return;
+  const sum = gid('cush-sum-'+k); if (!sum) return;
+  const amt = (it.quoted_cost||0) * (it.cushion_pct||10) / 100;
+  sum.innerHTML = `Cushion: ${fmtMoney(amt)}<br>Base: ${fmtMoney(it.quoted_cost||0)} · Client sees: ${fmtMoney((it.quoted_cost||0)+amt)}`;
+}
+
+function renderVariance(k) {
+  const it  = trackerItems.find(i => i._k === k); if (!it) return;
+  const el  = gid('var-'+k); if (!el) return;
+  const actSet  = it.actual_cost !== null && it.actual_cost !== '';
+  const actUSD  = actSet ? (+it.actual_cost * (it.actual_exchange_rate||1)) : null;
+  const variance = actUSD !== null ? actUSD - (it.quoted_cost||0) : null;
+  if (variance === null)    { el.innerHTML = `<div class="var-none">—</div>`; return; }
+  if (variance >  0.01)     { el.innerHTML = `<div class="var-over">+${fmtMoney(variance)}</div>`; return; }
+  if (variance < -0.01)     { el.innerHTML = `<div class="var-under">${fmtMoney(variance)}</div>`; return; }
+  el.innerHTML = `<div class="var-none">—</div>`;
+}
+
+function readRow(k) {
+  const it = trackerItems.find(i => i._k === k); if (!it) return;
+  it.room              = gv('room-'+k);
+  it.status            = gv('status-'+k) || 'pending_approval';
+  const actRaw = gv('actual-'+k);
+  it.actual_cost       = actRaw !== '' ? parseFloat(actRaw) : null;
+  it.actual_currency   = gv('acurr-'+k) || 'USD';
+  it.actual_exchange_rate = parseFloat(gv('arate-'+k)) || 1;
+  it.cushion_enabled   = !!(gid('cush-'+k)?.checked);
+  it.cushion_pct       = parseFloat(gv('cush-pct-'+k)) || 10;
+  it.cushion_visible   = !!(gid('cush-vis-'+k)?.checked);
+  it.purchase_date     = gv('pdate-'+k);
+  it.est_delivery_date = gv('estdate-'+k);
+  it.actual_delivery_date = gv('actdate-'+k);
+  it.tracking_number   = gv('track-'+k);
+  it.carrier           = gv('carrier-'+k);
+  it.notes             = gv('notes-'+k);
+}
+
+/* ── SAVE ──────────────────────────────────────── */
+async function saveTracker() {
+  trackerItems.forEach(it => readRow(it._k));
+  const btn = gid('btnSave'); btn.textContent = 'Saving…'; btn.disabled = true;
+  try {
+    // PO-level tracking dates
+    const trackPayload = {
+      po_id:               currentPO.id,
+      po_sent_date:        gv('poSentDate') || null,
+      money_received_date: gv('moneyReceivedDate') || null,
+      updated_at:          new Date().toISOString(),
+    };
+    if (poTracking.id) {
+      const { error } = await DB().from('procurement_po_tracking').update(trackPayload).eq('id', poTracking.id);
+      if (error) throw error;
+    } else {
+      const { data, error } = await DB().from('procurement_po_tracking').insert(trackPayload).select().single();
+      if (error) throw error;
+      poTracking = data;
+    }
+
+    // Line item tracker records
+    for (const it of trackerItems) {
+      const payload = {
+        po_id:               it.po_id,
+        po_line_item_id:     it.po_line_item_id,
+        room:                it.room || null,
+        status:              it.status,
+        quoted_cost:         it.quoted_cost,
+        actual_cost:         it.actual_cost,
+        actual_currency:     it.actual_currency,
+        actual_exchange_rate:it.actual_exchange_rate,
+        cushion_enabled:     it.cushion_enabled,
+        cushion_pct:         it.cushion_pct,
+        cushion_visible:     it.cushion_visible,
+        purchase_date:       it.purchase_date       || null,
+        est_delivery_date:   it.est_delivery_date   || null,
+        actual_delivery_date:it.actual_delivery_date|| null,
+        tracking_number:     it.tracking_number     || null,
+        carrier:             it.carrier             || null,
+        notes:               it.notes               || null,
+        updated_at:          new Date().toISOString(),
+      };
+      if (it.id) {
+        const { error } = await DB().from('tracker_line_items').update(payload).eq('id', it.id);
+        if (error) throw error;
+      } else {
+        const { data, error } = await DB().from('tracker_line_items').insert(payload).select().single();
+        if (error) throw error;
+        it.id = data.id;
+      }
+    }
+
+    btn.textContent = 'Saved ✓';
+    gid('saveBarInfo').textContent = 'Saved at ' + new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+    setTimeout(() => { btn.textContent = 'Save Changes'; btn.disabled = false; }, 1800);
+    await loadRoomSuggestions(currentPO.project_id);
+  } catch(e) {
+    alert('Save failed: ' + e.message);
+    btn.textContent = 'Save Changes'; btn.disabled = false;
+  }
+}
+
+function markUnsaved() {
+  gid('saveBarInfo').textContent = 'Unsaved changes';
+}
+
+/* ── HELPERS ───────────────────────────────────── */
+function gid(id) { return document.getElementById(id); }
+function gv(id)  { const e = gid(id); return e ? e.value : ''; }
+function esc(s)  { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmtMoney(n) { return '$' + Number(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+init();
+</script>
+</body>
+</html>

@@ -15,3 +15,15 @@
   from = "/procurement"
   to   = "/procurement/index.html"
   status = 200
+
+# Procurement Tracker tool
+[[redirects]]
+  from = "/tracker"
+  to   = "/tracker/index.html"
+  status = 200
+
+# Project Management tool
+[[redirects]]
+  from = "/projects"
+  to   = "/projects/index.html"
+  status = 200
