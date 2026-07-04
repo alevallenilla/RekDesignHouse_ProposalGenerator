@@ -153,6 +153,9 @@ textarea.fi { resize:vertical; }
 .paste-zone { border:1px dashed rgba(37,14,15,0.18); border-radius:6px; padding:7px 10px; font-size:11px; color:var(--muted); text-align:center; cursor:pointer; transition:border-color 0.15s, background 0.15s; margin-top:6px; }
 .paste-zone:hover, .paste-zone.drag-over { border-color:var(--slate); background:rgba(76,98,112,0.04); color:var(--slate); }
 
+/* Currency */
+.curr-indicator { font-size:10px; color:var(--muted); margin-top:2px; }
+
 /* ── PO EDITOR ──────────────────────────── */
 .po-editor  { max-width:1160px; margin:0 auto; padding:36px 32px 160px; }
 .hd-row     { display:grid; gap:16px; margin-bottom:16px; }
@@ -535,10 +538,13 @@ textarea.fi { resize:vertical; }
   <div class="doc-screen">
     <div class="doc-toolbar">
       <button class="btn-ghost" onclick="go('po')">← Edit PO</button>
-      <button class="btn-primary" onclick="window.print()">
-        <svg width="13" height="13" viewBox="0 0 13 13" fill="none" style="vertical-align:-2px;margin-right:5px"><rect x="2" y="5" width="9" height="6" rx="1" stroke="currentColor" stroke-width="1.2"/><path d="M4 5V2h5v3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 9h5M4 11h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
-        Print / Save PDF
-      </button>
+      <div style="display:flex;gap:10px;align-items:center">
+        <button class="btn-ghost" id="currToggleBtn" onclick="toggleDocCurrency()" style="display:none">Show in USD</button>
+        <button class="btn-primary" onclick="window.print()">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none" style="vertical-align:-2px;margin-right:5px"><rect x="2" y="5" width="9" height="6" rx="1" stroke="currentColor" stroke-width="1.2"/><path d="M4 5V2h5v3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 9h5M4 11h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+          Print / Save PDF
+        </button>
+      </div>
     </div>
     <div class="doc-wrap" id="docWrap"></div>
   </div>
@@ -622,6 +628,9 @@ textarea.fi { resize:vertical; }
   alter table po_line_items add column if not exists shipping_amt numeric default 0;
   alter table po_line_items add column if not exists discount_amt numeric default 0;
   alter table po_line_items add column if not exists white_glove boolean default false;
+  alter table po_line_items add column if not exists currency text default 'USD';
+  alter table po_line_items add column if not exists exchange_rate numeric default 1;
+  alter table purchase_orders add column if not exists display_currency text default 'original';
 */
 
 const SUPA_URL = 'https://danfcudpvzjcjxhwwqhp.supabase.co';
@@ -654,13 +663,14 @@ const P = {
   shipping: 0, shipping_mode: 'flat',
   markup_pct: 15,
   discount_pct: 0, discount_mode: 'flat_pct',
+  display_currency: 'original',
   payment_method: '', payment_account: '',
   items: []
 };
 
 let _seq = 0;
 function blankItem() {
-  return { _k: ++_seq, id: null, category: '', item_name: '', description: '', source: '', product_url: '', image_url: '', qty: 1, unit_cost: 0, tax_amt: 0, shipping_amt: 0, discount_amt: 0, white_glove: false, internal_notes: '', _open: false };
+  return { _k: ++_seq, id: null, category: '', item_name: '', description: '', source: '', product_url: '', image_url: '', qty: 1, unit_cost: 0, tax_amt: 0, shipping_amt: 0, discount_amt: 0, white_glove: false, internal_notes: '', currency: 'USD', exchange_rate: 1, _open: false };
 }
 
 
@@ -731,9 +741,9 @@ function renderPoList() {
 
 async function loadPoTotal(id) {
   const po = allPOs.find(p => p.id === id); if (!po) return;
-  const { data } = await DB().from('po_line_items').select('qty,unit_cost,discount_amt').eq('po_id', id);
+  const { data } = await DB().from('po_line_items').select('qty,unit_cost,discount_amt,exchange_rate').eq('po_id', id);
   if (!data) return;
-  const sub = data.reduce((a,it) => a + (+it.unit_cost||0) * (+it.qty||0), 0);
+  const sub = data.reduce((a,it) => a + (+it.unit_cost||0) * (+it.exchange_rate||1) * (+it.qty||0), 0);
   const disc = (po.discount_mode||'flat_pct') === 'flat_pct'
     ? sub * ((+po.discount_pct||0)/100)
     : data.reduce((a,it) => a + (+it.discount_amt||0), 0);
@@ -765,6 +775,7 @@ function newPO() {
   P.shipping = 0; P.shipping_mode = 'flat';
   P.markup_pct = 15;
   P.discount_pct = 0; P.discount_mode = 'flat_pct';
+  P.display_currency = 'original';
   P.payment_method = ''; P.payment_account = '';
   P.items = [blankItem()];
   renderEditor(); go('po');
@@ -784,6 +795,7 @@ async function openPO(id) {
   P.shipping = po.shipping ?? 0; P.shipping_mode = po.shipping_mode || 'flat';
   P.markup_pct = po.markup_pct ?? 15;
   P.discount_pct = po.discount_pct ?? 0; P.discount_mode = po.discount_mode || 'flat_pct';
+  P.display_currency = po.display_currency || 'original';
   P.payment_method = po.payment_method||''; P.payment_account = po.payment_account||'';
   const proj = allProjects.find(p => p.id === po.project_id);
   P.project_id = po.project_id; P.client_id = proj?.client_id || null;
@@ -794,7 +806,7 @@ async function openPO(id) {
     qty: +it.qty||1, unit_cost: +it.unit_cost||0,
     tax_amt: +it.tax_amt||0, shipping_amt: +it.shipping_amt||0, discount_amt: +it.discount_amt||0,
     white_glove: !!it.white_glove,
-    internal_notes: it.internal_notes||'', _open: false
+    internal_notes: it.internal_notes||'', currency: it.currency||'USD', exchange_rate: +it.exchange_rate||1, _open: false
   }));
   if (!P.items.length) P.items = [blankItem()];
   renderEditor(); go('po');
@@ -935,14 +947,31 @@ function readRow(k) {
   it.tax_amt        = parseFloat(gv('ta-'+k))  || 0;
   it.shipping_amt   = parseFloat(gv('sa-'+k))  || 0;
   it.discount_amt   = parseFloat(gv('da-'+k))  || 0;
+  it.currency       = gv('curr-'+k) || it.currency || 'USD';
+  it.exchange_rate  = parseFloat(gv('rate-'+k)) || it.exchange_rate || 1;
   const wgEl = gid('wg-'+k); if (wgEl) it.white_glove = wgEl.checked;
 }
 
 function onRowChange(k) {
   readRow(k);
   const it = P.items.find(i => i._k === k);
-  if (it) { const el = gid('ct-'+k); if (el) el.textContent = fmtMoney(it.unit_cost * it.qty); }
+  if (it) {
+    const el = gid('ct-'+k);
+    if (el) {
+      const usdTotal = it.unit_cost * (it.exchange_rate||1) * it.qty;
+      const origTotal = it.unit_cost * it.qty;
+      el.innerHTML = fmtMoney(usdTotal) + ((it.currency||'USD') !== 'USD' ? `<div class="curr-indicator">${fmtCurrency(origTotal, it.currency)}</div>` : '');
+    }
+  }
   renderTotals();
+}
+
+function onCurrencyChange(k) {
+  const it = P.items.find(i => i._k === k); if (!it) return;
+  it.currency = gv('curr-'+k) || 'USD';
+  const rateFg = gid('rate-fg-'+k);
+  if (rateFg) rateFg.style.display = it.currency === 'USD' ? 'none' : '';
+  onRowChange(k);
 }
 
 function renderItems() {
@@ -985,7 +1014,7 @@ function rowHTML(it, idx) {
   <td class="c-src"><input class="ti" id="src-${it._k}" type="text" value="${esc(it.source)}" placeholder="Source…" oninput="onRowChange(${it._k})"></td>
   <td class="c-qty"><input class="ti r" id="qty-${it._k}" type="number" value="${it.qty}" min="0.01" step="0.01" oninput="onRowChange(${it._k})"></td>
   <td class="c-prc"><input class="ti r" id="uc-${it._k}" type="number" value="${it.unit_cost}" min="0" step="0.01" oninput="onRowChange(${it._k})"></td>
-  <td class="c-tot" id="ct-${it._k}">${fmtMoney(total)}</td>
+  <td class="c-tot" id="ct-${it._k}">${fmtMoney(it.unit_cost*(it.exchange_rate||1)*it.qty)}${(it.currency||'USD')!=='USD'?`<div class="curr-indicator">${fmtCurrency(it.unit_cost*it.qty,it.currency)}</div>`:''}</td>
   <td class="c-act">
     <button class="xbtn" id="xbtn-${it._k}" onclick="toggleDet(${it._k})">${it._open?'▲':'▼'}</button>
     <button class="dbtn" onclick="deleteRow(${it._k})">×</button>
@@ -1021,6 +1050,18 @@ function rowHTML(it, idx) {
         ${perItemTax}
         ${perItemShip}
         ${perItemDisc}
+        <div class="fg" style="margin-top:10px">
+          <label class="fl">Currency</label>
+          <select class="fi" id="curr-${it._k}" onchange="onCurrencyChange(${it._k})" style="font-size:12px">
+            <option value="USD"${(it.currency||'USD')==='USD'?' selected':''}>USD ($)</option>
+            <option value="EUR"${it.currency==='EUR'?' selected':''}>EUR (€)</option>
+            <option value="BOB"${it.currency==='BOB'?' selected':''}>BOB (Bs.)</option>
+          </select>
+        </div>
+        <div class="fg" id="rate-fg-${it._k}" style="margin-top:10px${it.currency==='USD'||!it.currency?';display:none':''}">
+          <label class="fl">Rate to USD</label>
+          <input class="fi" id="rate-${it._k}" type="number" value="${it.exchange_rate||1}" min="0.0000001" step="0.000001" placeholder="e.g. 0.1456" oninput="onRowChange(${it._k})">
+        </div>
       </div>
     </div>
   </td>
@@ -1078,7 +1119,7 @@ function compressImg(file) {
 /* ── TOTALS ──────────────────────────────── */
 function renderTotals() {
   P.items.forEach(it => readRow(it._k));
-  const sub  = P.items.reduce((a,it) => a + it.unit_cost*it.qty, 0);
+  const sub  = P.items.reduce((a,it) => a + it.unit_cost * (it.exchange_rate||1) * it.qty, 0);
   const mkup = parseFloat(gv('poMarkup')) || 0;
 
   const disc = P.discount_mode === 'flat_pct'
@@ -1147,6 +1188,7 @@ async function savePO() {
       shipping: P.shipping, shipping_mode: P.shipping_mode,
       markup_pct: P.markup_pct,
       discount_pct: P.discount_pct, discount_mode: P.discount_mode,
+      display_currency: P.display_currency,
       payment_method: P.payment_method, payment_account: P.payment_account,
       updated_at: new Date().toISOString()
     };
@@ -1163,7 +1205,8 @@ async function savePO() {
       description: it.description, source: it.source, product_url: it.product_url,
       image_url: it.image_url, qty: it.qty, unit_cost: it.unit_cost,
       tax_amt: it.tax_amt||0, shipping_amt: it.shipping_amt||0, discount_amt: it.discount_amt||0,
-      white_glove: !!it.white_glove, internal_notes: it.internal_notes
+      white_glove: !!it.white_glove, internal_notes: it.internal_notes,
+      currency: it.currency||'USD', exchange_rate: it.exchange_rate||1
     }));
     if (lines.length) {
       const { error: lineErr } = await DB().from('po_line_items').insert(lines);
@@ -1180,13 +1223,22 @@ async function savePO() {
 }
 
 /* ── DOCUMENT ────────────────────────────── */
-function showDoc() { renderDoc(); go('doc'); }
+function showDoc() { renderDoc(); updateCurrToggleBtn(); go('doc'); }
 
 function renderDoc() {
   P.items.forEach(it => readRow(it._k));
   const client  = allClients.find(c => c.id === P.client_id);
   const project = allProjects.find(p => p.id === P.project_id);
-  const sub  = P.items.reduce((a,it) => a + it.unit_cost*it.qty, 0);
+
+  // Currency setup
+  const itemCurrencies = [...new Set(P.items.map(it => it.currency || 'USD'))];
+  const allSameCurrency = itemCurrencies.length === 1;
+  const docCurrency = (allSameCurrency && P.display_currency === 'original') ? itemCurrencies[0] : 'USD';
+  const hasNonUSD = itemCurrencies.some(c => c !== 'USD');
+  const fmt = n => fmtCurrency(n, docCurrency);
+
+  // All financials in USD-equivalent
+  const sub  = P.items.reduce((a,it) => a + it.unit_cost * (it.exchange_rate||1) * it.qty, 0);
   const ship = parseFloat(gv('poShipping')) || P.shipping;
   const taxR = parseFloat(gv('poTaxRate'))  || P.tax_rate;
   const mkup = parseFloat(gv('poMarkup'))   || P.markup_pct;
@@ -1211,7 +1263,15 @@ function renderDoc() {
   const shipColH= showShipCol ? `<th class="r" style="width:80px">Shipping</th>` : '';
 
   const rows = P.items.map((it, idx) => {
-    const total = it.unit_cost * it.qty;
+    const itCurr = it.currency || 'USD';
+    const rate = it.exchange_rate || 1;
+    const itemPriceInDoc = docCurrency === itCurr ? it.unit_cost : it.unit_cost * rate;
+    const itemTotalInDoc = itemPriceInDoc * it.qty;
+    const showOrig = hasNonUSD && docCurrency !== itCurr;
+    const priceCell = fmtCurrency(itemPriceInDoc, docCurrency)
+      + (showOrig ? `<div style="font-size:10px;color:var(--muted);margin-top:2px">${fmtCurrency(it.unit_cost, itCurr)}</div>` : '');
+    const totalCell = fmtCurrency(itemTotalInDoc, docCurrency)
+      + (showOrig ? `<div style="font-size:10px;color:var(--muted);margin-top:2px">${fmtCurrency(it.unit_cost * it.qty, itCurr)}</div>` : '');
     const imgCell  = hasImages   ? `<td style="padding:10px 12px;width:66px">${it.image_url ? `<img class="doc-item-img" src="${esc(it.image_url)}">` : ''}</td>` : '';
     const taxCell  = showTaxCol  ? `<td class="r" style="width:80px">${fmtMoney(it.tax_amt||0)}</td>` : '';
     const shipCell = showShipCol ? `<td class="r" style="width:80px">${fmtMoney(it.shipping_amt||0)}</td>` : '';
@@ -1226,9 +1286,9 @@ function renderDoc() {
         ${it.white_glove?`<div><span class="wg-badge">White-Glove Delivery</span></div>`:''}
       </td>
       <td style="text-align:center;width:50px">${it.qty%1===0?it.qty:it.qty.toFixed(2)}</td>
-      <td class="r" style="width:100px">${fmtMoney(it.unit_cost)}</td>
+      <td class="r" style="width:100px">${priceCell}</td>
       ${taxCell}${shipCell}
-      <td class="r" style="width:100px">${fmtMoney(total)}</td>
+      <td class="r" style="width:100px">${totalCell}</td>
     </tr>`;
   }).join('');
 
@@ -1254,6 +1314,10 @@ function renderDoc() {
         ${payAccount ? `<div class="doc-payment-block"><label>Account</label><span>${esc(payAccount)}</span></div>` : ''}
       </div>
     </div>` : '';
+
+  const currencyNote = hasNonUSD && docCurrency === 'USD'
+    ? `<div style="font-size:10px;color:var(--muted);text-align:right;padding-bottom:8px">* Amounts converted to USD at specified exchange rates</div>`
+    : '';
 
   gid('docWrap').innerHTML = `
     <div class="doc-ph">
@@ -1295,12 +1359,13 @@ function renderDoc() {
     </div>
     <div class="doc-totals">
       <div class="doc-tot-table">
-        <div class="doc-tot-row"><span>Subtotal</span><span>${fmtMoney(sub)}</span></div>
-        ${disc ? `<div class="doc-tot-row" style="color:var(--moss)"><span>Discount${discMode==='flat_pct'&&discPct?' ('+discPct+'%)':''}</span><span>−${fmtMoney(disc)}</span></div>` : ''}
-        ${ship ? `<div class="doc-tot-row"><span>Shipping</span><span>${fmtMoney(ship)}</span></div>` : ''}
-        ${tax  ? `<div class="doc-tot-row"><span>Taxes</span><span>${fmtMoney(tax)}</span></div>` : ''}
-        <div class="doc-tot-row"><span>${mkup}% Procurement Fee</span><span>${fmtMoney(fee)}</span></div>
-        <div class="doc-tot-row grand"><span>Total Amount</span><span>${fmtMoney(grandTotal)}</span></div>
+        ${currencyNote}
+        <div class="doc-tot-row"><span>Subtotal</span><span>${fmt(sub)}</span></div>
+        ${disc ? `<div class="doc-tot-row" style="color:var(--moss)"><span>Discount${discMode==='flat_pct'&&discPct?' ('+discPct+'%)':''}</span><span>−${fmt(disc)}</span></div>` : ''}
+        ${ship ? `<div class="doc-tot-row"><span>Shipping</span><span>${fmt(ship)}</span></div>` : ''}
+        ${tax  ? `<div class="doc-tot-row"><span>Taxes</span><span>${fmt(tax)}</span></div>` : ''}
+        <div class="doc-tot-row"><span>${mkup}% Procurement Fee</span><span>${fmt(fee)}</span></div>
+        <div class="doc-tot-row grand"><span>Total Amount</span><span>${fmt(grandTotal)}</span></div>
       </div>
     </div>
     ${payHTML}
@@ -1596,6 +1661,7 @@ async function createMasterPO() {
     P.shipping = firstPO?.shipping ?? 0; P.shipping_mode = firstPO?.shipping_mode || 'flat';
     P.markup_pct = firstPO?.markup_pct ?? 15;
     P.discount_pct = firstPO?.discount_pct ?? 0; P.discount_mode = firstPO?.discount_mode || 'flat_pct';
+    P.display_currency = firstPO?.display_currency || 'original';
     P.payment_method = firstPO?.payment_method || ''; P.payment_account = firstPO?.payment_account || '';
 
     P.items = combined.length ? combined.map(it => ({
@@ -1605,7 +1671,8 @@ async function createMasterPO() {
       product_url: it.product_url||'', image_url: it.image_url||'',
       qty: +it.qty||1, unit_cost: +it.unit_cost||0,
       tax_amt: +it.tax_amt||0, shipping_amt: +it.shipping_amt||0, discount_amt: +it.discount_amt||0,
-      white_glove: !!it.white_glove, internal_notes: it.internal_notes||'', _open: false
+      white_glove: !!it.white_glove, internal_notes: it.internal_notes||'',
+      currency: it.currency||'USD', exchange_rate: +it.exchange_rate||1, _open: false
     })) : [blankItem()];
 
     renderEditor(); go('po');
@@ -1621,6 +1688,23 @@ function gv(id)  { const e = gid(id); return e ? e.value : ''; }
 function sv(id,t){ const e = gid(id); if (e) e.textContent = t; }
 function esc(s)  { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function fmtMoney(n) { return '$' + Number(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function fmtCurrency(n, currency) {
+  const num = Number(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+  if (currency === 'EUR') return '€' + num;
+  if (currency === 'BOB') return 'Bs. ' + num;
+  return '$' + num;
+}
+function toggleDocCurrency() {
+  P.display_currency = P.display_currency === 'usd' ? 'original' : 'usd';
+  renderDoc(); updateCurrToggleBtn();
+}
+function updateCurrToggleBtn() {
+  const btn = gid('currToggleBtn'); if (!btn) return;
+  const currencies = [...new Set(P.items.map(it => it.currency || 'USD'))];
+  const allUSD = currencies.every(c => c === 'USD');
+  btn.style.display = allUSD ? 'none' : '';
+  btn.textContent = P.display_currency === 'usd' ? 'Show in Original Currency' : 'Show in USD';
+}
 function fmtDate(d)  { if (!d) return ''; const [y,m,dy] = d.split('-'); return new Date(+y,+m-1,+dy).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); }
 function today()     { return new Date().toISOString().slice(0,10); }
 
