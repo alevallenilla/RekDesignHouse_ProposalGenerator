@@ -370,7 +370,7 @@ async function loadTrackerPO(poId) {
       room:                ex?.room              || '',
       status:              ex?.status            || 'pending_approval',
       quoted_cost:         ex?.quoted_cost       ?? (+li.unit_cost * +li.qty),
-      actual_cost:         ex?.actual_cost       ?? null,
+      actual_cost:         ex?.actual_cost       ?? (+li.unit_cost * +li.qty),
       actual_currency:     ex?.actual_currency   || li.currency || 'USD',
       actual_exchange_rate: ex?.actual_exchange_rate ?? 1,
       cushion_enabled:     ex?.cushion_enabled   ?? false,
