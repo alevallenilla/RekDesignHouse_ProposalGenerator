@@ -242,13 +242,21 @@ const STATUS_MAP = {
   delivered:        { label:'Delivered',         cls:'s-delivered'},
 };
 
-let allPOs = [];
+let allPOs      = [];
+let allClients  = [];
+let allProjects = [];
 
 async function init() {
-  const { data } = await DB().from('purchase_orders')
-    .select('*, procurement_projects(name, client_id, procurement_clients(name, company))')
-    .order('created_at', { ascending: false });
-  allPOs = data || [];
+  const [cr, pr, por] = await Promise.all([
+    DB().from('procurement_clients').select('*').order('name'),
+    DB().from('procurement_projects').select('*').order('name'),
+    DB().from('purchase_orders')
+      .select('*, procurement_projects(name, client_id, procurement_clients(name))')
+      .order('created_at', { ascending: false }),
+  ]);
+  allClients  = cr.data  || [];
+  allProjects = pr.data  || [];
+  allPOs      = por.data || [];
   renderSelector();
 }
 
@@ -297,8 +305,8 @@ async function loadReport(poId) {
   const trackerData = trackerRes.data || [];
   const tracking    = trackingRes.data;
 
-  const proj   = po.procurement_projects || {};
-  const client = proj.procurement_clients || {};
+  const proj   = allProjects.find(p => p.id === po.project_id) || po.procurement_projects || {};
+  const client = allClients.find(c => c.id === proj.client_id) || {};
 
   // Merge line items with tracker data
   const items = lineItems.map(li => {
@@ -359,8 +367,8 @@ function renderDoc({ po, proj, client, tracking, rooms, items }) {
         <div class="dcf-value">${esc(client.name || '—')}</div>
       </div>
       <div>
-        <div class="dcf-label">Company</div>
-        <div class="dcf-value">${esc(client.company || '—')}</div>
+        <div class="dcf-label">Location</div>
+        <div class="dcf-value">${esc([client.city, client.state].filter(Boolean).join(', ') || '—')}</div>
       </div>
       <div>
         <div class="dcf-label">Project</div>
