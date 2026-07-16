@@ -26,7 +26,7 @@ body { font-family:'Inter',sans-serif; background:var(--ivory); color:var(--ink)
 /* ── TOPBAR ─────────────────────────────── */
 .topbar {
   position:sticky; top:0; width:100%; height:56px;
-  background:var(--ink); z-index:100;
+  background:var(--ink); z-index:200;
   display:flex; align-items:center; padding:0 28px;
   justify-content:space-between; flex-shrink:0;
 }
@@ -37,151 +37,230 @@ body { font-family:'Inter',sans-serif; background:var(--ivory); color:var(--ink)
 
 /* ── SHARED ──────────────────────────────── */
 .eyebrow { font-size:10px; font-weight:600; letter-spacing:0.24em; text-transform:uppercase; color:var(--muted); margin-bottom:8px; }
-.page-hd { padding:36px 32px 28px; border-bottom:1px solid var(--border); display:flex; align-items:flex-end; justify-content:space-between; }
-.page-hd h1 { font-family:'Adamina',serif; font-size:32px; font-weight:400; line-height:1.1; }
-
-.btn-primary { font-family:'Inter',sans-serif; font-size:12px; font-weight:500; background:var(--ink); color:var(--parchment); border:none; border-radius:6px; padding:10px 18px; cursor:pointer; transition:opacity 0.15s; }
-.btn-primary:hover  { opacity:0.85; }
-.btn-primary:disabled { opacity:0.45; cursor:default; }
-.btn-ghost  { font-family:'Inter',sans-serif; font-size:12px; font-weight:500; background:none; color:var(--muted); border:1px solid var(--border); border-radius:6px; padding:10px 18px; cursor:pointer; transition:background 0.15s; }
+.btn-primary { font-family:'Inter',sans-serif; font-size:12px; font-weight:500; background:var(--ink); color:var(--parchment); border:none; border-radius:6px; padding:9px 16px; cursor:pointer; transition:opacity 0.15s; white-space:nowrap; }
+.btn-primary:hover { opacity:0.85; }
+.btn-primary:disabled { opacity:0.40; cursor:default; }
+.btn-ghost  { font-family:'Inter',sans-serif; font-size:12px; font-weight:500; background:none; color:var(--muted); border:1px solid var(--border); border-radius:6px; padding:9px 16px; cursor:pointer; transition:background 0.15s; white-space:nowrap; }
 .btn-ghost:hover { background:rgba(37,14,15,0.05); }
-
+.btn-danger { font-family:'Inter',sans-serif; font-size:11px; font-weight:500; background:none; color:rgba(139,26,26,0.65); border:1px solid rgba(139,26,26,0.18); border-radius:6px; padding:6px 12px; cursor:pointer; transition:background 0.15s; }
+.btn-danger:hover { background:rgba(139,26,26,0.06); }
 .fg  { display:flex; flex-direction:column; gap:5px; }
 .fl  { font-size:10px; font-weight:600; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted); }
-.fi, .fsel {
-  font-family:'Inter',sans-serif; font-size:13px; color:var(--ink);
-  background:white; border:1px solid var(--border); border-radius:6px;
-  padding:9px 12px; outline:none; transition:border-color 0.15s; width:100%;
-}
+.fi, .fsel { font-family:'Inter',sans-serif; font-size:13px; color:var(--ink); background:white; border:1px solid var(--border); border-radius:6px; padding:9px 12px; outline:none; transition:border-color 0.15s; }
 .fi:focus, .fsel:focus { border-color:rgba(37,14,15,0.35); }
 .fsel { cursor:pointer; }
-textarea.fi { resize:vertical; }
 
-/* ── PO SELECTOR ─────────────────────────── */
-.tracker-body { padding:32px; padding-bottom:100px; }
-.po-selector-wrap { max-width:520px; margin-bottom:28px; }
+/* ── HOME VIEW ───────────────────────────── */
+.page-hd { padding:36px 32px 28px; border-bottom:1px solid var(--border); display:flex; align-items:flex-end; justify-content:space-between; }
+.page-hd h1 { font-family:'Adamina',serif; font-size:32px; font-weight:400; line-height:1.1; }
+.home-body { padding:28px 32px 60px; }
+.home-proj-bar { display:flex; align-items:flex-end; gap:16px; margin-bottom:32px; }
+.home-proj-bar .fg { flex:1; max-width:360px; }
 
-/* ── PO INFO CARD ─────────────────────────── */
-.po-info-card {
+.reports-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(280px,1fr)); gap:16px; }
+.report-card {
   background:white; border:1px solid var(--border); border-radius:10px;
-  padding:20px 24px; margin-bottom:24px;
+  padding:20px 22px; cursor:pointer;
+  transition:border-color 0.15s, box-shadow 0.15s;
+  position:relative;
 }
-.po-info-top {
-  display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:16px;
-  padding-bottom:16px; border-bottom:1px solid var(--border); margin-bottom:16px;
+.report-card:hover { border-color:rgba(37,14,15,0.22); box-shadow:0 2px 12px rgba(37,14,15,0.07); }
+.rc-name  { font-size:15px; font-weight:500; color:var(--ink); margin-bottom:6px; }
+.rc-meta  { font-size:11px; color:var(--muted); line-height:1.7; }
+.rc-actions { display:flex; gap:8px; margin-top:14px; padding-top:14px; border-top:1px solid var(--border); }
+.rc-actions button { font-family:'Inter',sans-serif; font-size:11px; font-weight:500; background:none; border:none; color:var(--muted); cursor:pointer; padding:0; transition:color 0.12s; }
+.rc-actions button:hover { color:var(--ink); }
+.rc-actions button.del:hover { color:#8B1A1A; }
+.rc-open { position:absolute; inset:0; border-radius:10px; }
+.no-reports { text-align:center; padding:60px 24px; }
+.no-reports p { font-size:13px; color:var(--muted); }
+
+/* ── TRACKER VIEW ────────────────────────── */
+.trk-hd {
+  position:sticky; top:56px; z-index:150;
+  background:white; border-bottom:1px solid var(--border);
+  padding:0 28px; height:58px;
+  display:flex; align-items:center; gap:16px;
 }
-.po-info-field label { font-size:9px; font-weight:600; letter-spacing:0.18em; text-transform:uppercase; color:var(--muted); display:block; margin-bottom:4px; }
-.po-info-field span  { font-size:13px; color:var(--ink); font-weight:500; }
-.po-info-dates { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; align-items:end; }
+.btn-back { font-family:'Inter',sans-serif; font-size:12px; color:var(--muted); background:none; border:none; cursor:pointer; padding:0; display:flex; align-items:center; gap:5px; transition:color 0.12s; flex-shrink:0; }
+.btn-back:hover { color:var(--ink); }
+.trk-hd-mid { flex:1; display:flex; align-items:center; gap:10px; min-width:0; }
+.trk-breadcrumb { font-size:11px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.trk-title-input {
+  font-family:'Adamina',serif; font-size:18px; font-weight:400; color:var(--ink);
+  background:none; border:none; border-bottom:1px solid transparent;
+  outline:none; padding:2px 4px; min-width:0; flex:1;
+  transition:border-color 0.15s;
+}
+.trk-title-input:hover { border-bottom-color:var(--border); }
+.trk-title-input:focus { border-bottom-color:rgba(37,14,15,0.30); }
+.trk-hd-actions { display:flex; align-items:center; gap:8px; flex-shrink:0; }
+.unsaved-dot { width:7px; height:7px; background:#C4622D; border-radius:50%; display:none; }
+.unsaved-dot.on { display:block; }
+
+.trk-body { padding:0 0 80px; }
 
 /* ── TRACKER TABLE ───────────────────────── */
-.tracker-table-wrap { overflow-x:auto; }
-.tracker-table { width:100%; border-collapse:collapse; font-size:12.5px; }
-.tracker-table th {
-  font-size:9.5px; font-weight:600; letter-spacing:0.14em; text-transform:uppercase;
-  color:var(--muted); text-align:left; padding:8px 8px 10px;
-  border-bottom:1px solid var(--border); white-space:nowrap;
+.trk-table-wrap { overflow-x:auto; }
+.trk-table { width:100%; border-collapse:collapse; table-layout:fixed; }
+.trk-table th {
+  font-size:10px; font-weight:600; letter-spacing:0.14em; text-transform:uppercase;
+  color:var(--muted); padding:10px 10px 10px 12px; text-align:left;
+  background:var(--linen); border-bottom:1px solid var(--border);
+  white-space:nowrap; position:sticky; top:114px; z-index:10;
 }
-.tracker-table th.r { text-align:right; }
-.tracker-table td   { padding:5px 6px; vertical-align:top; border-bottom:1px solid rgba(37,14,15,0.04); }
+.trk-table td { padding:0; border-bottom:1px solid rgba(37,14,15,0.06); vertical-align:middle; }
+.trk-table tr:last-child td { border-bottom:none; }
+.trk-table .r { text-align:right; }
 
-.tc-num    { width:28px; text-align:center; color:var(--muted); font-size:11px; padding-top:12px !important; }
-.tc-room   { width:140px; }
-.tc-item   { min-width:150px; }
-.tc-vendor { width:110px; }
-.tc-status { width:150px; }
-.tc-quoted { width:88px; }
-.tc-actual { width:96px; }
-.tc-curr   { width:68px; }
-.tc-var    { width:80px; }
-.tc-act    { width:40px; white-space:nowrap; padding-top:8px !important; }
+/* Columns */
+.tc-img   { width:56px; }
+.tc-prod  { min-width:180px; }
+.tc-vend  { width:130px; }
+.tc-qty   { width:56px; }
+.tc-stat  { width:185px; }
+.tc-ord   { width:110px; }
+.tc-date  { width:110px; }
+.tc-trk   { width:140px; }
+.tc-act   { width:80px; }
 
-.ti {
-  font-family:'Inter',sans-serif; font-size:12.5px; color:var(--ink);
-  background:transparent; border:1px solid transparent; border-radius:4px;
-  padding:5px 7px; width:100%; outline:none;
-  transition:border-color 0.15s, background 0.15s;
-}
-.ti:hover { border-color:var(--border); background:white; }
-.ti:focus { border-color:rgba(37,14,15,0.30); background:white; }
-.ti.r { text-align:right; }
-
-.tsel {
+/* Row cells */
+.trk-table td input[type=text],
+.trk-table td input[type=number],
+.trk-table td input[type=date] {
   font-family:'Inter',sans-serif; font-size:12px; color:var(--ink);
-  background:transparent; border:1px solid transparent; border-radius:4px;
-  padding:5px 6px; width:100%; outline:none; cursor:pointer;
-  transition:border-color 0.15s, background 0.15s;
+  background:none; border:none; outline:none; width:100%;
+  padding:11px 10px 11px 12px;
+  transition:background 0.12s;
 }
-.tsel:hover { border-color:var(--border); background:white; }
-.tsel:focus { border-color:rgba(37,14,15,0.30); background:white; }
+.trk-table td input:hover  { background:rgba(37,14,15,0.03); }
+.trk-table td input:focus  { background:rgba(37,14,15,0.05); }
+.trk-table td input[type=number] { text-align:right; padding-right:12px; }
 
-/* Read-only item name / vendor */
-.item-ro     { font-size:12.5px; font-weight:500; color:var(--ink); padding:6px 0; line-height:1.3; }
-.item-ro-sub { font-size:11px; color:var(--muted); margin-top:2px; }
-.vendor-ro   { font-size:12px; color:var(--muted); padding:7px 0; }
+.item-img-cell { padding:8px 8px 8px 12px !important; }
+.item-thumb {
+  width:38px; height:38px; object-fit:cover; border-radius:4px;
+  border:1px solid var(--border); display:block;
+}
+.item-thumb-ph {
+  width:38px; height:38px; border-radius:4px; border:1px solid var(--border);
+  background:var(--linen); display:flex; align-items:center; justify-content:center;
+}
+
+.prod-cell { padding:8px 8px 8px 0 !important; }
+.prod-name { font-size:12px; font-weight:500; color:var(--ink); line-height:1.3; }
+.prod-sub  { font-size:10px; color:var(--muted); margin-top:2px; }
 
 /* Status select */
-.status-sel { font-family:'Inter',sans-serif; font-size:11px; font-weight:600; letter-spacing:0.07em; border-radius:5px; padding:5px 8px; border:none; cursor:pointer; width:100%; outline:none; }
-.s-pending  { background:rgba(37,14,15,0.07);  color:rgba(37,14,15,0.55); }
-.s-approved { background:rgba(184,134,11,0.13); color:var(--amber); }
-.s-purchased{ background:rgba(76,98,112,0.13);  color:var(--slate); }
-.s-transit  { background:rgba(82,85,164,0.10);  color:#5255A4; }
-.s-delivered{ background:rgba(61,92,58,0.13);   color:var(--moss); }
+.stat-sel {
+  font-family:'Inter',sans-serif; font-size:11px; font-weight:600;
+  letter-spacing:0.05em; border:none; outline:none; cursor:pointer;
+  border-radius:5px; padding:5px 8px; width:calc(100% - 24px); margin:0 12px;
+  appearance:none; -webkit-appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23666' stroke-width='1.3' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat; background-position:right 6px center;
+  padding-right:22px;
+}
 
-/* Quoted / Actual cells */
-.amt-cell { font-size:12px; font-weight:500; text-align:right; padding-top:10px; }
-.amt-sub  { font-size:10px; color:var(--muted); text-align:right; margin-top:2px; }
-
-/* Variance */
-.var-over  { font-size:12px; font-weight:500; color:#b03030; text-align:right; padding-top:10px; }
-.var-under { font-size:12px; font-weight:500; color:var(--moss); text-align:right; padding-top:10px; }
-.var-none  { font-size:12px; color:var(--muted); text-align:right; padding-top:10px; }
-
-/* xbtn */
-.xbtn { background:none; border:none; cursor:pointer; color:var(--muted); padding:4px 5px; border-radius:4px; font-size:13px; transition:color 0.15s,background 0.15s; }
-.xbtn:hover { color:var(--ink); background:rgba(37,14,15,0.05); }
+/* Row actions */
+.row-actions { display:flex; align-items:center; justify-content:flex-end; gap:4px; padding-right:10px; }
+.xbtn { font-size:12px; background:none; border:none; cursor:pointer; color:var(--muted); padding:5px; border-radius:4px; transition:background 0.12s; }
+.xbtn:hover { background:rgba(37,14,15,0.07); color:var(--ink); }
+.delbtn { font-size:16px; background:none; border:none; cursor:pointer; color:rgba(37,14,15,0.20); padding:5px; border-radius:4px; transition:color 0.12s; line-height:1; }
+.delbtn:hover { color:#8B1A1A; }
 
 /* Detail row */
-.det-row { display:none; }
-.det-row.open { display:table-row; }
-.det-row td { background:rgba(37,14,15,0.018) !important; border-bottom:1px solid var(--border) !important; padding:16px 18px 20px 36px !important; }
-.det-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:18px; }
-
-/* Cushion panel */
-.cushion-panel { background:rgba(61,92,58,0.05); border:1px solid rgba(61,92,58,0.15); border-radius:7px; padding:12px 14px; }
-.cushion-toggle-row { display:flex; align-items:center; gap:9px; }
-.cushion-toggle-row input[type=checkbox] { width:14px; height:14px; accent-color:var(--moss); cursor:pointer; flex-shrink:0; }
-.cushion-toggle-row label { font-size:12px; cursor:pointer; }
-.cushion-detail { margin-top:10px; }
-.cushion-vis-row { display:flex; align-items:center; gap:8px; margin-top:8px; }
-.cushion-vis-row input[type=checkbox] { width:13px; height:13px; accent-color:var(--slate); cursor:pointer; }
-.cushion-vis-row label { font-size:11px; color:var(--muted); cursor:pointer; }
-.cushion-summary { font-size:11px; color:var(--moss); margin-top:8px; line-height:1.5; }
-.cushion-off-note { font-size:11px; color:var(--muted); margin-top:6px; }
-
-/* Section header */
-.section-hd { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
-.section-hd h2 { font-size:13px; font-weight:600; }
-.item-count-lbl { font-size:11px; color:var(--muted); }
+.det-row td { padding:0 !important; border-bottom:1px solid rgba(37,14,15,0.06); }
+.det-inner {
+  padding:14px 20px 18px 68px;
+  background:rgba(37,14,15,0.025);
+  display:grid; grid-template-columns:repeat(4,1fr); gap:14px 20px;
+}
+.det-inner .fg label { font-size:9px; }
+.det-inner .fi { font-size:12px; padding:7px 10px; }
+.det-inner textarea.fi { resize:vertical; min-height:56px; font-size:12px; }
+.det-last-upd { grid-column:span 4; font-size:10px; color:var(--muted); margin-top:4px; }
 
 /* Empty state */
-.empty-state { text-align:center; padding:80px 24px; }
-.empty-state h2 { font-family:'Adamina',serif; font-size:22px; margin-bottom:10px; }
-.empty-state p { font-size:13px; color:var(--muted); }
+.trk-empty { text-align:center; padding:60px 24px; }
+.trk-empty p { font-size:13px; color:var(--muted); margin-bottom:16px; }
 
-/* Save bar */
-.save-bar {
-  position:fixed; bottom:0; left:220px; right:0;
-  background:white; border-top:1px solid var(--border);
-  padding:14px 32px; display:flex; align-items:center;
-  justify-content:space-between; z-index:50;
-  box-shadow:0 -4px 20px rgba(37,14,15,0.06);
+/* ── STATUS BADGE COLORS (applied via JS) ─── */
+
+/* ── MODAL ───────────────────────────────── */
+.modal-overlay {
+  position:fixed; inset:0; background:rgba(37,14,15,0.45);
+  z-index:500; display:flex; align-items:center; justify-content:center;
+  padding:20px;
 }
-.save-bar-info { font-size:12px; color:var(--muted); }
+.modal-box {
+  background:white; border-radius:12px; width:100%; max-width:740px;
+  max-height:calc(100vh - 40px); display:flex; flex-direction:column;
+  box-shadow:0 16px 60px rgba(37,14,15,0.20);
+}
+.modal-hd {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:20px 24px 16px; border-bottom:1px solid var(--border); flex-shrink:0;
+}
+.modal-title { font-family:'Adamina',serif; font-size:18px; }
+.modal-close { background:none; border:none; cursor:pointer; font-size:16px; color:var(--muted); padding:4px 6px; border-radius:4px; transition:background 0.12s; }
+.modal-close:hover { background:rgba(37,14,15,0.07); color:var(--ink); }
+
+.modal-filters { padding:14px 24px 10px; flex-shrink:0; border-bottom:1px solid var(--border); }
+.modal-search { font-family:'Inter',sans-serif; font-size:13px; width:100%; border:1px solid var(--border); border-radius:7px; padding:9px 14px; outline:none; margin-bottom:10px; }
+.modal-search:focus { border-color:rgba(37,14,15,0.32); }
+.filter-pills { display:flex; gap:6px; flex-wrap:wrap; }
+.filter-pill {
+  font-size:11px; font-weight:500; letter-spacing:0.04em;
+  border:1px solid var(--border); border-radius:20px;
+  padding:4px 11px; cursor:pointer; background:white; color:var(--muted);
+  transition:background 0.12s, border-color 0.12s;
+}
+.filter-pill.active { background:var(--ink); color:white; border-color:var(--ink); }
+
+.modal-list { flex:1; overflow-y:auto; padding:8px 0; }
+.modal-list::-webkit-scrollbar { width:4px; }
+.modal-list::-webkit-scrollbar-thumb { background:rgba(37,14,15,0.12); border-radius:2px; }
+
+.modal-group-hd {
+  font-size:9px; font-weight:600; letter-spacing:0.18em; text-transform:uppercase;
+  color:var(--muted); padding:12px 24px 6px; background:var(--ivory);
+  position:sticky; top:0; z-index:2;
+}
+.modal-item {
+  display:flex; align-items:center; gap:12px; padding:10px 24px;
+  cursor:pointer; transition:background 0.12s;
+}
+.modal-item:hover:not(.mi-disabled) { background:rgba(37,14,15,0.03); }
+.modal-item input[type=checkbox] { width:15px; height:15px; accent-color:var(--burgundy); cursor:pointer; flex-shrink:0; }
+.mi-img { width:36px; height:36px; object-fit:cover; border-radius:4px; border:1px solid var(--border); flex-shrink:0; }
+.mi-img-ph { width:36px; height:36px; border-radius:4px; border:1px solid var(--border); background:var(--linen); flex-shrink:0; }
+.mi-info { flex:1; min-width:0; }
+.mi-name { font-size:13px; font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.mi-sub  { font-size:11px; color:var(--muted); margin-top:2px; }
+.mi-disabled { opacity:0.40; cursor:default; }
+.mi-already { font-size:10px; color:var(--moss); font-weight:600; flex-shrink:0; }
+
+.modal-foot {
+  padding:14px 24px; border-top:1px solid var(--border);
+  display:flex; align-items:center; gap:10px; flex-shrink:0;
+}
+.modal-sel-count { font-size:12px; color:var(--muted); flex:1; }
+.modal-empty { text-align:center; padding:40px 24px; font-size:13px; color:var(--muted); }
+
+/* ── SAVE BAR ────────────────────────────── */
+.save-bar {
+  position:fixed; bottom:0; left:220px; right:0; z-index:100;
+  background:white; border-top:1px solid var(--border);
+  padding:12px 28px; display:none; align-items:center; justify-content:space-between;
+}
+.save-bar.visible { display:flex; }
+.save-bar-msg { font-size:12px; color:var(--muted); }
+#btnSaveBar { }
 
 @media print {
-  .topbar, #ws-nav, .save-bar { display:none !important; }
-  body { padding-left:0 !important; padding-top:0 !important; }
+  .topbar, #ws-nav, .trk-hd, .save-bar { display:none !important; }
+  body { padding-left:0 !important; }
 }
 </style>
 </head>
@@ -192,558 +271,667 @@ textarea.fi { resize:vertical; }
     <img class="tb-logo" src="/logos/rek-wordmark-white.svg" alt="Rek Design Studio">
     <span class="tb-sub">Design Studio</span>
   </div>
-  <div class="tb-date" id="tbDate"></div>
+  <span class="tb-date" id="tbDate"></span>
 </header>
 
-<datalist id="roomSuggestions"></datalist>
-
-<div class="page-wrap">
-
+<!-- ── HOME ──────────────────────────────────────────────────────── -->
+<div id="v-home">
   <div class="page-hd">
     <div>
-      <p class="eyebrow">Work Suite · Procurement</p>
-      <h1>Procurement Tracker</h1>
+      <p class="eyebrow">Procurement</p>
+      <h1>Tracking Reports</h1>
     </div>
   </div>
-
-  <div class="tracker-body">
-
-    <!-- PO Selector -->
-    <div class="po-selector-wrap">
+  <div class="home-body">
+    <div class="home-proj-bar">
       <div class="fg">
-        <label class="fl">Select Purchase Order</label>
-        <select class="fsel" id="poSel" onchange="loadTrackerPO(this.value)">
-          <option value="">Choose a PO to track…</option>
+        <label class="fl">Project</label>
+        <select class="fsel" id="projSel" onchange="onProjectChange()">
+          <option value="">Select a project…</option>
         </select>
       </div>
+      <button class="btn-primary" id="btnNewReport" onclick="createReport()" style="display:none">+ New Report</button>
     </div>
+    <div id="reportsGrid" class="reports-grid"></div>
+  </div>
+</div>
 
-    <!-- Tracker content — shown after PO selected -->
-    <div id="trackerContent" style="display:none">
-
-      <!-- PO Info Card -->
-      <div class="po-info-card" id="poInfoCard"></div>
-
-      <!-- Items Table -->
-      <div class="section-hd">
-        <h2>Line Items</h2>
-        <span class="item-count-lbl" id="itemCountLbl"></span>
-      </div>
-
-      <div class="tracker-table-wrap">
-        <table class="tracker-table">
-          <thead>
-            <tr>
-              <th class="tc-num"></th>
-              <th class="tc-room">Room / Space</th>
-              <th class="tc-item">Item</th>
-              <th class="tc-vendor">Vendor</th>
-              <th class="tc-status">Status</th>
-              <th class="tc-quoted r">Quoted</th>
-              <th class="tc-actual r">Actual</th>
-              <th class="tc-curr">Currency</th>
-              <th class="tc-var r">Variance</th>
-              <th class="tc-act"></th>
-            </tr>
-          </thead>
-          <tbody id="trackerTbody"></tbody>
-        </table>
-      </div>
+<!-- ── TRACKER ────────────────────────────────────────────────────── -->
+<div id="v-tracker" style="display:none">
+  <div class="trk-hd">
+    <button class="btn-back" onclick="goHome()">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 2L4 7l5 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Reports
+    </button>
+    <div class="trk-hd-mid">
+      <span class="trk-breadcrumb" id="trkBreadcrumb"></span>
+      <input class="trk-title-input" id="trkTitle" type="text" placeholder="Report name…" onblur="saveReportName()" oninput="markUnsaved()">
     </div>
-
-  </div><!-- /tracker-body -->
-
-  <!-- Save Bar -->
-  <div class="save-bar" id="saveBar" style="display:none">
-    <span class="save-bar-info" id="saveBarInfo">No changes</span>
-    <button class="btn-primary" id="btnSave" onclick="saveTracker()">Save Changes</button>
+    <div class="trk-hd-actions">
+      <div class="unsaved-dot" id="unsavedDot"></div>
+      <button class="btn-ghost" onclick="openAddModal()">+ Add Items</button>
+      <button class="btn-ghost" onclick="addManualItem()">+ Add Manual</button>
+      <button class="btn-primary" id="btnSave" onclick="saveReport()">Save</button>
+    </div>
   </div>
 
-</div><!-- /page-wrap -->
+  <div class="trk-body">
+    <div class="trk-table-wrap" id="trkTableWrap">
+      <table class="trk-table">
+        <thead>
+          <tr>
+            <th class="tc-img"></th>
+            <th class="tc-prod">Product</th>
+            <th class="tc-vend">Vendor</th>
+            <th class="tc-qty r">Qty</th>
+            <th class="tc-stat">Status</th>
+            <th class="tc-ord">Order #</th>
+            <th class="tc-date">Est. Delivery</th>
+            <th class="tc-trk">Tracking</th>
+            <th class="tc-act"></th>
+          </tr>
+        </thead>
+        <tbody id="trkBody"></tbody>
+      </table>
+    </div>
+    <div id="trkEmpty" class="trk-empty" style="display:none">
+      <p>No items yet.</p>
+      <button class="btn-ghost" onclick="openAddModal()">+ Add Items from Procurement</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── ADD ITEMS MODAL ────────────────────────────────────────────── -->
+<div id="addModal" class="modal-overlay" style="display:none" onclick="modalOverlayClick(event)">
+  <div class="modal-box">
+    <div class="modal-hd">
+      <span class="modal-title">Add Items to Report</span>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-filters">
+      <input class="modal-search" id="modalSearch" type="text" placeholder="Search by product name, vendor…" oninput="renderModalList()">
+      <div class="filter-pills" id="filterPills"></div>
+    </div>
+    <div class="modal-list" id="modalList"></div>
+    <div class="modal-foot">
+      <span class="modal-sel-count" id="modalSelCount">0 selected</span>
+      <button class="btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn-primary" onclick="confirmAddItems()">Add to Report</button>
+    </div>
+  </div>
+</div>
+
+<div class="save-bar" id="saveBar">
+  <span class="save-bar-msg">You have unsaved changes.</span>
+  <button class="btn-primary" id="btnSaveBar" onclick="saveReport()">Save</button>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/shared/nav.js"></script>
 <script>
+/* ── SUPABASE ────────────────────────────────────── */
 const SUPA_URL = 'https://danfcudpvzjcjxhwwqhp.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRhbmZjdWRwdnpqY2p4aHd3cWhwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwMTg3NjMsImV4cCI6MjA5MzU5NDc2M30.KdDpMNteoNFnnPX-47ZLlDJQnwlsH4ohHMjo20goDFE';
 let _db = null;
 const DB = () => { if (!_db) _db = supabase.createClient(SUPA_URL, SUPA_KEY); return _db; };
 
+/* ── STATUSES ─────────────────────────────────────── */
 const STATUSES = [
-  { value:'pending_approval', label:'Pending Approval', cls:'s-pending'  },
-  { value:'approved',         label:'Approved',         cls:'s-approved' },
-  { value:'purchased',        label:'Purchased',        cls:'s-purchased'},
-  { value:'in_transit',       label:'In Transit',       cls:'s-transit'  },
-  { value:'delivered',        label:'Delivered',        cls:'s-delivered'},
+  { key:'not_purchased',       label:'Not Purchased',              color:'#666',    bg:'rgba(100,100,100,0.10)' },
+  { key:'ready_to_purchase',   label:'Ready to Purchase',          color:'#8a6508', bg:'rgba(184,134,11,0.12)'  },
+  { key:'purchased',           label:'Purchased',                  color:'#7C5B00', bg:'rgba(184,134,11,0.22)'  },
+  { key:'order_confirmed',     label:'Order Confirmed',            color:'#4C6270', bg:'rgba(76,98,112,0.16)'   },
+  { key:'in_production',       label:'In Production',              color:'#6B4C9E', bg:'rgba(107,76,158,0.13)'  },
+  { key:'backordered',         label:'Backordered',                color:'#B05218', bg:'rgba(176,82,24,0.13)'   },
+  { key:'ready_to_ship',       label:'Ready to Ship',              color:'#1E7D68', bg:'rgba(30,125,104,0.13)'  },
+  { key:'in_transit',          label:'In Transit',                 color:'#1A5CA8', bg:'rgba(26,92,168,0.14)'   },
+  { key:'out_for_delivery',    label:'Out for Delivery',           color:'#1B7A50', bg:'rgba(27,122,80,0.13)'   },
+  { key:'partially_delivered', label:'Partially Delivered',        color:'#3D5C3A', bg:'rgba(61,92,58,0.16)'    },
+  { key:'delivered',           label:'Delivered',                  color:'#2E5C2A', bg:'rgba(46,92,42,0.20)'    },
+  { key:'delayed',             label:'Delayed',                    color:'#B85A1A', bg:'rgba(184,90,26,0.16)'   },
+  { key:'cancelled',           label:'Cancelled',                  color:'#8B1A1A', bg:'rgba(139,26,26,0.12)'   },
+  { key:'returned',            label:'Returned',                   color:'#7B1515', bg:'rgba(123,21,21,0.16)'   },
+  { key:'damaged',             label:'Damaged / Replacement Req.', color:'#6B0F1A', bg:'rgba(107,15,26,0.16)'   },
 ];
+const STATUS_MAP = Object.fromEntries(STATUSES.map(s => [s.key, s]));
+const statusOptsHTML = STATUSES.map(s =>
+  `<option value="${s.key}">${s.label}</option>`
+).join('');
 
-let allPOs       = [];
-let allClients   = [];
-let allProjects  = [];
-let currentPO    = null;
-let poTracking   = null;
-let trackerItems = [];
-let _seq = 0;
+/* ── STATE ───────────────────────────────────────── */
+let allProjects   = [];
+let allClients    = [];
+let allPOs        = [];   // POs for the selected project
+let allPOItems    = [];   // po_line_items for the selected project
+let reports       = [];
+let currentReport = null; // { id, project_id, name, ... }
+let reportItems   = [];   // working copy of tracking_report_items
+let _seq          = 0;
+let _unsaved      = false;
+let _activePill   = 'all';
+let _modalSel     = new Set(); // po_line_item_id or _manual keys
 
-/* ── INIT ────────────────────────────────────── */
+/* ── INIT ────────────────────────────────────────── */
 async function init() {
   gid('tbDate').textContent = new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'});
-  const [cr, pr, por] = await Promise.all([
+  const [cr, pr] = await Promise.all([
     DB().from('procurement_clients').select('*').order('name'),
     DB().from('procurement_projects').select('*').order('name'),
-    DB().from('purchase_orders')
-      .select('*, procurement_projects(name, client_id, procurement_clients(name))')
-      .order('created_at',{ascending:false})
   ]);
-  allClients  = cr.data  || [];
-  allProjects = pr.data  || [];
-  allPOs      = por.data || [];
-  renderPoSelector();
+  allClients  = cr.data || [];
+  allProjects = pr.data || [];
+  renderProjSelector();
 }
 
-/* ── PO SELECTOR ─────────────────────────────── */
-function renderPoSelector() {
-  const sel = gid('poSel');
-  if (!allPOs.length) {
-    sel.innerHTML = '<option value="">No purchase orders found</option>';
-    return;
-  }
-  const grouped = {};
-  allPOs.forEach(po => {
-    const proj = po.procurement_projects || {};
-    const cn = proj.procurement_clients?.name || 'Unknown Client';
-    const pn = proj.name || 'Unknown Project';
-    if (!grouped[cn]) grouped[cn] = {};
-    if (!grouped[cn][pn]) grouped[cn][pn] = [];
-    grouped[cn][pn].push(po);
+function renderProjSelector() {
+  const sel = gid('projSel');
+  let html = '<option value="">Select a project…</option>';
+  // Group by client
+  const byClient = {};
+  allProjects.forEach(p => {
+    const cn = allClients.find(c => c.id === p.client_id)?.name || 'Unknown Client';
+    if (!byClient[cn]) byClient[cn] = [];
+    byClient[cn].push(p);
   });
-  let html = '<option value="">Choose a PO to track…</option>';
-  for (const [client, projects] of Object.entries(grouped)) {
-    for (const [proj, pos] of Object.entries(projects)) {
-      html += `<optgroup label="${esc(client)} — ${esc(proj)}">`;
-      pos.forEach(po => {
-        const label = po.po_number + (po.po_name ? ' · ' + po.po_name : '') + (po.notes ? '  (' + po.notes + ')' : '');
-        html += `<option value="${po.id}">${esc(label)}</option>`;
-      });
-      html += `</optgroup>`;
-    }
+  for (const [cn, projs] of Object.entries(byClient)) {
+    html += `<optgroup label="${esc(cn)}">`;
+    projs.forEach(p => { html += `<option value="${p.id}">${esc(p.name)}</option>`; });
+    html += `</optgroup>`;
   }
   sel.innerHTML = html;
 }
 
-/* ── LOAD TRACKER PO ─────────────────────────── */
-async function loadTrackerPO(poId) {
-  if (!poId) {
-    gid('trackerContent').style.display = 'none';
-    gid('saveBar').style.display = 'none';
-    currentPO = null;
-    return;
-  }
-  currentPO = allPOs.find(p => p.id === poId);
-  if (!currentPO) return;
+async function onProjectChange() {
+  const pid = gid('projSel').value;
+  gid('reportsGrid').innerHTML = '';
+  gid('btnNewReport').style.display = pid ? '' : 'none';
+  if (!pid) return;
 
-  const [trackRes, lineRes, trackerRes] = await Promise.all([
-    DB().from('procurement_po_tracking').select('*').eq('po_id', poId).maybeSingle(),
-    DB().from('po_line_items').select('*').eq('po_id', poId).order('sort_order'),
-    DB().from('tracker_line_items').select('*').eq('po_id', poId),
+  // Load reports and PO items for this project
+  const [rr, por] = await Promise.all([
+    DB().from('tracking_reports').select('*').eq('project_id', pid).order('updated_at',{ascending:false}),
+    DB().from('purchase_orders').select('id,po_number,po_name').eq('project_id', pid),
   ]);
+  reports = rr.data || [];
+  allPOs  = por.data || [];
 
-  poTracking = trackRes.data || { id: null, po_id: poId, po_sent_date: null, money_received_date: null };
+  if (allPOs.length) {
+    const { data } = await DB().from('po_line_items').select('*').in('po_id', allPOs.map(p=>p.id));
+    allPOItems = (data || []).map(it => {
+      const po = allPOs.find(p => p.id === it.po_id);
+      return { ...it, _poLabel: po ? (po.po_number + (po.po_name?' · '+po.po_name:'')) : 'Unknown PO' };
+    });
+  } else {
+    allPOItems = [];
+  }
 
-  const lineItems = lineRes.data || [];
-  const existing  = trackerRes.data || [];
-
-  trackerItems = lineItems.map(li => {
-    const ex = existing.find(t => t.po_line_item_id === li.id);
-    return {
-      _k:  ++_seq,
-      id:  ex?.id || null,
-      po_id:           poId,
-      po_line_item_id: li.id,
-      // Source fields from PO (display only)
-      _item_name: li.item_name || '',
-      _source:    li.source    || '',
-      _qty:       +li.qty      || 1,
-      _unit_cost: +li.unit_cost|| 0,
-      _currency:  li.currency  || 'USD',
-      // Tracker fields
-      room:                ex?.room              || '',
-      status:              ex?.status            || 'pending_approval',
-      quoted_cost:         ex?.quoted_cost       ?? (+li.unit_cost * +li.qty),
-      actual_cost:         ex?.actual_cost       ?? (+li.unit_cost * +li.qty),
-      actual_currency:     ex?.actual_currency   || li.currency || 'USD',
-      actual_exchange_rate: ex?.actual_exchange_rate ?? 1,
-      cushion_enabled:     ex?.cushion_enabled   ?? false,
-      cushion_pct:         ex?.cushion_pct       ?? 10,
-      cushion_visible:     ex?.cushion_visible   ?? false,
-      purchase_date:       ex?.purchase_date     || '',
-      est_delivery_date:   ex?.est_delivery_date || '',
-      actual_delivery_date:ex?.actual_delivery_date || '',
-      tracking_number:     ex?.tracking_number   || '',
-      carrier:             ex?.carrier           || '',
-      notes:               ex?.notes             || '',
-      image_url:           ex?.image_url         || '',
-      _open: false,
-    };
-  });
-
-  await loadRoomSuggestions(currentPO.project_id);
-  renderPoInfoCard();
-  renderTrackerTable();
-  gid('trackerContent').style.display = 'block';
-  gid('saveBar').style.display = 'flex';
-  gid('saveBarInfo').textContent = 'No unsaved changes';
+  renderReportsGrid();
 }
 
-/* ── ROOM SUGGESTIONS ────────────────────────── */
-async function loadRoomSuggestions(projectId) {
-  const poIds = allPOs.filter(p => p.project_id === projectId).map(p => p.id);
-  if (!poIds.length) return;
-  const { data } = await DB().from('tracker_line_items')
-    .select('room').in('po_id', poIds).not('room','is',null);
-  const rooms = [...new Set((data||[]).map(r => r.room).filter(Boolean))];
-  gid('roomSuggestions').innerHTML = rooms.map(r => `<option value="${esc(r)}">`).join('');
-}
-
-/* ── PO INFO CARD ────────────────────────────── */
-function renderPoInfoCard() {
-  const proj   = allProjects.find(p => p.id === currentPO.project_id);
-  const client = allClients.find(c => c.id === proj?.client_id);
-  const stClass = {draft:'s-pending',ordered:'s-purchased',received:'s-transit',invoiced:'s-delivered'}[currentPO.status] || 's-pending';
-  gid('poInfoCard').innerHTML = `
-    <div class="po-info-top">
-      <div class="po-info-field">
-        <label>Purchase Order</label>
-        <span>${esc(currentPO.po_number)}${currentPO.po_name?' &middot; '+esc(currentPO.po_name):''}</span>
-      </div>
-      <div class="po-info-field">
-        <label>Project</label>
-        <span>${esc(proj?.name||'—')}</span>
-      </div>
-      <div class="po-info-field">
-        <label>Client</label>
-        <span>${esc(client?.name||'—')}</span>
-      </div>
-      <div class="po-info-field">
-        <label>PO Status</label>
-        <span class="status-sel ${stClass}" style="display:inline-block;width:auto;padding:4px 10px">${currentPO.status.charAt(0).toUpperCase()+currentPO.status.slice(1)}</span>
-      </div>
-    </div>
-    <div class="po-info-dates">
-      <div class="fg">
-        <label class="fl">PO Sent Date</label>
-        <input class="fi" type="date" id="poSentDate" value="${poTracking.po_sent_date||''}" oninput="markUnsaved()">
-      </div>
-      <div class="fg">
-        <label class="fl">Funds Received Date</label>
-        <input class="fi" type="date" id="moneyReceivedDate" value="${poTracking.money_received_date||''}" oninput="markUnsaved()">
-      </div>
-      <div></div>
-    </div>`;
-}
-
-/* ── TRACKER TABLE ───────────────────────────── */
-function renderTrackerTable() {
-  const n = trackerItems.length;
-  gid('itemCountLbl').textContent = n + ' item' + (n !== 1 ? 's' : '');
-  if (!n) {
-    gid('trackerTbody').innerHTML = `<tr><td colspan="10" style="padding:32px;text-align:center;color:var(--muted);font-size:13px">This PO has no line items.</td></tr>`;
+function renderReportsGrid() {
+  const grid = gid('reportsGrid');
+  if (!reports.length) {
+    grid.innerHTML = `<div class="no-reports"><p>No reports yet for this project.<br>Create your first one above.</p></div>`;
     return;
   }
-  gid('trackerTbody').innerHTML = trackerItems.map((it, idx) => rowHTML(it, idx)).join('');
+  grid.innerHTML = reports.map(r => {
+    const upd = new Date(r.updated_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    return `
+    <div class="report-card">
+      <div class="rc-name">${esc(r.name)}</div>
+      <div class="rc-meta">Last updated ${upd}</div>
+      <div class="rc-actions" style="position:relative;z-index:2">
+        <button onclick="openReport('${r.id}')">Open</button>
+        <button onclick="renameReport(event,'${r.id}')">Rename</button>
+        <button onclick="duplicateReport(event,'${r.id}')">Duplicate</button>
+        <button class="del" onclick="deleteReport(event,'${r.id}')">Delete</button>
+      </div>
+      <div class="rc-open" onclick="openReport('${r.id}')"></div>
+    </div>`;
+  }).join('');
 }
 
-function rowHTML(it, idx) {
-  const stCls   = STATUSES.find(s => s.value === it.status)?.cls || 's-pending';
-  const stOpts  = STATUSES.map(s => `<option value="${s.value}"${it.status===s.value?' selected':''}>${s.label}</option>`).join('');
-  const currOpts = ['USD','EUR','BOB'].map(c => `<option value="${c}"${it.actual_currency===c?' selected':''}>${c}</option>`).join('');
-  const quotedUSD = it.quoted_cost ?? 0;
-  const actSet    = it.actual_cost !== null && it.actual_cost !== undefined && it.actual_cost !== '';
-  const actUSD    = actSet ? (+it.actual_cost * (it.actual_exchange_rate || 1)) : null;
-  const variance  = actUSD !== null ? actUSD - quotedUSD : null;
-  const varHTML   = variance === null
-    ? `<div class="var-none">—</div>`
-    : variance >  0.01 ? `<div class="var-over">+${fmtMoney(variance)}</div>`
-    : variance < -0.01 ? `<div class="var-under">${fmtMoney(variance)}</div>`
-    : `<div class="var-none">—</div>`;
-  const cushAmt = it.cushion_enabled ? (it.quoted_cost||0) * (it.cushion_pct||10) / 100 : 0;
-  const showRate = it.actual_currency !== 'USD';
+/* ── REPORT CRUD ─────────────────────────────────── */
+async function createReport() {
+  const pid = gid('projSel').value; if (!pid) return;
+  const name = prompt('Report name:','New Tracking Report'); if (!name) return;
+  const { data, error } = await DB().from('tracking_reports')
+    .insert({ project_id: pid, name: name.trim() }).select().single();
+  if (error) { alert('Could not create report: ' + error.message); return; }
+  reports.unshift(data);
+  renderReportsGrid();
+  openReport(data.id);
+}
 
-  return `
-<tr>
-  <td class="tc-num">${idx+1}</td>
-  <td class="tc-room">
-    <input class="ti" list="roomSuggestions" id="room-${it._k}"
-      value="${esc(it.room)}" placeholder="e.g. Living Room"
-      oninput="readRow(${it._k});markUnsaved()">
+async function renameReport(e, id) {
+  e.stopPropagation();
+  const r = reports.find(x => x.id === id); if (!r) return;
+  const name = prompt('New name:', r.name); if (!name || name === r.name) return;
+  await DB().from('tracking_reports').update({ name: name.trim(), updated_at: new Date().toISOString() }).eq('id', id);
+  r.name = name.trim();
+  renderReportsGrid();
+}
+
+async function duplicateReport(e, id) {
+  e.stopPropagation();
+  const r = reports.find(x => x.id === id); if (!r) return;
+  const name = prompt('Name for duplicate:', r.name + ' (Copy)'); if (!name) return;
+  const { data: newRep, error } = await DB().from('tracking_reports')
+    .insert({ project_id: r.project_id, name: name.trim() }).select().single();
+  if (error) { alert('Could not duplicate: ' + error.message); return; }
+  // Copy items
+  const { data: items } = await DB().from('tracking_report_items').select('*').eq('report_id', id);
+  if (items?.length) {
+    const copies = items.map(it => {
+      const c = { ...it }; delete c.id; delete c.created_at;
+      c.report_id = newRep.id;
+      c.last_updated_at = new Date().toISOString();
+      return c;
+    });
+    await DB().from('tracking_report_items').insert(copies);
+  }
+  reports.unshift(newRep);
+  renderReportsGrid();
+}
+
+async function deleteReport(e, id) {
+  e.stopPropagation();
+  const r = reports.find(x => x.id === id); if (!r) return;
+  if (!confirm(`Delete "${r.name}"? This cannot be undone.`)) return;
+  await DB().from('tracking_reports').delete().eq('id', id);
+  reports = reports.filter(x => x.id !== id);
+  renderReportsGrid();
+}
+
+/* ── OPEN REPORT ─────────────────────────────────── */
+async function openReport(id) {
+  currentReport = reports.find(r => r.id === id);
+  if (!currentReport) return;
+  const { data } = await DB().from('tracking_report_items')
+    .select('*').eq('report_id', id).order('sort_order').order('created_at');
+  reportItems = (data || []).map(it => ({ ...it, _k: ++_seq, _open: false, _dirty: false, _new: false }));
+
+  const proj   = allProjects.find(p => p.id === currentReport.project_id);
+  const client = allClients.find(c => c.id === proj?.client_id);
+  gid('trkBreadcrumb').textContent = [client?.name, proj?.name].filter(Boolean).join(' · ');
+  gid('trkTitle').value = currentReport.name;
+
+  _unsaved = false;
+  gid('unsavedDot').classList.remove('on');
+  gid('saveBar').classList.remove('visible');
+
+  go('tracker');
+  renderTrackerTable();
+}
+
+function goHome() {
+  if (_unsaved && !confirm('You have unsaved changes. Leave without saving?')) return;
+  _unsaved = false;
+  gid('saveBar').classList.remove('visible');
+  go('home');
+}
+
+/* ── TRACKER TABLE ───────────────────────────────── */
+function renderTrackerTable() {
+  const tbody = gid('trkBody');
+  gid('trkEmpty').style.display = reportItems.length ? 'none' : 'block';
+  gid('trkTableWrap').style.display = reportItems.length ? '' : 'none';
+  if (!reportItems.length) { tbody.innerHTML = ''; return; }
+  tbody.innerHTML = reportItems.filter(it => !it._deleted).map(it => itemRowHTML(it) + detailRowHTML(it)).join('');
+  reportItems.forEach(it => applyStatusColor(it._k));
+}
+
+function itemRowHTML(it) {
+  const s   = STATUS_MAP[it.status] || STATUS_MAP['not_purchased'];
+  const img = it.image_url
+    ? `<img class="item-thumb" src="${esc(it.image_url)}" alt="" onerror="this.style.display='none'">`
+    : `<div class="item-thumb-ph"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1.5" width="12" height="11" rx="1.5" stroke="rgba(37,14,15,0.22)" stroke-width="1.2"/><circle cx="5" cy="5.5" r="1.2" stroke="rgba(37,14,15,0.22)" stroke-width="1.2"/><path d="M1 10l3.5-3.5L7 9l2.5-3 3.5 4.5" stroke="rgba(37,14,15,0.22)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>`;
+
+  return `<tr id="row-${it._k}">
+  <td class="tc-img item-img-cell">${img}</td>
+  <td class="tc-prod prod-cell">
+    <div class="prod-name" id="pname-${it._k}">${esc(it.product_name||'—')}</div>
+    ${it.po_line_item_id ? `<div class="prod-sub" id="psub-${it._k}">From PO</div>` : ''}
   </td>
-  <td class="tc-item">
-    <div class="item-ro">${esc(it._item_name||'—')}</div>
-    ${it._qty !== 1 ? `<div class="item-ro-sub">Qty: ${it._qty}</div>` : ''}
-  </td>
-  <td class="tc-vendor">
-    <div class="vendor-ro">${esc(it._source||'—')}</div>
-  </td>
-  <td class="tc-status">
-    <select class="${stCls} status-sel" id="status-${it._k}" onchange="onStatusChange(${it._k})">
-      ${stOpts}
+  <td class="tc-vend"><input type="text" id="vend-${it._k}" value="${esc(it.vendor)}" placeholder="—" oninput="readRow(${it._k});markUnsaved()"></td>
+  <td class="tc-qty"><input type="number" id="qty-${it._k}" value="${it.qty||1}" min="0.01" step="0.01" oninput="readRow(${it._k});markUnsaved()"></td>
+  <td class="tc-stat">
+    <select class="stat-sel" id="stat-${it._k}" onchange="readRow(${it._k});applyStatusColor(${it._k});markUnsaved()">
+      ${statusOptsHTML}
     </select>
   </td>
-  <td class="tc-quoted">
-    <div class="amt-cell">${fmtMoney(quotedUSD)}</div>
-    ${it._currency!=='USD'?`<div class="amt-sub">${it._currency}</div>`:''}
-  </td>
-  <td class="tc-actual">
-    <input class="ti r" id="actual-${it._k}" type="number"
-      value="${actSet ? it.actual_cost : ''}" min="0" step="0.01"
-      placeholder="—"
-      oninput="readRow(${it._k});renderVariance(${it._k});markUnsaved()">
-  </td>
-  <td class="tc-curr">
-    <select class="tsel" id="acurr-${it._k}" onchange="onActualCurrencyChange(${it._k})">
-      ${currOpts}
-    </select>
-  </td>
-  <td class="tc-var" id="var-${it._k}">${varHTML}</td>
+  <td class="tc-ord"><input type="text" id="ord-${it._k}" value="${esc(it.order_number)}" placeholder="—" oninput="readRow(${it._k});markUnsaved()"></td>
+  <td class="tc-date"><input type="date" id="estd-${it._k}" value="${it.est_delivery_date||''}" oninput="readRow(${it._k});markUnsaved()"></td>
+  <td class="tc-trk"><input type="text" id="trk-${it._k}" value="${esc(it.tracking_number)}" placeholder="—" oninput="readRow(${it._k});markUnsaved()"></td>
   <td class="tc-act">
-    <button class="xbtn" id="xbtn-${it._k}" onclick="toggleDet(${it._k})">${it._open?'▲':'▼'}</button>
-  </td>
-</tr>
-<tr id="det-${it._k}" class="det-row${it._open?' open':''}">
-  <td colspan="10">
-    <div class="det-grid">
-
-      <!-- Col 1: Dates -->
-      <div>
-        <div class="fg">
-          <label class="fl">Purchase Date</label>
-          <input class="fi" type="date" id="pdate-${it._k}" value="${it.purchase_date||''}" oninput="readRow(${it._k});markUnsaved()">
-        </div>
-        <div class="fg" style="margin-top:10px">
-          <label class="fl">Est. Delivery Date</label>
-          <input class="fi" type="date" id="estdate-${it._k}" value="${it.est_delivery_date||''}" oninput="readRow(${it._k});markUnsaved()">
-        </div>
-        <div class="fg" style="margin-top:10px">
-          <label class="fl">Actual Delivery Date</label>
-          <input class="fi" type="date" id="actdate-${it._k}" value="${it.actual_delivery_date||''}" oninput="readRow(${it._k});markUnsaved()">
-        </div>
-      </div>
-
-      <!-- Col 2: Tracking + Rate + Notes -->
-      <div>
-        <div class="fg">
-          <label class="fl">Tracking Number</label>
-          <input class="fi" id="track-${it._k}" type="text"
-            value="${esc(it.tracking_number)}" placeholder="e.g. 1Z999AA10123456784"
-            oninput="readRow(${it._k});markUnsaved()">
-        </div>
-        <div class="fg" style="margin-top:10px">
-          <label class="fl">Carrier</label>
-          <input class="fi" id="carrier-${it._k}" type="text"
-            value="${esc(it.carrier)}" placeholder="UPS, FedEx, DHL, USPS…"
-            oninput="readRow(${it._k});markUnsaved()">
-        </div>
-        <div class="fg" id="arate-fg-${it._k}" style="margin-top:10px${showRate?'':';display:none'}">
-          <label class="fl">Actual Rate to USD</label>
-          <input class="fi" id="arate-${it._k}" type="number"
-            value="${it.actual_exchange_rate||1}" min="0.0000001" step="0.000001"
-            placeholder="e.g. 0.1456"
-            oninput="readRow(${it._k});renderVariance(${it._k});markUnsaved()">
-        </div>
-        <div class="fg" style="margin-top:10px">
-          <label class="fl">Item Image URL</label>
-          <input class="fi" id="imgurl-${it._k}" type="url"
-            value="${esc(it.image_url)}" placeholder="https://…"
-            oninput="readRow(${it._k});markUnsaved()">
-        </div>
-        <div class="fg" style="margin-top:10px">
-          <label class="fl">Notes</label>
-          <textarea class="fi" id="notes-${it._k}" rows="2"
-            placeholder="Lead time, ref #, order details…"
-            oninput="readRow(${it._k});markUnsaved()">${esc(it.notes)}</textarea>
-        </div>
-      </div>
-
-      <!-- Col 3: Cushion -->
-      <div>
-        <label class="fl" style="margin-bottom:8px">Cushion</label>
-        <div class="cushion-panel">
-          <div class="cushion-toggle-row">
-            <input type="checkbox" id="cush-${it._k}" ${it.cushion_enabled?'checked':''} onchange="onCushionChange(${it._k})">
-            <label for="cush-${it._k}">Apply cushion to this item</label>
-          </div>
-          <div id="cush-det-${it._k}" style="${it.cushion_enabled?'':'display:none'}">
-            <div class="cushion-detail">
-              <div class="fg">
-                <label class="fl">Cushion %</label>
-                <input class="fi" id="cush-pct-${it._k}" type="number"
-                  value="${it.cushion_pct||10}" min="0" step="0.5"
-                  oninput="readRow(${it._k});updateCushionDisplay(${it._k});markUnsaved()">
-              </div>
-              <div class="cushion-vis-row">
-                <input type="checkbox" id="cush-vis-${it._k}" ${it.cushion_visible?'checked':''} onchange="readRow(${it._k});markUnsaved()">
-                <label for="cush-vis-${it._k}">Show cushion to client</label>
-              </div>
-              <div class="cushion-summary" id="cush-sum-${it._k}">
-                Cushion: ${fmtMoney(cushAmt)}<br>
-                Base: ${fmtMoney(it.quoted_cost||0)} · Client sees: ${fmtMoney((it.quoted_cost||0)+cushAmt)}
-              </div>
-            </div>
-          </div>
-          ${!it.cushion_enabled?`<div class="cushion-off-note">Not applied — base quoted price used</div>`:''}
-        </div>
-      </div>
-
+    <div class="row-actions">
+      <button class="xbtn" id="xbtn-${it._k}" onclick="toggleDet(${it._k})" title="Details">▼</button>
+      <button class="delbtn" onclick="deleteItem(${it._k})" title="Remove">×</button>
     </div>
   </td>
 </tr>`;
 }
 
-/* ── ROW INTERACTIONS ─────────────────────────── */
+function detailRowHTML(it) {
+  const upd = it.last_updated_at
+    ? new Date(it.last_updated_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'})
+    : '—';
+  return `<tr id="det-${it._k}" style="display:none">
+  <td colspan="9">
+    <div class="det-inner">
+      <div class="fg">
+        <label class="fl">Product Name</label>
+        <input class="fi" type="text" id="dpname-${it._k}" value="${esc(it.product_name)}" placeholder="Product name" oninput="syncProdName(${it._k});markUnsaved()">
+      </div>
+      <div class="fg">
+        <label class="fl">Order Date</label>
+        <input class="fi" type="date" id="ordd-${it._k}" value="${it.order_date||''}" oninput="readRow(${it._k});markUnsaved()">
+      </div>
+      <div class="fg">
+        <label class="fl">Actual Delivery</label>
+        <input class="fi" type="date" id="actd-${it._k}" value="${it.actual_delivery_date||''}" oninput="readRow(${it._k});markUnsaved()">
+      </div>
+      <div class="fg">
+        <label class="fl">Carrier</label>
+        <input class="fi" type="text" id="carr-${it._k}" value="${esc(it.carrier)}" placeholder="UPS, FedEx, DHL…" oninput="readRow(${it._k});markUnsaved()">
+      </div>
+      <div class="fg" style="grid-column:span 2">
+        <label class="fl">Tracking Link</label>
+        <input class="fi" type="url" id="trklink-${it._k}" value="${esc(it.tracking_link)}" placeholder="https://…" oninput="readRow(${it._k});markUnsaved()">
+      </div>
+      <div class="fg" style="grid-column:span 2">
+        <label class="fl">Notes / Updates</label>
+        <textarea class="fi" id="notes-${it._k}" rows="2" placeholder="Delays, replacements, ref #s…" oninput="readRow(${it._k});markUnsaved()">${esc(it.notes)}</textarea>
+      </div>
+      <div class="det-last-upd">Last updated: ${upd}</div>
+    </div>
+  </td>
+</tr>`;
+}
+
 function toggleDet(k) {
-  const it = trackerItems.find(i => i._k === k); if (!it) return;
-  it._open = !it._open;
-  gid('det-'+k)?.classList.toggle('open', it._open);
-  const btn = gid('xbtn-'+k); if (btn) btn.textContent = it._open ? '▲' : '▼';
+  const det  = gid('det-'+k);
+  const btn  = gid('xbtn-'+k);
+  const open = det.style.display !== 'none';
+  det.style.display = open ? 'none' : '';
+  btn.textContent = open ? '▼' : '▲';
 }
 
-function onStatusChange(k) {
+function syncProdName(k) {
   readRow(k);
-  const it = trackerItems.find(i => i._k === k); if (!it) return;
-  const sel = gid('status-'+k);
-  if (sel) sel.className = (STATUSES.find(s => s.value === it.status)?.cls || 's-pending') + ' status-sel';
-  markUnsaved();
+  const it = reportItems.find(i => i._k === k); if (!it) return;
+  const el = gid('pname-'+k); if (el) el.textContent = it.product_name || '—';
 }
 
-function onActualCurrencyChange(k) {
-  readRow(k);
-  const it = trackerItems.find(i => i._k === k); if (!it) return;
-  const rateFg = gid('arate-fg-'+k);
-  if (rateFg) rateFg.style.display = it.actual_currency === 'USD' ? 'none' : '';
-  renderVariance(k);
-  markUnsaved();
+function applyStatusColor(k) {
+  const sel = gid('stat-'+k); if (!sel) return;
+  sel.value = sel.value || 'not_purchased';
+  const s = STATUS_MAP[sel.value] || STATUS_MAP['not_purchased'];
+  sel.style.background = s.bg;
+  sel.style.color      = s.color;
 }
 
-function onCushionChange(k) {
-  readRow(k);
-  const it = trackerItems.find(i => i._k === k); if (!it) return;
-  gid('cush-det-'+k).style.display = it.cushion_enabled ? '' : 'none';
-  updateCushionDisplay(k);
-  markUnsaved();
-}
-
-function updateCushionDisplay(k) {
-  const it  = trackerItems.find(i => i._k === k); if (!it) return;
-  const sum = gid('cush-sum-'+k); if (!sum) return;
-  const amt = (it.quoted_cost||0) * (it.cushion_pct||10) / 100;
-  sum.innerHTML = `Cushion: ${fmtMoney(amt)}<br>Base: ${fmtMoney(it.quoted_cost||0)} · Client sees: ${fmtMoney((it.quoted_cost||0)+amt)}`;
-}
-
-function renderVariance(k) {
-  const it  = trackerItems.find(i => i._k === k); if (!it) return;
-  const el  = gid('var-'+k); if (!el) return;
-  const actSet  = it.actual_cost !== null && it.actual_cost !== '';
-  const actUSD  = actSet ? (+it.actual_cost * (it.actual_exchange_rate||1)) : null;
-  const variance = actUSD !== null ? actUSD - (it.quoted_cost||0) : null;
-  if (variance === null)    { el.innerHTML = `<div class="var-none">—</div>`; return; }
-  if (variance >  0.01)     { el.innerHTML = `<div class="var-over">+${fmtMoney(variance)}</div>`; return; }
-  if (variance < -0.01)     { el.innerHTML = `<div class="var-under">${fmtMoney(variance)}</div>`; return; }
-  el.innerHTML = `<div class="var-none">—</div>`;
-}
-
+/* ── READ ROW ────────────────────────────────────── */
 function readRow(k) {
-  const it = trackerItems.find(i => i._k === k); if (!it) return;
-  it.room              = gv('room-'+k);
-  it.status            = gv('status-'+k) || 'pending_approval';
-  const actRaw = gv('actual-'+k);
-  it.actual_cost       = actRaw !== '' ? parseFloat(actRaw) : null;
-  it.actual_currency   = gv('acurr-'+k) || 'USD';
-  it.actual_exchange_rate = parseFloat(gv('arate-'+k)) || 1;
-  it.cushion_enabled   = !!(gid('cush-'+k)?.checked);
-  it.cushion_pct       = parseFloat(gv('cush-pct-'+k)) || 10;
-  it.cushion_visible   = !!(gid('cush-vis-'+k)?.checked);
-  it.purchase_date     = gv('pdate-'+k);
-  it.est_delivery_date = gv('estdate-'+k);
-  it.actual_delivery_date = gv('actdate-'+k);
-  it.tracking_number   = gv('track-'+k);
-  it.carrier           = gv('carrier-'+k);
-  it.notes             = gv('notes-'+k);
-  it.image_url         = gv('imgurl-'+k);
+  const it = reportItems.find(i => i._k === k); if (!it) return;
+  it.vendor             = gv('vend-'+k);
+  it.qty                = parseFloat(gv('qty-'+k)) || 1;
+  it.status             = gv('stat-'+k) || 'not_purchased';
+  it.order_number       = gv('ord-'+k);
+  it.est_delivery_date  = gv('estd-'+k) || null;
+  it.order_date         = gv('ordd-'+k) || null;
+  it.actual_delivery_date = gv('actd-'+k) || null;
+  it.tracking_number    = gv('trk-'+k);
+  it.carrier            = gv('carr-'+k);
+  it.tracking_link      = gv('trklink-'+k);
+  it.notes              = gv('notes-'+k);
+  it.product_name       = gv('dpname-'+k) || it.product_name;
+  it._dirty = true;
 }
 
-/* ── SAVE ──────────────────────────────────────── */
-async function saveTracker() {
-  trackerItems.forEach(it => readRow(it._k));
-  const btn = gid('btnSave'); btn.textContent = 'Saving…'; btn.disabled = true;
-  try {
-    // PO-level tracking dates
-    const trackPayload = {
-      po_id:               currentPO.id,
-      po_sent_date:        gv('poSentDate') || null,
-      money_received_date: gv('moneyReceivedDate') || null,
-      updated_at:          new Date().toISOString(),
-    };
-    if (poTracking.id) {
-      const { error } = await DB().from('procurement_po_tracking').update(trackPayload).eq('id', poTracking.id);
-      if (error) throw error;
-    } else {
-      const { data, error } = await DB().from('procurement_po_tracking').insert(trackPayload).select().single();
-      if (error) throw error;
-      poTracking = data;
-    }
+/* ── DELETE ITEM ─────────────────────────────────── */
+function deleteItem(k) {
+  const it = reportItems.find(i => i._k === k); if (!it) return;
+  it._deleted = true;
+  const row = gid('row-'+k); if (row) row.remove();
+  const det = gid('det-'+k); if (det) det.remove();
+  const remaining = reportItems.filter(i => !i._deleted);
+  gid('trkEmpty').style.display     = remaining.length ? 'none' : 'block';
+  gid('trkTableWrap').style.display = remaining.length ? ''     : 'none';
+  markUnsaved();
+}
 
-    // Line item tracker records
-    for (const it of trackerItems) {
+/* ── ADD MANUAL ITEM ─────────────────────────────── */
+function addManualItem() {
+  const it = {
+    _k: ++_seq, _new: true, _dirty: true, _deleted: false, _open: false,
+    id: null, report_id: currentReport.id, po_line_item_id: null,
+    product_name: 'New Item', image_url: '', vendor: '', qty: 1,
+    order_number: '', order_date: null, est_delivery_date: null,
+    actual_delivery_date: null, tracking_number: '', tracking_link: '',
+    carrier: '', status: 'not_purchased', notes: '',
+    sort_order: reportItems.length, last_updated_at: new Date().toISOString(),
+  };
+  reportItems.push(it);
+  const tbody = gid('trkBody');
+  tbody.insertAdjacentHTML('beforeend', itemRowHTML(it) + detailRowHTML(it));
+  applyStatusColor(it._k);
+  gid('trkEmpty').style.display     = 'none';
+  gid('trkTableWrap').style.display = '';
+  // Open detail row for editing
+  toggleDet(it._k);
+  gid('dpname-'+it._k)?.focus();
+  markUnsaved();
+}
+
+/* ── SAVE ────────────────────────────────────────── */
+async function saveReport() {
+  // Read all visible rows before saving
+  reportItems.filter(it => !it._deleted).forEach(it => readRow(it._k));
+
+  const btn1 = gid('btnSave'); const btn2 = gid('btnSaveBar');
+  btn1.textContent = 'Saving…'; btn1.disabled = true;
+  btn2.textContent = 'Saving…'; btn2.disabled = true;
+
+  try {
+    // Save report name
+    await DB().from('tracking_reports').update({
+      name: gid('trkTitle').value.trim() || currentReport.name,
+      updated_at: new Date().toISOString()
+    }).eq('id', currentReport.id);
+
+    const now = new Date().toISOString();
+
+    // Delete removed items
+    const toDelete = reportItems.filter(it => it._deleted && it.id);
+    for (const it of toDelete) {
+      await DB().from('tracking_report_items').delete().eq('id', it.id);
+    }
+    reportItems = reportItems.filter(it => !it._deleted);
+
+    // Upsert dirty/new items
+    const toSave = reportItems.filter(it => it._dirty || it._new);
+    for (let i = 0; i < toSave.length; i++) {
+      const it = toSave[i];
       const payload = {
-        po_id:               it.po_id,
-        po_line_item_id:     it.po_line_item_id,
-        room:                it.room || null,
-        status:              it.status,
-        quoted_cost:         it.quoted_cost,
-        actual_cost:         it.actual_cost,
-        actual_currency:     it.actual_currency,
-        actual_exchange_rate:it.actual_exchange_rate,
-        cushion_enabled:     it.cushion_enabled,
-        cushion_pct:         it.cushion_pct,
-        cushion_visible:     it.cushion_visible,
-        purchase_date:       it.purchase_date       || null,
-        est_delivery_date:   it.est_delivery_date   || null,
-        actual_delivery_date:it.actual_delivery_date|| null,
-        tracking_number:     it.tracking_number     || null,
-        carrier:             it.carrier             || null,
-        notes:               it.notes               || null,
-        image_url:           it.image_url           || null,
-        updated_at:          new Date().toISOString(),
+        report_id: currentReport.id, po_line_item_id: it.po_line_item_id || null,
+        product_name: it.product_name||'', image_url: it.image_url||null,
+        vendor: it.vendor||null, qty: it.qty||1,
+        order_number: it.order_number||null, order_date: it.order_date||null,
+        est_delivery_date: it.est_delivery_date||null,
+        actual_delivery_date: it.actual_delivery_date||null,
+        tracking_number: it.tracking_number||null,
+        tracking_link: it.tracking_link||null,
+        carrier: it.carrier||null, status: it.status||'not_purchased',
+        notes: it.notes||null, sort_order: i,
+        last_updated_at: now,
       };
       if (it.id) {
-        const { error } = await DB().from('tracker_line_items').update(payload).eq('id', it.id);
-        if (error) throw error;
+        await DB().from('tracking_report_items').update(payload).eq('id', it.id);
       } else {
-        const { data, error } = await DB().from('tracker_line_items').insert(payload).select().single();
-        if (error) throw error;
-        it.id = data.id;
+        const { data } = await DB().from('tracking_report_items').insert(payload).select().single();
+        if (data) it.id = data.id;
       }
+      it._dirty = false; it._new = false;
+      // Refresh last-updated display in open detail rows
+      const lu = gid('det-'+it._k)?.querySelector('.det-last-upd');
+      if (lu) lu.textContent = 'Last updated: ' + new Date(now).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});
     }
 
-    btn.textContent = 'Saved ✓';
-    gid('saveBarInfo').textContent = 'Saved at ' + new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
-    setTimeout(() => { btn.textContent = 'Save Changes'; btn.disabled = false; }, 1800);
-    await loadRoomSuggestions(currentPO.project_id);
+    _unsaved = false;
+    gid('unsavedDot').classList.remove('on');
+    gid('saveBar').classList.remove('visible');
   } catch(e) {
     alert('Save failed: ' + e.message);
-    btn.textContent = 'Save Changes'; btn.disabled = false;
+  } finally {
+    btn1.textContent = 'Save'; btn1.disabled = false;
+    btn2.textContent = 'Save'; btn2.disabled = false;
   }
 }
 
-function markUnsaved() {
-  gid('saveBarInfo').textContent = 'Unsaved changes';
+/* ── MODAL ───────────────────────────────────────── */
+let _modalFilters = ['all'];
+
+function openAddModal() {
+  _modalSel.clear();
+  _activePill = 'all';
+  gid('modalSearch').value = '';
+  buildModalPills();
+  renderModalList();
+  gid('addModal').style.display = 'flex';
+  gid('modalSearch').focus();
 }
 
-/* ── HELPERS ───────────────────────────────────── */
-function gid(id) { return document.getElementById(id); }
-function gv(id)  { const e = gid(id); return e ? e.value : ''; }
-function esc(s)  { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function fmtMoney(n) { return '$' + Number(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function closeModal() { gid('addModal').style.display = 'none'; }
+function modalOverlayClick(e) { if (e.target === gid('addModal')) closeModal(); }
+
+function buildModalPills() {
+  // Pills: All + one per PO
+  const pills = [{ key:'all', label:'All' }];
+  allPOs.forEach(po => {
+    const label = po.po_number + (po.po_name ? ' · ' + po.po_name : '');
+    pills.push({ key: po.id, label });
+  });
+  gid('filterPills').innerHTML = pills.map(p =>
+    `<button class="filter-pill${_activePill===p.key?' active':''}" onclick="setModalPill('${p.key}')">${esc(p.label)}</button>`
+  ).join('');
+}
+
+function setModalPill(key) {
+  _activePill = key;
+  buildModalPills();
+  renderModalList();
+}
+
+function renderModalList() {
+  const q        = gid('modalSearch').value.toLowerCase();
+  const existIds = new Set(reportItems.filter(i=>!i._deleted && i.po_line_item_id).map(i=>i.po_line_item_id));
+  let items = allPOItems;
+  if (_activePill !== 'all') items = items.filter(it => it.po_id === _activePill);
+  if (q) items = items.filter(it =>
+    (it.item_name||'').toLowerCase().includes(q) ||
+    (it.source||'').toLowerCase().includes(q) ||
+    (it.category||'').toLowerCase().includes(q)
+  );
+  if (!items.length) {
+    gid('modalList').innerHTML = `<div class="modal-empty">No items found.</div>`;
+    updateModalCount();
+    return;
+  }
+  // Group by PO
+  const byPO = {};
+  items.forEach(it => {
+    if (!byPO[it._poLabel]) byPO[it._poLabel] = [];
+    byPO[it._poLabel].push(it);
+  });
+  let html = '';
+  for (const [poLabel, grpItems] of Object.entries(byPO)) {
+    html += `<div class="modal-group-hd">${esc(poLabel)}</div>`;
+    grpItems.forEach(it => {
+      const already    = existIds.has(it.id);
+      const checked    = already || _modalSel.has(it.id);
+      const disabledAttr = already ? 'disabled' : '';
+      const imgHTML = it.image_url
+        ? `<img class="mi-img" src="${esc(it.image_url)}" alt="">`
+        : `<div class="mi-img-ph"></div>`;
+      html += `
+      <div class="modal-item${already?' mi-disabled':''}" onclick="${already?'':'modalItemClick(event,\''+it.id+'\')'}">
+        <input type="checkbox" id="mc-${it.id}" ${checked?'checked':''} ${disabledAttr} onclick="event.stopPropagation();modalItemClick(event,'${it.id}')">
+        ${imgHTML}
+        <div class="mi-info">
+          <div class="mi-name">${esc(it.item_name||'Untitled')}</div>
+          <div class="mi-sub">${esc([it.source, it.category, it.qty > 1 ? 'Qty '+it.qty : ''].filter(Boolean).join(' · '))}</div>
+        </div>
+        ${already ? '<span class="mi-already">✓ In report</span>' : ''}
+      </div>`;
+    });
+  }
+  gid('modalList').innerHTML = html;
+  updateModalCount();
+}
+
+function modalItemClick(e, id) {
+  if (_modalSel.has(id)) { _modalSel.delete(id); } else { _modalSel.add(id); }
+  const cb = gid('mc-'+id); if (cb) cb.checked = _modalSel.has(id);
+  updateModalCount();
+}
+
+function updateModalCount() {
+  gid('modalSelCount').textContent = _modalSel.size === 0 ? '0 selected'
+    : _modalSel.size === 1 ? '1 item selected'
+    : `${_modalSel.size} items selected`;
+}
+
+function confirmAddItems() {
+  if (!_modalSel.size) { closeModal(); return; }
+  const now = new Date().toISOString();
+  _modalSel.forEach(poItemId => {
+    const src = allPOItems.find(i => i.id === poItemId); if (!src) return;
+    const it = {
+      _k: ++_seq, _new: true, _dirty: true, _deleted: false, _open: false,
+      id: null, report_id: currentReport.id, po_line_item_id: src.id,
+      product_name: src.item_name||'', image_url: src.image_url||'',
+      vendor: src.source||'', qty: src.qty||1,
+      order_number: '', order_date: null, est_delivery_date: null,
+      actual_delivery_date: null, tracking_number: '', tracking_link: '',
+      carrier: '', status: 'not_purchased', notes: '',
+      sort_order: reportItems.length, last_updated_at: now,
+    };
+    reportItems.push(it);
+    const tbody = gid('trkBody');
+    tbody.insertAdjacentHTML('beforeend', itemRowHTML(it) + detailRowHTML(it));
+    applyStatusColor(it._k);
+  });
+  gid('trkEmpty').style.display     = 'none';
+  gid('trkTableWrap').style.display = '';
+  closeModal();
+  markUnsaved();
+}
+
+/* ── REPORT NAME ─────────────────────────────────── */
+function saveReportName() {
+  if (!currentReport) return;
+  currentReport.name = gid('trkTitle').value.trim() || currentReport.name;
+}
+
+/* ── UNSAVED STATE ───────────────────────────────── */
+function markUnsaved() {
+  if (_unsaved) return;
+  _unsaved = true;
+  gid('unsavedDot').classList.add('on');
+  gid('saveBar').classList.add('visible');
+}
+
+/* ── VIEW SWITCH ─────────────────────────────────── */
+function go(view) {
+  gid('v-home').style.display    = view === 'home'    ? '' : 'none';
+  gid('v-tracker').style.display = view === 'tracker' ? '' : 'none';
+}
+
+/* ── HELPERS ─────────────────────────────────────── */
+function gid(id)  { return document.getElementById(id); }
+function gv(id)   { const e = gid(id); return e ? e.value : ''; }
+function esc(s)   { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 init();
 </script>
