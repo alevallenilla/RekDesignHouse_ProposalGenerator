@@ -311,23 +311,84 @@ body { font-family:'Inter',sans-serif; background:var(--ivory); color:var(--ink)
 .save-bar.visible { display:flex; }
 .save-bar-msg { font-size:12px; color:var(--muted); }
 
-/* ── PRINT / PDF ─────────────────────────── */
+/* ── PRINT DOCUMENT (screen: hidden) ────────── */
+#printDoc { display:none; font-family:'Inter',sans-serif; }
+
+.pd-header {
+  background:#250E0F; padding:32px 48px 24px;
+  display:flex; justify-content:space-between; align-items:flex-start;
+}
+.pd-logo { height:26px; display:block; }
+.pd-header-sub {
+  font-size:9px; font-weight:500; letter-spacing:0.22em; text-transform:uppercase;
+  color:rgba(245,245,245,0.35); margin-top:7px; display:block;
+}
+.pd-header-right { text-align:right; }
+.pd-header-label {
+  font-size:9px; letter-spacing:0.20em; text-transform:uppercase;
+  color:rgba(245,245,245,0.35); margin-bottom:4px;
+}
+.pd-header-title {
+  font-family:'Adamina',serif; font-size:22px; color:#F5F5F5; line-height:1.1;
+}
+.pd-header-date { font-size:11px; color:rgba(245,245,245,0.45); margin-top:5px; }
+
+.pd-meta {
+  background:#2d1213; padding:9px 48px;
+  font-size:9.5px; font-weight:600; letter-spacing:0.20em; text-transform:uppercase;
+  color:rgba(245,245,245,0.42);
+}
+
+.pd-intro {
+  padding:20px 48px; background:#FDFCF9; border-bottom:1px solid rgba(37,14,15,0.08);
+  font-size:12.5px; line-height:1.65; color:#250E0F; white-space:pre-wrap;
+}
+
+.pd-items { padding:28px 48px 24px; }
+
+.pd-table { width:100%; border-collapse:collapse; }
+.pd-table th {
+  font-size:9px; font-weight:600; letter-spacing:0.16em; text-transform:uppercase;
+  color:rgba(37,14,15,0.45); text-align:left; padding:0 12px 10px;
+  border-bottom:1px solid rgba(37,14,15,0.12);
+}
+.pd-table th.r { text-align:right; }
+.pd-table td {
+  padding:11px 12px; vertical-align:middle;
+  border-bottom:1px solid rgba(37,14,15,0.05);
+  font-size:12px; color:#250E0F;
+}
+.pd-table td.r { text-align:right; }
+.pd-table tr:last-child td { border-bottom:none; }
+
+.pd-item-row { display:flex; align-items:center; gap:10px; }
+.pd-item-img { width:42px; height:42px; object-fit:cover; border-radius:3px; border:1px solid rgba(37,14,15,0.10); display:block; flex-shrink:0; }
+.pd-item-name { font-weight:500; font-size:12.5px; line-height:1.3; }
+.pd-item-sub  { font-size:10.5px; color:rgba(37,14,15,0.50); margin-top:2px; }
+
+.pd-badge {
+  display:inline-block; font-size:10.5px; font-weight:600;
+  letter-spacing:0.04em; border-radius:4px; padding:3px 9px;
+}
+.pd-trk-link { color:#1A5CA8; text-decoration:none; font-size:11.5px; }
+.pd-trk-plain { font-size:11.5px; color:rgba(37,14,15,0.60); }
+
+.pd-footer {
+  background:#250E0F; padding:18px 48px;
+  display:flex; justify-content:space-between; align-items:center;
+}
+.pd-footer-brand { font-size:11px; font-weight:500; letter-spacing:0.14em; text-transform:uppercase; color:rgba(245,245,245,0.50); }
+.pd-footer-note  { font-size:10px; color:rgba(245,245,245,0.25); }
+
+/* ── PRINT ───────────────────────────────── */
+@page { margin:0; }
 @media print {
-  .topbar, #ws-nav, .trk-hd, .save-bar,
-  .status-filter-bar, .intro-panel, .trk-hd-actions,
-  .row-actions, .tc-act, .tc-drag { display:none !important; }
+  * { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  body > *:not(#printDoc) { display:none !important; }
   body { padding-left:0 !important; background:white !important; }
-  .trk-body { padding-bottom:0 !important; }
-  .trk-table-wrap { overflow-x:visible !important; }
-  .trk-table { min-width:unset !important; font-size:11px; }
-  .trk-table th { background:#f0ede8 !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
-  .trk-table th, .trk-table td { padding:8px 10px !important; }
-  .stat-badge { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
-  .print-header { display:block !important; padding:28px 28px 0; }
-  .print-header h2 { font-family:'Adamina',serif; font-size:22px; font-weight:400; }
-  .print-header .ph-sub { font-size:11px; color:#888; margin-top:3px; }
-  .intro-display { margin:16px 28px !important; }
-  tr.det-row { display:none !important; }
+  #printDoc { display:block !important; }
+  .pd-header, .pd-meta, .pd-footer { background-color:#250E0F !important; }
+  .pd-meta { background-color:#2d1213 !important; }
 }
 </style>
 </head>
@@ -398,12 +459,6 @@ body { font-family:'Inter',sans-serif; background:var(--ivory); color:var(--ink)
     </div>
   </div>
 
-  <!-- Print-only header (hidden on screen) -->
-  <div class="print-header" id="printHeader">
-    <h2 id="printTitle"></h2>
-    <p class="ph-sub" id="printSubtitle"></p>
-  </div>
-
   <!-- Intro message panel (internal = editable, client = display) -->
   <div id="introInternal" style="display:none">
     <div class="intro-panel">
@@ -451,6 +506,42 @@ body { font-family:'Inter',sans-serif; background:var(--ivory); color:var(--ink)
       <button class="btn-ghost" onclick="closeModal()">Cancel</button>
       <button class="btn-primary" onclick="confirmAddItems()">Add to Report</button>
     </div>
+  </div>
+</div>
+
+<!-- ── BRANDED PRINT DOCUMENT ─────────────────────────────────────── -->
+<div id="printDoc">
+  <div class="pd-header">
+    <div>
+      <img class="pd-logo" src="/logos/rek-wordmark-white.svg" alt="Rek Design Studio">
+      <span class="pd-header-sub">Design Studio</span>
+    </div>
+    <div class="pd-header-right">
+      <div class="pd-header-label">Procurement Status Report</div>
+      <div class="pd-header-title" id="pdTitle"></div>
+      <div class="pd-header-date"  id="pdDate"></div>
+    </div>
+  </div>
+  <div class="pd-meta" id="pdMeta"></div>
+  <div class="pd-intro" id="pdIntro" style="display:none"></div>
+  <div class="pd-items">
+    <table class="pd-table">
+      <thead>
+        <tr>
+          <th>Product</th>
+          <th>Vendor</th>
+          <th class="r">Qty</th>
+          <th>Status</th>
+          <th>Est. Delivery</th>
+          <th>Tracking</th>
+        </tr>
+      </thead>
+      <tbody id="pdTbody"></tbody>
+    </table>
+  </div>
+  <div class="pd-footer">
+    <span class="pd-footer-brand">Rek Design Studio</span>
+    <span class="pd-footer-note">Prepared for client review</span>
   </div>
 </div>
 
@@ -708,13 +799,6 @@ function applyViewMode() {
     gid('introClient').style.display = 'none';
   }
 
-  // Print header
-  if (currentReport) {
-    gid('printTitle').textContent    = currentReport.name;
-    const proj   = allProjects.find(p => p.id === currentReport.project_id);
-    const client = allClients.find(c => c.id === proj?.client_id);
-    gid('printSubtitle').textContent = [client?.name, proj?.name, new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})].filter(Boolean).join(' · ');
-  }
 }
 
 /* ── STATUS FILTER ───────────────────────────────── */
@@ -1087,6 +1171,53 @@ async function saveReport() {
 
 /* ── PRINT / PDF ─────────────────────────────────── */
 function printReport() {
+  const proj   = allProjects.find(p => p.id === currentReport.project_id);
+  const client = allClients.find(c => c.id === proj?.client_id);
+  const date   = new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+  const intro  = (localStorage.getItem('intro_' + currentReport.id) || '').trim();
+
+  gid('pdTitle').textContent = currentReport.name;
+  gid('pdDate').textContent  = date;
+  gid('pdMeta').textContent  = [client?.name, proj?.name].filter(Boolean).join(' · ');
+
+  if (intro) {
+    gid('pdIntro').textContent   = intro;
+    gid('pdIntro').style.display = '';
+  } else {
+    gid('pdIntro').style.display = 'none';
+  }
+
+  const items = reportItems.filter(it => !it._deleted);
+  gid('pdTbody').innerHTML = items.map(it => {
+    const s    = STATUS_MAP[it.status||'not_purchased'] || STATUS_MAP['not_purchased'];
+    const estD = it.est_delivery_date
+      ? new Date(it.est_delivery_date + 'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})
+      : '—';
+    const imgHTML = it.image_url
+      ? `<img class="pd-item-img" src="${esc(it.image_url)}" alt="">`
+      : '';
+    const trkHTML = it.tracking_link
+      ? `<a class="pd-trk-link" href="${esc(it.tracking_link)}">${esc(it.tracking_number || 'Track ↗')}</a>`
+      : `<span class="pd-trk-plain">${esc(it.tracking_number || '—')}</span>`;
+
+    return `<tr>
+      <td>
+        <div class="pd-item-row">
+          ${imgHTML}
+          <div>
+            <div class="pd-item-name">${esc(it.product_name||'—')}</div>
+            ${it.vendor ? `<div class="pd-item-sub">${esc(it.vendor)}</div>` : ''}
+          </div>
+        </div>
+      </td>
+      <td>${esc(it.vendor||'—')}</td>
+      <td class="r">${it.qty||1}</td>
+      <td><span class="pd-badge" style="background:${s.bg};color:${s.color}">${s.label}</span></td>
+      <td>${estD}</td>
+      <td>${trkHTML}</td>
+    </tr>`;
+  }).join('');
+
   window.print();
 }
 
