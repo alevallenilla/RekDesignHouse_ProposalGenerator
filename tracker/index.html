@@ -101,13 +101,13 @@ body { font-family:'Inter',sans-serif; background:var(--ivory); color:var(--ink)
 .trk-body { padding:0 0 80px; }
 
 /* ── TRACKER TABLE ───────────────────────── */
-.trk-table-wrap { overflow-x:auto; }
-.trk-table { width:100%; border-collapse:collapse; table-layout:fixed; }
+.trk-table-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+.trk-table { width:100%; border-collapse:collapse; min-width:860px; }
 .trk-table th {
   font-size:10px; font-weight:600; letter-spacing:0.14em; text-transform:uppercase;
   color:var(--muted); padding:10px 10px 10px 12px; text-align:left;
   background:var(--linen); border-bottom:1px solid var(--border);
-  white-space:nowrap; position:sticky; top:114px; z-index:10;
+  white-space:nowrap;
 }
 .trk-table td { padding:0; border-bottom:1px solid rgba(37,14,15,0.06); vertical-align:middle; }
 .trk-table tr:last-child td { border-bottom:none; }
@@ -394,9 +394,11 @@ const STATUSES = [
   { key:'damaged',             label:'Damaged / Replacement Req.', color:'#6B0F1A', bg:'rgba(107,15,26,0.16)'   },
 ];
 const STATUS_MAP = Object.fromEntries(STATUSES.map(s => [s.key, s]));
-const statusOptsHTML = STATUSES.map(s =>
-  `<option value="${s.key}">${s.label}</option>`
-).join('');
+function statusOptsHTML(current) {
+  return STATUSES.map(s =>
+    `<option value="${s.key}"${s.key === (current||'not_purchased') ? ' selected' : ''}>${s.label}</option>`
+  ).join('');
+}
 
 /* ── STATE ───────────────────────────────────────── */
 let allProjects   = [];
@@ -597,7 +599,7 @@ function itemRowHTML(it) {
   <td class="tc-qty"><input type="number" id="qty-${it._k}" value="${it.qty||1}" min="0.01" step="0.01" oninput="readRow(${it._k});markUnsaved()"></td>
   <td class="tc-stat">
     <select class="stat-sel" id="stat-${it._k}" onchange="readRow(${it._k});applyStatusColor(${it._k});markUnsaved()">
-      ${statusOptsHTML}
+      ${statusOptsHTML(it.status)}
     </select>
   </td>
   <td class="tc-ord"><input type="text" id="ord-${it._k}" value="${esc(it.order_number)}" placeholder="—" oninput="readRow(${it._k});markUnsaved()"></td>
