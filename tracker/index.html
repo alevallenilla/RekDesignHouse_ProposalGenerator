@@ -60,18 +60,32 @@ body { font-family:'Inter',sans-serif; background:var(--ivory); color:var(--ink)
 .reports-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(280px,1fr)); gap:16px; }
 .report-card {
   background:white; border:1px solid var(--border); border-radius:10px;
-  padding:20px 22px; cursor:pointer;
+  padding:20px 22px;
   transition:border-color 0.15s, box-shadow 0.15s;
-  position:relative;
 }
 .report-card:hover { border-color:rgba(37,14,15,0.22); box-shadow:0 2px 12px rgba(37,14,15,0.07); }
 .rc-name  { font-size:15px; font-weight:500; color:var(--ink); margin-bottom:6px; }
 .rc-meta  { font-size:11px; color:var(--muted); line-height:1.7; }
-.rc-actions { display:flex; gap:8px; margin-top:14px; padding-top:14px; border-top:1px solid var(--border); }
-.rc-actions button { font-family:'Inter',sans-serif; font-size:11px; font-weight:500; background:none; border:none; color:var(--muted); cursor:pointer; padding:0; transition:color 0.12s; }
-.rc-actions button:hover { color:var(--ink); }
-.rc-actions button.del:hover { color:#8B1A1A; }
-.rc-open { position:absolute; inset:0; border-radius:10px; }
+.rc-actions { display:flex; align-items:center; gap:6px; margin-top:16px; padding-top:16px; border-top:1px solid var(--border); flex-wrap:wrap; }
+.rc-btn {
+  font-family:'Inter',sans-serif; font-size:11px; font-weight:500;
+  border-radius:6px; padding:6px 12px; cursor:pointer;
+  transition:background 0.12s, border-color 0.12s, color 0.12s;
+  white-space:nowrap;
+}
+.rc-btn-open {
+  background:var(--ink); color:var(--parchment); border:1px solid var(--ink);
+}
+.rc-btn-open:hover { opacity:0.85; }
+.rc-btn-secondary {
+  background:white; color:rgba(37,14,15,0.60); border:1px solid var(--border);
+}
+.rc-btn-secondary:hover { background:rgba(37,14,15,0.04); border-color:rgba(37,14,15,0.22); color:var(--ink); }
+.rc-btn-del {
+  background:white; color:rgba(139,26,26,0.65); border:1px solid rgba(139,26,26,0.18);
+  margin-left:auto;
+}
+.rc-btn-del:hover { background:rgba(139,26,26,0.06); border-color:rgba(139,26,26,0.35); color:#8B1A1A; }
 .no-reports { text-align:center; padding:60px 24px; }
 .no-reports p { font-size:13px; color:var(--muted); }
 
@@ -482,13 +496,12 @@ function renderReportsGrid() {
     <div class="report-card">
       <div class="rc-name">${esc(r.name)}</div>
       <div class="rc-meta">Last updated ${upd}</div>
-      <div class="rc-actions" style="position:relative;z-index:2">
-        <button onclick="openReport('${r.id}')">Open</button>
-        <button onclick="renameReport(event,'${r.id}')">Rename</button>
-        <button onclick="duplicateReport(event,'${r.id}')">Duplicate</button>
-        <button class="del" onclick="deleteReport(event,'${r.id}')">Delete</button>
+      <div class="rc-actions">
+        <button class="rc-btn rc-btn-open" onclick="openReport('${r.id}')">Open</button>
+        <button class="rc-btn rc-btn-secondary" onclick="renameReport(event,'${r.id}')">Rename</button>
+        <button class="rc-btn rc-btn-secondary" onclick="duplicateReport(event,'${r.id}')">Duplicate</button>
+        <button class="rc-btn rc-btn-del" onclick="deleteReport(event,'${r.id}')">Delete</button>
       </div>
-      <div class="rc-open" onclick="openReport('${r.id}')"></div>
     </div>`;
   }).join('');
 }
